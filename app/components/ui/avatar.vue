@@ -1,33 +1,32 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed } from 'vue'
-import {
-  AvatarRoot,
-  type AvatarRootProps,
-} from 'radix-vue'
-import { cn } from '@/lib/utils'
-
-const props = defineProps<AvatarRootProps & { class?: HTMLAttributes['class'] }>()
+import { AvatarRoot, type AvatarRootProps } from "radix-vue";
+import { type HTMLAttributes, computed } from "vue";
+const props = defineProps<
+  AvatarRootProps & { class?: HTMLAttributes["class"] }
+>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const { class: _, ...delegated } = props;
 
-  return delegated
-})
+  return delegated;
+});
 </script>
 
 <template>
   <AvatarRoot
     v-bind="delegatedProps"
-    :class="cn(
-      'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
-      props.class,
-    )"
+    :class="
+      cn(
+        'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
+        props.class,
+      )
+    "
   >
     <slot />
   </AvatarRoot>
 </template>
 
 <script lang="ts">
-export { default as AvatarImage } from './avatar-image.vue'
-export { default as AvatarFallback } from './avatar-fallback.vue'
+export { default as AvatarFallback } from "./avatar-fallback.vue";
+export { default as AvatarImage } from "./avatar-image.vue";
 </script>
