@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import AppHeaderLayout from "@/layouts/app/AppHeaderLayout.vue";
-
-defineOptions({
-  layout: AppHeaderLayout,
+definePageMeta({
+  layout: "app-header",
 });
 useHead({
   title: "Contact",

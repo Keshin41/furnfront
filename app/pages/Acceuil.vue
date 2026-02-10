@@ -1,44 +1,31 @@
 <script setup lang="ts">
-import AppHeaderLayout from "@/layouts/app/AppHeaderLayout.vue";
 import { ChevronDown } from "lucide-vue-next";
 import { computed } from "vue";
 
-defineOptions({
-  layout: AppHeaderLayout,
+definePageMeta({
+  layout: "app-header",
 });
 
-interface FurMeet {
-  id: number;
-  title: string;
-  date: string;
-  description: string;
-  category: string | null;
-  image_url: string | null;
-}
-
-interface Statistic {
-  telegram_members: number;
-  association_members: number;
-  furmeets_count: number;
-  hero_video_url: string;
-}
-
-interface Staff {
-  id: number;
-  name: string;
-  role: string;
-  photo: string | null;
-  social_links: Array<{ platform: string; url: string }> | null;
-  order: number;
-}
-
-interface Props {
-  furMeets: FurMeet[];
-  statistics: Statistic;
-  staff: Staff[];
-}
-
-const props = defineProps<Props>();
+const { data } = useFetch<{
+  furMeets: { date: Date; id: string }[];
+  staff: { id: string; photo: string; name: string }[];
+  statistics: {
+    telegram_members: number;
+    association_members: number;
+    furmeets_count: number;
+  };
+}>("/api/homepage-data", {
+  method: "GET",
+  default: () => ({
+    furMeets: [],
+    staff: [],
+    statistics: {
+      telegram_members: 0,
+      association_members: 0,
+      furmeets_count: 0,
+    },
+  }),
+});
 
 const scrollToContent = () => {
   window.scrollTo({
@@ -48,7 +35,7 @@ const scrollToContent = () => {
 };
 
 const nextFurMeet = computed(() => {
-  const upcomingMeets = props.furMeets
+  const upcomingMeets = data.value.furMeets
     .map((furMeet) => ({
       ...furMeet,
       dateObj: new Date(furMeet.date),
@@ -74,7 +61,10 @@ useHead({
       playsinline
       class="absolute inset-0 h-full w-full object-cover"
     >
-      <source :src="props.statistics.hero_video_url" type="video/webm" />
+      <source
+        src="~assets/media/video/hero-background.webm"
+        type="video/webm"
+      />
       Votre navigateur ne supporte pas la vidéo.
     </video>
 
@@ -172,11 +162,11 @@ useHead({
 
       <!-- Grille de FurMeets -->
       <div
-        v-if="props.furMeets.length > 0"
+        v-if="data.furMeets.length > 0"
         class="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
       >
         <FurMeetCard
-          v-for="furMeet in props.furMeets"
+          v-for="furMeet in data.furMeets"
           :key="furMeet.id"
           :fur-meet="furMeet"
         />
@@ -222,7 +212,7 @@ useHead({
                 Membres
               </p>
               <p class="text-4xl font-bold text-light-blue md:text-5xl">
-                {{ props.statistics.telegram_members.toLocaleString() }}
+                {{ data.statistics.telegram_members.toLocaleString() }}
               </p>
             </div>
           </div>
@@ -240,7 +230,7 @@ useHead({
                 Adhérents
               </p>
               <p class="text-4xl font-bold text-light-blue md:text-5xl">
-                {{ props.statistics.association_members }}
+                {{ data.statistics.association_members }}
               </p>
             </div>
           </div>
@@ -259,7 +249,7 @@ useHead({
                 Furmeet
               </p>
               <p class="text-4xl font-bold text-light-blue md:text-5xl">
-                {{ props.statistics.furmeets_count }}
+                {{ data.statistics.furmeets_count }}
               </p>
             </div>
           </div>
@@ -437,7 +427,7 @@ useHead({
         <!-- Grille de staff members -->
         <div class="flex flex-wrap justify-center gap-8 md:gap-12">
           <div
-            v-for="member in props.staff"
+            v-for="member in data.staff"
             :key="member.id"
             class="group relative overflow-hidden rounded-4xl border border-cyan-400/30 bg-[#2c4a5c] p-6 w-[20rem] text-center transition-all duration-300 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-400/20"
           >

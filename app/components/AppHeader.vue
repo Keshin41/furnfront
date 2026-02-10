@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppLogoIcon from "@/components/AppLogoIcon.vue";
-import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import CartButton from "@/components/CartButton.vue";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,60 +15,38 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-vue-next";
-import { computed } from "vue";
 
-interface Props {
-  breadcrumbs?: BreadcrumbItem[];
-}
+const route = useRoute();
 
-const props = withDefaults(defineProps<Props>(), {
-  breadcrumbs: () => [],
-});
+/**
+ * Détection route active (équivalent Inertia)
+ */
+const isCurrentRoute = (targetUrl: string) => {
+  const currentUrl = route.path;
 
-const page = usePage();
-const auth = computed(() => page.props.auth);
+  if (currentUrl.startsWith("/boutique/panier") && targetUrl === "/boutique") {
+    return true;
+  }
 
-const isCurrentRoute = computed(
-  () => (url: NonNullable<InertiaLinkProps["href"]>) => {
-    const targetUrl = toUrl(url);
-    const currentUrl = page.url;
+  if (targetUrl === "/") return currentUrl === "/";
 
-    if (currentUrl.startsWith("/boutique/panier") && targetUrl === "/boutique")
-      return true;
+  return currentUrl.startsWith(targetUrl);
+};
 
-    if (targetUrl === "/") return currentUrl === "/";
-    return currentUrl.startsWith(targetUrl);
-  },
-);
+const activeItemStyles = (url: string) =>
+  isCurrentRoute(url)
+    ? "text-yellow font-semibold"
+    : "text-blue hover:text-blue";
 
-const activeItemStyles = computed(
-  () => (url: NonNullable<InertiaLinkProps["href"]>) =>
-    isCurrentRoute.value(toUrl(url))
-      ? "text-yellow font-semibold"
-      : "text-blue hover:text-blue",
-);
-
-const mainNavItems: NavItem[] = [
-  {
-    title: "Acceuil",
-    href: acceuil(),
-  },
-  {
-    title: "Boutique",
-    href: boutique.index(),
-  },
-  {
-    title: "C'est quoi un furry?",
-    href: explication(),
-  },
-  {
-    title: "Furmeets",
-    href: furmeets(),
-  },
-  {
-    title: "Contact",
-    href: contact(),
-  },
+/**
+ * Navigation principale
+ */
+const mainNavItems = [
+  { title: "Accueil", href: "/acceuil" },
+  { title: "Boutique", href: "/boutique" },
+  { title: "C'est quoi un furry?", href: "/explication" },
+  { title: "Furmeets", href: "/furmeets" },
+  { title: "Contact", href: "/contact" },
 ];
 </script>
 
@@ -102,7 +79,7 @@ const mainNavItems: NavItem[] = [
                 class="flex h-full flex-1 flex-col justify-between space-y-4 py-6"
               >
                 <nav class="-mx-3 space-y-1">
-                  <Link
+                  <NuxtLink
                     v-for="item in mainNavItems"
                     :key="item.title"
                     :href="item.href"
@@ -110,12 +87,12 @@ const mainNavItems: NavItem[] = [
                     :class="activeItemStyles(item.href)"
                   >
                     <component
-                      v-if="item.icon"
                       :is="item.icon"
+                      v-if="item.icon"
                       class="h-5 w-5"
                     />
                     {{ item.title }}
-                  </Link>
+                  </NuxtLink>
                 </nav>
               </div>
             </SheetContent>
@@ -146,7 +123,7 @@ const mainNavItems: NavItem[] = [
                   :key="index"
                   class="relative flex h-full items-center"
                 >
-                  <Link
+                  <NuxtLink
                     :class="[
                       activeItemStyles(item.href),
                       'h-9 cursor-pointer px-3 transition-colors relative pb-2',
@@ -166,7 +143,7 @@ const mainNavItems: NavItem[] = [
                       v-if="isCurrentRoute(item.href)"
                       class="absolute bottom-0 left-0 h-0.5 w-full bg-yellow"
                     ></span>
-                  </Link>
+                  </NuxtLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
@@ -175,17 +152,6 @@ const mainNavItems: NavItem[] = [
           <!-- Cart Button (Desktop) -->
           <CartButton />
         </div>
-      </div>
-    </div>
-
-    <div
-      v-if="props.breadcrumbs.length > 1"
-      class="flex w-full border-b border-sidebar-border/70"
-    >
-      <div
-        class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl"
-      >
-        <Breadcrumbs :breadcrumbs="breadcrumbs" />
       </div>
     </div>
   </div>

@@ -2,12 +2,11 @@
 import NotificationContainer from "@/components/NotificationContainer.vue";
 import { useCart } from "@/composables/useCart";
 import { useNotification } from "@/composables/useNotification";
-import AppHeaderLayout from "@/layouts/app/AppHeaderLayout.vue";
 import { Filter, Package, ShoppingCart, Ticket, Users } from "lucide-vue-next";
 import { ref } from "vue";
 
-defineOptions({
-  layout: AppHeaderLayout,
+definePageMeta({
+  layout: "app-header",
 });
 
 interface Product {

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import FurMeetCard from "@/components/FurMeetCard.vue";
-import AppHeaderLayout from "@/layouts/app/AppHeaderLayout.vue";
 
-defineOptions({
-  layout: AppHeaderLayout,
+definePageMeta({
+  layout: "app-header",
 });
 
 interface FurMeet {

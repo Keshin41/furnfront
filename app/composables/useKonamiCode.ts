@@ -38,7 +38,7 @@ export function useKonamiCode() {
       // Si la séquence complète est entrée
       if (konamiIndex === konamiCode.length) {
         konamiIndex = 0;
-        router.visit("/admin/login");
+        navigateTo("/admin/login");
       }
     } else {
       // Réinitialiser si la séquence est incorrecte
