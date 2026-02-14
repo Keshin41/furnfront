@@ -1,12 +1,4 @@
 <script setup lang="ts">
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useCart } from "@/composables/useCart";
-import { useNotification } from "@/composables/useNotification";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-vue-next";
 
 const { cartItems, removeFromCart, updateQuantity, itemCount, total } =
@@ -15,23 +7,21 @@ const { warning } = useNotification();
 </script>
 
 <template>
-  <Popover>
-    <PopoverTrigger :as-child="true">
-      <Button
+  <UPopover>
+    <UChip
+      :text="5"
+      :show="!itemCount"
+      :ui="{ base: 'h-[16px] min-w-[16px] text-[14px]' }"
+    >
+      <UButton
         variant="ghost"
-        size="icon"
+        size="xs"
         class="relative h-9 w-9 text-blue hover:text-light-blue"
       >
         <ShoppingCart class="h-5 w-5" />
-        <span
-          v-if="itemCount > 0"
-          class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-yellow to-yellow text-xs font-bold text-[#2c3e50]"
-        >
-          {{ itemCount }}
-        </span>
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-80 p-0" align="end">
+      </UButton>
+    </UChip>
+    <template #content>
       <div
         class="flex items-center justify-between border-b border-light-blue/30 bg-blue/20 px-4 py-3"
       >
@@ -53,16 +43,14 @@ const { warning } = useNotification();
       </div>
 
       <!-- Cart Items -->
-      <div v-else class="max-h-[400px] overflow-y-auto">
+      <div v-else class="max-h-100 overflow-y-auto">
         <div
           v-for="item in cartItems"
           :key="item.id"
           class="flex gap-3 border-b border-light-blue/20 p-4 hover:bg-blue/10 transition-colors"
         >
           <!-- Image -->
-          <div
-            class="h-16 w-16 flex-shrink-0 rounded overflow-hidden bg-blue/20"
-          >
+          <div class="h-16 w-16 shrink-0 rounded overflow-hidden bg-blue/20">
             <img
               v-if="item.image"
               :src="`/storage/${item.image}`"
@@ -84,6 +72,7 @@ const { warning } = useNotification();
             </p>
             <div class="flex items-center gap-1 mt-2">
               <button
+                class="h-6 w-6 flex items-center justify-center rounded hover:bg-light-blue/20 text-light-blue/60 hover:text-light-blue transition-colors"
                 @click="
                   () => {
                     if (item.quantity > 1) {
@@ -91,7 +80,6 @@ const { warning } = useNotification();
                     }
                   }
                 "
-                class="h-6 w-6 flex items-center justify-center rounded hover:bg-light-blue/20 text-light-blue/60 hover:text-light-blue transition-colors"
               >
                 <Minus class="h-3 w-3" />
               </button>
@@ -100,6 +88,7 @@ const { warning } = useNotification();
                 >{{ item.quantity }}</span
               >
               <button
+                class="h-6 w-6 flex items-center justify-center rounded hover:bg-light-blue/20 text-light-blue/60 hover:text-light-blue transition-colors"
                 @click="
                   () => {
                     if (item.quantity < item.stock) {
@@ -112,7 +101,6 @@ const { warning } = useNotification();
                     }
                   }
                 "
-                class="h-6 w-6 flex items-center justify-center rounded hover:bg-light-blue/20 text-light-blue/60 hover:text-light-blue transition-colors"
               >
                 <Plus class="h-3 w-3" />
               </button>
@@ -121,8 +109,8 @@ const { warning } = useNotification();
 
           <!-- Remove Button -->
           <button
+            class="shrink-0 h-8 w-8 flex items-center justify-center rounded hover:bg-red-500/20 text-light-blue/60 hover:text-red-400 transition-colors"
             @click="removeFromCart(item.id)"
-            class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded hover:bg-red-500/20 text-light-blue/60 hover:text-red-400 transition-colors"
           >
             <Trash2 class="h-4 w-4" />
           </button>
@@ -141,13 +129,13 @@ const { warning } = useNotification();
           >
         </div>
         <Link href="/boutique/panier" as="button" class="w-full">
-          <Button
-            class="w-full bg-gradient-to-r from-light-blue to-cyan-500 text-[#2c3e50] hover:from-cyan-300 hover:to-light-blue font-semibold"
+          <UButton
+            class="w-full bg-linear-to-r from-light-blue to-cyan-500 text-[#2c3e50] hover:from-cyan-300 hover:to-light-blue font-semibold"
           >
             Voir le panier
-          </Button>
+          </UButton>
         </Link>
       </div>
-    </PopoverContent>
-  </Popover>
+    </template>
+  </UPopover>
 </template>

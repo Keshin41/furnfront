@@ -1,27 +1,15 @@
 <script setup lang="ts">
-import FurMeetCard from "@/components/FurMeetCard.vue";
+import type { Furmeet } from "~/types/furmeet";
 
 definePageMeta({
   layout: "app-header",
 });
 
-interface FurMeet {
-  id: number;
-  title: string;
-  date: string;
-  description: string;
-  category: string | null;
-  image_url: string | null;
-}
-
-interface Props {
-  furMeets: FurMeet[];
-}
-
-const props = defineProps<Props>();
 useHead({
   title: "FurMeets",
 });
+
+const { data } = await useAPI<Furmeet[]>("/furmeet");
 </script>
 
 <template>
@@ -60,13 +48,13 @@ useHead({
       <div class="container mx-auto px-4">
         <!-- Grille de FurMeets -->
         <div
-          v-if="props.furMeets.length > 0"
+          v-if="data && data.length > 0"
           class="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
         >
           <FurMeetCard
-            v-for="furMeet in props.furMeets"
+            v-for="furMeet in data"
             :key="furMeet.id"
-            :fur-meet="furMeet"
+            :furmeet="furMeet"
           />
         </div>
 

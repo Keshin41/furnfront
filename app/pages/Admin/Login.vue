@@ -80,27 +80,22 @@ useHead({
                   autofocus
                   autocomplete="email"
                   placeholder="admin@furntours.com"
-                  class="border-cyan-300/30 bg-[#1b2433] text-white focus:border-cyan-300 focus:ring-cyan-300/60"
+                  class="w-full"
                 />
               </UFormField>
               <UFormField name="password" label="Mot de passe">
                 <UInput
                   v-model="state.password"
-                  name="password"
                   type="password"
                   required
                   autocomplete="current-password"
                   placeholder="••••••••"
-                  class="border-cyan-300/30 bg-[#1b2433] text-white focus:border-cyan-300 focus:ring-cyan-300/60"
+                  class="w-full"
                 />
               </UFormField>
             </div>
 
-            <UButton
-              type="submit"
-              class="mt-2 w-full bg-linear-to-r from-cyan-300 to-light-blue text-[#0f172a] hover:from-cyan-200 hover:to-cyan-300"
-              :disabled="processing"
-            >
+            <UButton type="submit" class="w-full" :disabled="processing">
               <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
               <span v-else>Se connecter</span>
             </UButton>

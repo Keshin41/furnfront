@@ -1,9 +1,24 @@
 <script setup lang="ts">
 import { ChevronDown } from "lucide-vue-next";
 import { computed } from "vue";
+import z from "zod";
 
 definePageMeta({
   layout: "app-header",
+});
+
+const schema = z.object({
+  name: z.string("Un nom/pseudo est requis"),
+  email: z.email("Mail invalide"),
+  message: z.string("Votre message est requis"),
+});
+
+type Schema = z.output<typeof schema>;
+
+const state = reactive<Partial<Schema>>({
+  email: undefined,
+  message: undefined,
+  name: undefined,
 });
 
 const { data } = useFetch<{
@@ -168,7 +183,7 @@ useHead({
         <FurMeetCard
           v-for="furMeet in data.furMeets"
           :key="furMeet.id"
-          :fur-meet="furMeet"
+          :furmeet="furMeet"
         />
       </div>
 
@@ -372,42 +387,40 @@ useHead({
           <div
             class="relative overflow-hidden rounded-lg border border-light-blue/30 bg-blue/20 p-8"
           >
-            <form class="space-y-4">
-              <!-- Nom -->
-              <div>
-                <input
+            <UForm class="space-y-4" :schema="schema" :state="state">
+              <UFormField name="name" label="Nom">
+                <UInput
+                  v-model="state.name"
                   type="text"
+                  required
                   placeholder="Votre nom"
-                  class="w-full rounded-lg border border-light-blue/20 bg-[#2c3e50] px-4 py-3 text-white placeholder-gray-400 transition-all focus:border-light-blue/50 focus:outline-none focus:ring-2 focus:ring-light-blue/20"
+                  class="w-full"
                 />
-              </div>
+              </UFormField>
 
-              <!-- Email -->
-              <div>
-                <input
-                  type="email"
+              <UFormField name="email" label="Email">
+                <UInput
+                  v-model="state.email"
+                  type="text"
+                  required
                   placeholder="Votre email"
-                  class="w-full rounded-lg border border-light-blue/20 bg-[#2c3e50] px-4 py-3 text-white placeholder-gray-400 transition-all focus:border-light-blue/50 focus:outline-none focus:ring-2 focus:ring-light-blue/20"
+                  class="w-full"
                 />
-              </div>
+              </UFormField>
 
-              <!-- Message -->
-              <div>
-                <textarea
-                  placeholder="Votre message"
+              <UFormField name="message" label="Email">
+                <UTextarea
+                  v-model="state.message"
+                  required
                   rows="6"
-                  class="w-full rounded-lg border border-light-blue/20 bg-[#2c3e50] px-4 py-3 text-white placeholder-gray-400 transition-all focus:border-light-blue/50 focus:outline-none focus:ring-2 focus:ring-light-blue/20"
+                  placeholder="Votre message"
+                  class="w-full"
                 />
-              </div>
+              </UFormField>
 
               <!-- Bouton -->
-              <button
-                type="submit"
-                class="w-full rounded-lg bg-gradient-to-r from-light-blue to-cyan-500 px-6 py-3 font-semibold text-[#2c3e50] transition-all hover:from-cyan-300 hover:to-light-blue hover:shadow-lg hover:shadow-light-blue/30"
-              >
-                Envoyer
-              </button>
-            </form>
+              <UButton type="submit" class="w-full"> Envoyer </UButton>
+            </UForm>
           </div>
         </div>
       </div>

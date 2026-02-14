@@ -73,3 +73,47 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+# Liste des pages
+
+## Publique
+
+- Accueil
+- Pourquoi furry
+- CGU/V
+- Statut
+- RCS
+- Règlement intérieur
+- Contact
+- Meets
+  - Une mite
+- Boutique
+  - Articles
+  - Checkoout
+  - **Paninier**
+- Internat
+- Adhésion
+
+## Admin
+
+- RCS
+- Dashboard (pleins de raccourcis)
+- Répartition des chambres
+  - préférence des gens
+  - heure de levée
+- Gestion des meets
+  - Modification d'une meet
+  - Création de meet
+- Settings (textes de l'asso)
+  - CGU
+  - Statut
+  - Règlement intérieur
+- Boutique
+  - Commandes (listes des commandes)
+    - Détail de chaque commande -> facture
+    - Création de commande
+    - Logiciel de caisse ?
+  - Produits (liste + stock)
+    - Ajout
+    - Edition
+- Mon compte

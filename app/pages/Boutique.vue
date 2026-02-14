@@ -9,30 +9,13 @@ definePageMeta({
   layout: "app-header",
 });
 
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  price: number;
-  stock: number;
-  category: string;
-  image?: string;
-  active: boolean;
-}
-
-interface Props {
-  products: Product[];
-  selectedCategory: string;
-}
-
-const props = defineProps<Props>();
-
 const { addToCart: addToCartComposable } = useCart();
 const { success, error, warning } = useNotification();
 
 const productQuantities = ref<Record<number, number>>({});
-
+const selectedCategory = useRoute().query.category;
+const router = useRouter();
+console.log("Selected category:", selectedCategory);
 const categories = [
   {
     value: "all",
@@ -61,9 +44,11 @@ const categories = [
 ];
 
 const filterByCategory = async (category: string) => {
-  await navigateTo({
-    name: "Boutique",
-    query: category === "all" ? {} : { category },
+  await router.push({
+    query: {
+      ...router.currentRoute.value.query,
+      category: category !== "all" ? category : undefined,
+    },
   });
 };
 
@@ -120,7 +105,41 @@ const getCategoryLabel = (category: string) => {
 const getProductQuantity = (productId: number) => {
   return productQuantities.value[productId] || 1;
 };
-
+const data = {
+  products: [
+    {
+      id: 1,
+      name: "T-shirt Fur'n'Tours",
+      slug: "t-shirt-furn-tours",
+      description:
+        "Un t-shirt de qualité pour montrer votre soutien à Fur'n'Tours.",
+      price: 19.99,
+      stock: 50,
+      category: "merch",
+      image: "products/tshirt.jpg",
+    },
+    {
+      id: 2,
+      name: "Adhésion annuelle",
+      slug: "adhesion-annuelle",
+      description:
+        "Devenez membre de Fur'n'Tours et bénéficiez d'avantages exclusifs toute l'année.",
+      price: 49.99,
+      stock: 100,
+      category: "membership",
+    },
+    {
+      id: 3,
+      name: "Ticket FurMeet™ Paris",
+      slug: "ticket-furmeet-paris",
+      description:
+        "Accès à notre prochain FurMeet™ à Paris, avec des activités, des invités spéciaux et plus encore !",
+      price: 29.99,
+      stock: 200,
+      category: "ticket",
+    },
+  ],
+};
 const setProductQuantity = (
   productId: number,
   quantity: number,
@@ -168,7 +187,7 @@ useHead(() => ({
             :key="cat.value"
             :class="[
               'flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all',
-              props.selectedCategory === cat.value
+              selectedCategory === cat.value
                 ? `bg-linear-to-r ${cat.color} text-white shadow-lg`
                 : 'bg-blue/20 text-light-blue border border-light-blue/30 hover:bg-blue/30',
             ]"
@@ -180,14 +199,14 @@ useHead(() => ({
               v-if="cat.value === 'all'"
               class="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs"
             >
-              {{ props.products.length }}
+              {{ data?.products.length }}
             </span>
             <span
               v-else
               class="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-xs"
             >
               {{
-                props.products.filter((p) => p.category === cat.value).length
+                data?.products.filter((p) => p.category === cat.value).length
               }}
             </span>
           </button>
@@ -199,11 +218,11 @@ useHead(() => ({
     <section class="container mx-auto px-4 pb-16">
       <div class="mx-auto max-w-7xl">
         <div
-          v-if="props.products.length > 0"
+          v-if="data?.products.length > 0"
           class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
           <div
-            v-for="product in props.products"
+            v-for="product in data?.products"
             :key="product.id"
             class="group rounded-lg border border-light-blue/30 bg-blue/20 overflow-hidden hover:border-light-blue/50 hover:shadow-lg hover:shadow-light-blue/20 transition-all"
           >

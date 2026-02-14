@@ -1,35 +1,18 @@
 <script setup lang="ts">
-import AppHeaderLayout from "@/layouts/app/AppHeaderLayout.vue";
-import { Link } from "@inertiajs/vue3";
 import { ChevronLeft, ChevronRight } from "lucide-vue-next";
+import type { Furmeet } from "~/types/furmeet";
 
-defineOptions({
-  layout: AppHeaderLayout,
+definePageMeta({
+  layout: "app-header",
 });
-
-interface FurMeet {
-  id: number;
-  title: string;
-  date: string;
-  description: string;
-  category: string | null;
-  image_url: string | null;
-  is_published: boolean;
-}
-
-interface Props {
-  furMeet: FurMeet;
-  previousFurMeet: FurMeet | null;
-  nextFurMeet: FurMeet | null;
-}
-
-const props = defineProps<Props>();
+const route = useRoute();
+const { data } = await useAPI<Furmeet>(`/furmeet/${route.params.id}`);
 
 const isUpcoming = (dateString: string) => {
   return new Date(dateString) >= new Date();
 };
 useHead({
-  title: props.furMeet.title,
+  title: data.value?.title,
 });
 </script>
 
@@ -39,8 +22,8 @@ useHead({
     <section class="relative h-[60vh] w-full overflow-hidden">
       <!-- Image de fond -->
       <div
-        v-if="props.furMeet.image_url"
-        :style="{ backgroundImage: `url(${props.furMeet.image_url})` }"
+        v-if="data && data.image_url"
+        :style="{ backgroundImage: `url(${data.image_url})` }"
         class="absolute inset-0 bg-cover bg-center"
       />
       <div
@@ -57,13 +40,16 @@ useHead({
       >
         <!-- Titre -->
         <h1 class="mb-6 text-center text-4xl font-bold md:text-5xl lg:text-6xl">
-          {{ props.furMeet.title }}
+          {{ data.title }}
         </h1>
 
         <!-- Badge à venir/passé -->
+        <UBadge class="">
+          {{ isUpcoming(data.date) ? "À venir" : "Événement passé" }}
+        </UBadge>
         <div class="mt-4">
           <span
-            v-if="isUpcoming(props.furMeet.date)"
+            v-if="isUpcoming(data.date)"
             class="rounded-full bg-green-500/20 px-4 py-2 text-sm font-semibold text-green-400 border border-green-500/30"
           >
             À venir
@@ -92,15 +78,15 @@ useHead({
             <div
               class="prose prose-invert max-w-none [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:text-light-blue [&_h1]:mb-6 [&_h1]:mt-8 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:text-light-blue [&_h2]:mb-4 [&_h2]:mt-6 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-light-blue [&_h3]:mb-3 [&_h3]:mt-5 [&_p]:text-gray-300 [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:text-gray-300 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_ol]:text-gray-300 [&_li]:mb-2 [&_strong]:text-white [&_strong]:font-semibold [&_em]:text-gray-200 [&_em]:italic [&_a]:text-light-blue [&_a]:underline [&_a]:hover:text-cyan-300 [&_span[style*='color']]:inline [&_span[style*='font-size']]:inline [&_div[data-google-map]]:my-6 [&_div[data-google-map]]:aspect-video [&_div[data-google-map]]:overflow-hidden [&_div[data-google-map]]:rounded-lg [&_div[data-google-map]]:border [&_div[data-google-map]]:border-light-blue/30 [&_div[data-google-map]_iframe]:h-full [&_div[data-google-map]_iframe]:w-full"
             >
-              {{ props.furMeet.description }}
+              {{ data.description }}
             </div>
           </div>
 
           <!-- Navigation entre les FurMeets -->
           <div class="mb-12 flex items-center justify-between gap-4">
             <Link
-              v-if="props.nextFurMeet"
-              :href="`/furmeets/${props.nextFurMeet.id}`"
+              v-if="data && data.nextFurMeet"
+              :href="`/furmeets/${data.nextFurMeet.id}`"
               class="flex items-center gap-2 rounded-lg border-2 border-light-blue bg-transparent px-6 py-3 text-white transition-colors hover:bg-light-blue/20"
             >
               <ChevronLeft class="h-5 w-5" />
@@ -109,8 +95,8 @@ useHead({
             <div v-else class="w-32" />
 
             <Link
-              v-if="props.previousFurMeet"
-              :href="`/furmeets/${props.previousFurMeet.id}`"
+              v-if="data && data.previousFurMeet"
+              :href="`/furmeets/${data.previousFurMeet.id}`"
               class="flex items-center gap-2 rounded-lg border-2 border-light-blue bg-transparent px-6 py-3 text-white transition-colors hover:bg-light-blue/20"
             >
               <span>Précédent</span>

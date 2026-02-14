@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import { Button } from "@/components/ui/button";
-import { Calendar, ArrowRight } from "lucide-vue-next";
+import { ArrowRight, Calendar } from "lucide-vue-next";
+import type { Furmeet } from "~/types/furmeet";
 
-interface FurMeet {
-  id: number;
-  title: string;
-  date: string;
-  description: string;
-}
+const { furmeet } = defineProps<{ furmeet: Furmeet }>();
 
-interface Props {
-  furMeet: FurMeet;
-}
-
-const props = defineProps<Props>();
+console.log(furmeet);
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -46,14 +37,14 @@ const getTextFromHtml = (html: string) => {
 
 <template>
   <div
-    class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-light-blue/30 to-blue/10 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-blue/50"
+    class="group relative overflow-hidden rounded-2xl bg-linear-to-br from-light-blue/30 to-blue/10 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-blue/50"
   >
     <!-- Titre avec fond coloré -->
-    <div class="bg-gradient-to-br from-light-blue/80 to-blue/80 p-6">
+    <div class="bg-linear-to-br from-light-blue/80 to-blue/80 p-6">
       <h3
         class="text-center text-2xl font-bold text-white drop-shadow-lg md:text-3xl"
       >
-        {{ furMeet.title }}
+        {{ furmeet.title }}
       </h3>
     </div>
 
@@ -62,18 +53,18 @@ const getTextFromHtml = (html: string) => {
       <!-- Date -->
       <div class="flex items-center gap-2 text-sm text-light-blue">
         <Calendar class="h-4 w-4" />
-        <span>{{ formatDate(furMeet.date) }}</span>
+        <span>{{ formatDate(furmeet.date) }}</span>
       </div>
 
       <!-- Description -->
       <p class="line-clamp-3 text-sm text-gray-300">
-        {{ getTextFromHtml(furMeet.description) }}
+        {{ furmeet.description }}
       </p>
 
       <!-- Bouton Lire plus -->
       <UButton
         as="a"
-        :href="`/furmeets/${furMeet.id}`"
+        :href="`/furmeets/${furmeet.id}`"
         variant="ghost"
         size="sm"
         class="group/btn w-full text-light-blue hover:bg-blue/20 hover:text-blue"
