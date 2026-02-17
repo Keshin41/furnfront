@@ -32,7 +32,10 @@ export function useKonamiCode() {
     const key = e.key.toLowerCase();
 
     // Vérifier si la touche correspond à la séquence
-    if (key === konamiCode[konamiIndex].toLowerCase()) {
+    if (
+      konamiIndex < konamiCode.length &&
+      key === konamiCode[konamiIndex]?.toLowerCase()
+    ) {
       konamiIndex++;
 
       // Si la séquence complète est entrée
