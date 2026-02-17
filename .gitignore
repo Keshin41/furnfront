@@ -24,4 +24,4 @@ logs
 !.env.example
 
 # media
-app/assets/*
+app/assets/media/*
