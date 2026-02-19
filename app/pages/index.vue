@@ -5,7 +5,7 @@
       <section
         class="relative grid min-h-[calc(100vh-var(--ui-header-height))] items-center overflow-hidden text-white">
 
-        <HeroBackgroundCarousel />
+        <HeroBackgroundCarousel :photos="['/meet-shuffle.avif', '/meet-outdoor.jpg', '/meet-duck.jpg']"/>
 
         <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.2fr_1fr]">
           <div class="my-auto">
@@ -30,7 +30,7 @@
             <div class="relative mx-auto h-115 w-90">
               <div class="absolute inset-0 rounded-full bg-linear-to-b from-brand-light-blue/90 to-transparent"></div>
               <div class="absolute inset-6 rounded-[36px] bg-linear-to-b from-brand-green to-brand-green/85 shadow-xl">
-                <img src="assets/img/mascote.png" alt="Furn Fest 2026">
+                <img src="/mascote.png" alt="Furn Fest 2026">
               </div>
               <div class="absolute -top-2 left-6 h-3 w-3 rounded-full bg-white"></div>
               <div class="absolute top-10 right-5 h-2.5 w-2.5 rounded-full bg-white"></div>
@@ -98,7 +98,7 @@
             <div class="relative h-110 w-78">
               <div class="absolute inset-0 rounded-full bg-linear-to-b from-brand-light-blue/30 to-transparent"></div>
               <div class="absolute inset-6 rounded-[36px] bg-linear-to-b from-brand-yellow to-brand-mango shadow-xl">
-                <img src="assets/img/mascote.png" alt="Mascotte Fur'N'Tours" class="h-full w-full object-contain">
+                <img src="/mascote.png" alt="Mascotte Fur'N'Tours" class="h-full w-full object-contain">
               </div>
               <div class="absolute -top-2 left-8 h-3 w-3 rounded-full bg-white"></div>
               <div class="absolute top-16 right-6 h-2.5 w-2.5 rounded-full bg-white"></div>
@@ -211,8 +211,8 @@ const furmeetsList = computed<FurmeetCard[]>(() => {
   if (!items.length) {
     return defaultFurmeets;
   }
-  return items.map((item, index) => ({
-    id: item.id,
+  return items.slice(0, 3).map((item, index) => ({
+    id: String(item.id),
     title: item.title,
     description: item.description,
     place: "Tours",

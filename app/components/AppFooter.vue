@@ -18,8 +18,8 @@ const legalLinks = [
 <template>
   <UFooter class="bg-brand-light-blue" :ui="{ bottom: 'pt-0 lg:pt-0' }">
     <template #left>
-      <div class="grid w-80 place-items-center rounded-2xl">
-        <img src="assets/img/logo-full.jpg" alt="Furn Tours Logo" />
+      <div class="grid place-items-center rounded-2xl">
+        <SiteLogo variant="arrow" class="w-80" />
       </div>
     </template>
 
@@ -44,7 +44,7 @@ const legalLinks = [
     </template>
 
     <template #bottom>
-      <p class="flex justify-center text-sm text-gray-500">© 2025 MyApp. All rights reserved.</p>
+      <p class="flex justify-center text-sm text-gray-500">© 2025 Fur'N'Tours. All rights reserved.</p>
     </template>
 
   </UFooter>
