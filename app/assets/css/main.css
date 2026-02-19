@@ -1,3 +1,65 @@
 /* assets/css/main.css */
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+@theme {
+  --color-brand-green: #23787c;
+  --color-brand-white: #edf4f7;
+  --color-brand-dark-blue: #6681ff;
+  --color-brand-blue: #5c94d5;
+  --color-brand-light-blue: #a7d6ff;
+  --color-brand-yellow: #ffee88;
+  --color-brand-sky: #4c82b9;
+  --color-brand-ice: #e6f1ff;
+  --color-brand-mango: #f3b764;
+  --color-brand-ink: #24465d;
+  --color-brand-ink-deep: #1c2b36;
+  --color-brand-amber: #5b4d00;
+
+  /* Police par défaut pour tout le texte */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Police pour les titres */
+  --font-display: "DynaPuff", sans-serif;
+}
+
+* {
+  font-family: "Inter", sans-serif; /* ou Roboto, Poppins, etc. */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+  font-family: "DynaPuff", sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+:root {
+  --ui-primary: #6681ff;
+  --ui-secondary: black;
+  --ui-success: var(--ui-color-success-500);
+  --ui-info: var(--ui-color-info-500);
+  --ui-warning: var(--ui-color-warning-500);
+  --ui-error: var(--ui-color-error-500);
+  --ui-bg: rgba(240, 248, 251, 0.98);
+  --ui-bg-muted: var(--ui-color-neutral-50);
+  --ui-bg-elevated: var(--ui-color-neutral-100);
+  --ui-bg-accented: var(--ui-color-neutral-200);
+  --ui-bg-inverted: var(--ui-color-neutral-900);
+  --ui-header-height: --spacing(24);
+
+  --ui-text-dimmed: var(--ui-color-neutral-400);
+  --ui-text-muted: var(--ui-color-neutral-500);
+  --ui-text-toned: var(--ui-color-neutral-600);
+  --ui-text: black;
+  --ui-text-primary: black;
+  --ui-text-highlighted: var(--ui-color-neutral-900);
+  --ui-text-inverted: black;
+}
