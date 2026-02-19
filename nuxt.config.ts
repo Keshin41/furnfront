@@ -11,6 +11,7 @@ export default defineNuxtConfig({
   },
   typescript: {
     typeCheck: true,
+    strict: true,
     tsConfig: {
       vueCompilerOptions: {
         strictTemplates: true,
