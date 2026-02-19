@@ -10,7 +10,7 @@ const navItems: NavigationMenuItem[] = [
             { label: "Notre équipe", to: "/team" },
         ],
     },
-    { label: "About", to: "/about" },
+    { label: "Reseau", to: "/network" },
     { label: "Contact", to: "/contact" },
 ];
 </script>
