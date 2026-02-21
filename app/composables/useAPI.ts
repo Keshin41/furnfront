@@ -9,3 +9,13 @@ export function useAPI<T>(
     $fetch: useNuxtApp().$api as typeof $fetch,
   });
 }
+
+export function useApi() {
+  const token = localStorage.getItem("token");
+  return $fetch.create({
+    baseURL: "http://localhost:3001",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
