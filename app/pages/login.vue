@@ -2,9 +2,12 @@
 import { z } from "zod";
 const { login, token } = useAuth();
 
+if (token.value)
+  navigateTo("/profile");
+
 const schema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
+  email: z.email("Adresse email invalide"),
+  password: z.string().min(6, "6 caractères minimum"),
 });
 
 type Schema = z.output<typeof schema>;
@@ -26,20 +29,20 @@ async function handleLogin() {
 
 <template>
   <div>
-    <h1>Login</h1>
+    <h1>Connexion</h1>
 
     <UForm :state="state" :schema="schema" @submit="handleLogin">
       <UFormField label="Email" name="email">
         <UInput v-model="state.email" placeholder="Email" />
       </UFormField>
-      <UFormField label="Password" name="password">
+      <UFormField label="Mot de passe" name="password">
         <UInput
           v-model="state.password"
           placeholder="Password"
           type="password"
         />
       </UFormField>
-      <UButton type="submit" label="Login" />
+      <UButton type="submit" label="Connexion" />
     </UForm>
   </div>
 </template>
