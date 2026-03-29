@@ -1,42 +1,45 @@
 <script setup lang="ts">
+import { z } from "zod";
+const { login, token } = useAuth();
 
-const email = ref('')
-const password = ref('')
-const error = ref('')
-const loading = ref(false)
+const schema = z.object({
+  email: z.email(),
+  password: z.string().min(6),
+});
 
-async function login() {
+type Schema = z.output<typeof schema>;
+
+const state = reactive<Schema>({
+  email: "",
+  password: "",
+});
+
+async function handleLogin() {
   try {
-    loading.value = true
-
-    const response = await $fetch<{ accessToken: string }>('http://localhost:3001/auth/login', {
-      method: 'POST',
-      body: {
-        email: email.value,
-        password: password.value,
-      },
-    })
-
-    localStorage.setItem('token', response.accessToken)
-
-    await navigateTo('/profile')
-
+    await login(state.email, state.password);
+    await navigateTo("/profile");
   } catch {
-    error.value = 'Invalid login'
-  } finally {
-    loading.value = false
+    console.error("Login failed");
   }
 }
 </script>
 
 <template>
-	<div>
-		<h1>Login</h1>
-	
-		<UInput v-model="email" placeholder="Email"/>
-	
-		<UInput v-model="password" placeholder="Password"/>
-	
-		<UButton label="Login" @click="login" />
-	</div>
+  <div>
+    <h1>Login</h1>
+
+    <UForm :state="state" :schema="schema" @submit="handleLogin">
+      <UFormField label="Email" name="email">
+        <UInput v-model="state.email" placeholder="Email" />
+      </UFormField>
+      <UFormField label="Password" name="password">
+        <UInput
+          v-model="state.password"
+          placeholder="Password"
+          type="password"
+        />
+      </UFormField>
+      <UButton type="submit" label="Login" />
+    </UForm>
+  </div>
 </template>

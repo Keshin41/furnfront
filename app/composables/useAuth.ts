@@ -12,7 +12,7 @@ export const useAuth = () => {
 
   async function login(email: string, password: string) {
     const response = await $fetch<{ accessToken: string }>(
-      `${config.public.apiBase}/auth/login`,
+      `${config.public.apiBaseUrl}/auth/login`,
       {
         method: "POST",
         body: { email, password },
