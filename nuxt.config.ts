@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   modules: ["@nuxt/eslint", "@nuxt/ui", "nuxt-auth-utils"],
   runtimeConfig: {
     public: {
-      apiBaseUrl: "http://localhost:3001/",
+      apiBaseUrl: "http://localhost:3001",
     },
   },
   typescript: {

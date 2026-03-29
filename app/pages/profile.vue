@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { useApi } from '~/composables/useAPI';
+definePageMeta({ middleware: "auth" });
 
+const user = ref();
 
-definePageMeta({ middleware: 'auth' })
+const data = useAPI("/user/profile");
 
-const api = useApi()
-
-const user = ref()
-
-const data = await api('/user/profile');
-
-user.value = data
+user.value = data.data;
 </script>
 
 <template>
