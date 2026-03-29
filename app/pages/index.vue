@@ -20,12 +20,18 @@
                 pour les passionnés de la culture furry.
               </p>
               <div class="mt-6 flex flex-wrap gap-3">
-                <UButton class="rounded-full bg-brand-dark-blue px-6 py-3 text-white shadow-lg" size="lg">
-                  Découvrir les furmeets
-                </UButton>
-                <UButton class="rounded-full border-2 border-white/70 px-6 py-3 text-white" size="lg" variant="ghost">
-                  Voir le réseau
-                </UButton>
+                <CustomButton
+                  label="Découvrir les furmeets"
+                  bgClass="bg-brand-dark-blue"
+                  textClass="text-white"
+                  size="lg"
+                />
+                <CustomButton
+                  label="Voir le réseau"
+                  bgClass="border-2 border-white/70 bg-transparent"
+                  textClass="text-white"  
+                  size="lg"
+                />
               </div>
             </div>
 
@@ -47,13 +53,15 @@
                     <h3 class="font-semibold text-xl text-white">{{ currentAnnouncement.title }}</h3>
                     <p class="mt-1 text-l text-white/90">{{ currentAnnouncement.message }}</p>
                   </div>
-                  <UButton
+                  <CustomButton
                     v-if="currentAnnouncement.actionLabel && currentAnnouncement.actionUrl"
+                    :label="currentAnnouncement.actionLabel"
+                    bgClass="bg-brand-yellow"
+                    textClass="text-black"
                     size="xl"
-                    class="px-4  bg-brand-yellow my-auto"
-                    @click="onAnnouncementAction">
-                    {{ currentAnnouncement.actionLabel }}
-                  </UButton>
+                    class="px-4 my-auto"
+                    @click="onAnnouncementAction"
+                  />
                 </div>
               </div>
             </div>
@@ -93,9 +101,12 @@
           </UCard>
         </div>
         <div class="mt-8 flex justify-center">
-          <UButton class="rounded-full bg-brand-blue px-6 py-3 text-white" size="lg">
-            Voir tous les furmeets
-          </UButton>
+          <CustomButton
+            label="Voir tous les furmeets"
+            bgClass="bg-brand-blue"
+            textClass="text-white"
+            size="lg"
+          />
         </div>
       </section>
 
@@ -115,11 +126,14 @@
               régulièrement des rencontres pour renforcer les liens au sein de la communauté française.
             </p>
             <div class="mt-8">
-              <UButton to="/about"
-                class="rounded-full bg-brand-yellow px-8 py-3 text-brand-green font-semibold shadow-lg hover:bg-white/90"
-                size="lg">
-                En savoir plus
-              </UButton>
+              <CustomButton
+              to="/about"
+              label="En savoir plus"
+              bgClass="bg-brand-yellow"
+              textClass="text-brand-green"
+              hoverClass="hover:bg-white/90"
+              size="lg"
+            />
             </div>
           </div>
           <div class="flex items-center justify-center">
@@ -172,11 +186,13 @@
             <UInput placeholder="Email" type="email" class="rounded-xl" size="lg" color="neutral" />
             <UInput placeholder="Pseudo (optionnel)" class="rounded-xl" size="lg" color="neutral" />
             <UTextarea placeholder="Ton message" class="rounded-xl" :rows="5" size="lg" color="neutral" />
-            <UButton
-              class="rounded-full bg-white px-8 py-3 text-brand-dark-blue font-semibold shadow-lg hover:bg-white/90 mx-auto"
-              size="lg">
-              Envoyer le message
-            </UButton>
+            <CustomButton
+              label="Envoyer le message"
+              bgClass="bg-white"
+              textClass="text-brand-dark-blue"
+              size="lg"
+              class="mx-auto"
+            />
           </form>
         </div>
       </section>
@@ -187,6 +203,7 @@
 </template>
 
 <script setup lang="ts">
+import CustomButton from "~/components/CustomButton.vue"
 import type { Furmeet, FurmeetCard } from "~/types/furmeet";
 import type { Announcement } from "~/types/announcement";
 
