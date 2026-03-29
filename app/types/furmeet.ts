@@ -8,3 +8,11 @@ export type Furmeet = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type FurmeetCard = {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  imageURL?: string;
+};
