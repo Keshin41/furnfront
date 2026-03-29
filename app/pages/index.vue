@@ -5,39 +5,62 @@
       <section
         class="relative grid min-h-[calc(100vh-var(--ui-header-height))] items-center overflow-hidden text-white">
 
-        <HeroBackgroundCarousel :photos="['/meet-shuffle.avif', '/meet-outdoor.jpg', '/meet-duck.jpg']"/>
+        <HeroBackgroundCarousel :photos="['/meet-shuffle.avif', '/meet-outdoor.jpg', '/meet-duck.jpg']" />
 
-        <div class="relative z-10 mx-auto grid w-full max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.2fr_1fr]">
-          <div class="my-auto">
-            <p class="text-l font-semibold uppercase tracking-[0.3em] text-white/70">Association furry</p>
-            <h1 class="text-8xl font-bold leading-tight md:text-6xl">
-              Fur'N'Tours
-            </h1>
-            <p class="mt-4 max-w-xl text-xl text-white/85 font-family-sans">
-              Fur'N'Tours est une association dynamique qui organise des événements tous les deuxieme week-end du mois
-              pour les passionnés de la culture furry.
-            </p>
-            <div class="mt-6 flex flex-wrap gap-3">
-              <UButton class="rounded-full bg-brand-dark-blue px-6 py-3 text-white shadow-lg" size="lg">
-                Decouvrir les furmeets
-              </UButton>
-              <UButton class="rounded-full border-2 border-white/70 px-6 py-3 text-white" size="lg" variant="ghost">
-                Voir le reseau
-              </UButton>
-            </div>
-          </div>
-          <div class="relative grid gap-6 my-auto">
-            <div class="relative mx-auto h-115 w-90">
-              <div class="absolute inset-0 rounded-full bg-linear-to-b from-brand-light-blue/90 to-transparent"></div>
-              <div class="absolute inset-6 rounded-[36px] bg-linear-to-b from-brand-green to-brand-green/85 shadow-xl">
-                <img src="/mascote.png" alt="Furn Fest 2026">
+        <div class="relative z-10 mx-auto w-full max-w-6xl px-6 py-16">
+          <!-- Contenu principal -->
+          <div class="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
+            <div class="my-auto">
+              <p class="text-l font-semibold uppercase tracking-[0.3em] text-white/70">Association furry</p>
+              <h1 class="text-8xl font-bold leading-tight md:text-6xl">
+                Fur'N'Tours
+              </h1>
+              <p class="mt-4 max-w-xl text-xl text-white/85 font-family-sans">
+                Fur'N'Tours est une association dynamique qui organise des événements tous les deuxième  week-end du mois
+                pour les passionnés de la culture furry.
+              </p>
+              <div class="mt-6 flex flex-wrap gap-3">
+                <UButton class="rounded-full bg-brand-dark-blue px-6 py-3 text-white shadow-lg" size="lg">
+                  Découvrir les furmeets
+                </UButton>
+                <UButton class="rounded-full border-2 border-white/70 px-6 py-3 text-white" size="lg" variant="ghost">
+                  Voir le réseau
+                </UButton>
               </div>
-              <div class="absolute -top-2 left-6 h-3 w-3 rounded-full bg-white"></div>
-              <div class="absolute top-10 right-5 h-2.5 w-2.5 rounded-full bg-white"></div>
-              <div class="absolute bottom-6 left-4 h-2.5 w-2.5 rounded-full bg-white"></div>
+            </div>
+
+            <div class="relative grid gap-6 my-auto">
+              <MascotFrame
+                outer-bg="bg-linear-to-b from-brand-light-blue/90 to-transparent"
+                inner-bg="bg-linear-to-b from-brand-green to-brand-green/85"
+              />
             </div>
           </div>
+
+          <!-- Annonce personnalisée -->
+          <Transition name="fade" mode="out-in">
+            <div v-if="currentAnnouncement" class="flex justify-center mt-8">
+              <div class="w-full max-w-5xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 shadow-xl">
+                <div class="flex flex-wrap items-start gap-3">
+                  <UIcon name="i-lucide-megaphone" class="h-5 w-5 text-brand-yellow shrink-0 mt-0.5" />
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-xl text-white">{{ currentAnnouncement.title }}</h3>
+                    <p class="mt-1 text-l text-white/90">{{ currentAnnouncement.message }}</p>
+                  </div>
+                  <UButton
+                    v-if="currentAnnouncement.actionLabel && currentAnnouncement.actionUrl"
+                    size="xl"
+                    class="px-4  bg-brand-yellow my-auto"
+                    @click="onAnnouncementAction">
+                    {{ currentAnnouncement.actionLabel }}
+                  </UButton>
+                </div>
+              </div>
+            </div>
+          </Transition>
+
         </div>
+
       </section>
 
       <section class="mx-auto max-w-6xl px-6 py-16">
@@ -48,15 +71,22 @@
           </p>
         </div>
         <div class="mt-10 grid gap-6 md:grid-cols-3">
-          <UCard v-for="meet in furmeetsList" :key="meet.id" class="overflow-hidden rounded-3xl">
+          
+          <div v-if="furmeetsList.length === 0" class="col-span-full text-center text-slate-500">
+            <UIcon name="i-lucide-calendar-x" class="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p class="text-lg font-medium">Aucun furmeet à venir pour le moment</p>
+            <p class="text-sm mt-1">Restez à l'écoute de nos prochaines annonces !</p>
+          </div>
+
+          <UCard v-for="meet in furmeetsList" :key="meet.id" v-else class="overflow-hidden rounded-3xl">
             <div class="h-44 rounded-2xl bg-cover bg-center"
-              :style="{ backgroundImage: `url(/furmeet/thumbnail/${meet.id}.png), url(/furmeet/thumbnail/default.png)` }">
+              :style="{ backgroundImage: `url(/furmeet/thumbnail/${meet.id}.png)` }"
+              @error="$el.style.backgroundImage = 'url(/furmeet/thumbnail/default.png)'">
             </div>
             <div class="px-2 pb-4 pt-4">
               <h3 class="text-lg font-semibold">{{ meet.title }}</h3>
               <p class="mt-2 text-sm text-slate-500">{{ meet.description }}</p>
               <div class="mt-4 flex items-center justify-between text-xs font-semibold text-brand-blue">
-                <span>{{ meet.place }}</span>
                 <span>{{ meet.date }}</span>
               </div>
             </div>
@@ -74,36 +104,29 @@
           <div class="flex flex-col justify-center">
             <h2 class="text-4xl font-bold text-brand-yellow">Qu'est-ce qu'un furry ?</h2>
             <p class="mt-6 text-lg text-white/90">
-              Le Furry est un mouvement culturel qui célèbre l'amour des animaux anthropomorphes - des créatures 
-              possédant à la fois des caractéristiques humaines et animales. Les furries partagent une passion pour 
-              l'art, la création de personnages et l'expression personnelle à travers des avatars uniques appelés 
+              Le Furry est un mouvement culturel qui célèbre l'amour des animaux anthropomorphes - des créatures
+              possédant à la fois des caractéristiques humaines et animales. Les furries partagent une passion pour
+              l'art, la création de personnages et l'expression personnelle à travers des avatars uniques appelés
               <span class="font-semibold">fursonas</span>.
             </p>
             <p class="mt-4 text-base text-white/85">
-              C'est une communauté mondiale, inclusive et créative qui se rassemble lors de conventions et d'événements 
-              pour célébrer l'imagination, la diversité et l'entraide. Des associations comme la nôtre organisent 
+              C'est une communauté mondiale, inclusive et créative qui se rassemble lors de conventions et d'événements
+              pour célébrer l'imagination, la diversité et l'entraide. Des associations comme la nôtre organisent
               régulièrement des rencontres pour renforcer les liens au sein de la communauté française.
             </p>
             <div class="mt-8">
-              <UButton 
-                to="/about" 
-                class="rounded-full bg-brand-yellow px-8 py-3 text-brand-green font-semibold shadow-lg hover:bg-white/90" 
-                size="lg"
-              >
+              <UButton to="/about"
+                class="rounded-full bg-brand-yellow px-8 py-3 text-brand-green font-semibold shadow-lg hover:bg-white/90"
+                size="lg">
                 En savoir plus
               </UButton>
             </div>
           </div>
           <div class="flex items-center justify-center">
-            <div class="relative h-110 w-78">
-              <div class="absolute inset-0 rounded-full bg-linear-to-b from-brand-light-blue/30 to-transparent"></div>
-              <div class="absolute inset-6 rounded-[36px] bg-linear-to-b from-brand-yellow to-brand-mango shadow-xl">
-                <img src="/mascote.png" alt="Mascotte Fur'N'Tours" class="h-full w-full object-contain">
-              </div>
-              <div class="absolute -top-2 left-8 h-3 w-3 rounded-full bg-white"></div>
-              <div class="absolute top-16 right-6 h-2.5 w-2.5 rounded-full bg-white"></div>
-              <div class="absolute bottom-10 left-6 h-2.5 w-2.5 rounded-full bg-white"></div>
-            </div>
+            <MascotFrame
+              height="h-110"
+              width="w-78"
+            />
           </div>
         </div>
       </section>
@@ -149,7 +172,9 @@
             <UInput placeholder="Email" type="email" class="rounded-xl" size="lg" color="neutral" />
             <UInput placeholder="Pseudo (optionnel)" class="rounded-xl" size="lg" color="neutral" />
             <UTextarea placeholder="Ton message" class="rounded-xl" :rows="5" size="lg" color="neutral" />
-            <UButton class="rounded-full bg-white px-8 py-3 text-brand-dark-blue font-semibold shadow-lg hover:bg-white/90 mx-auto" size="lg">
+            <UButton
+              class="rounded-full bg-white px-8 py-3 text-brand-dark-blue font-semibold shadow-lg hover:bg-white/90 mx-auto"
+              size="lg">
               Envoyer le message
             </UButton>
           </form>
@@ -162,62 +187,53 @@
 </template>
 
 <script setup lang="ts">
-import type { Furmeet } from "~/types/furmeet";
+import type { Furmeet, FurmeetCard } from "~/types/furmeet";
+import type { Announcement } from "~/types/announcement";
 
-type FurmeetCard = {
-  id: string;
-  title: string;
-  description: string;
-  place: string;
-  date: string;
-  tone?: string;
-  imageUrl?: string;
-};
+// API calls
+const { data: furmeets } = await useAPI<Furmeet[] | { data: Furmeet[] }>("/furmeet/")
+const { data: announcementData } = await useAPI<Announcement>("/announcement/current")
 
-const defaultFurmeets: FurmeetCard[] = [
-  {
-    id: "local-1",
-    title: "Sortie au parc",
-    description: "Balade photo et pique-nique artistique.",
-    place: "Tours",
-    date: "Samedi",
-    tone: "bg-linear-to-br from-brand-yellow to-brand-mango",
-  },
-  {
-    id: "local-2",
-    title: "Atelier craft",
-    description: "Couture et accessoires pour fursona.",
-    place: "Atelier Creatif",
-    date: "Dimanche",
-    tone: "bg-linear-to-br from-brand-light-blue to-brand-blue",
-  },
-  {
-    id: "local-3",
-    title: "Soiree jeux",
-    description: "Jeux de societe, quiz et chill.",
-    place: "Maison associative",
-    date: "Vendredi",
-    tone: "bg-linear-to-br from-brand-blue to-brand-green",
-  },
-];
+const router = useRouter()
 
-const { data: furmeets, error } = await useAPI<Furmeet[] | { data: Furmeet[] }>("/furmeet/")
-watchEffect(() => {
-  console.log("error:", error.value)
-})
+// Computed properties
 const furmeetsList = computed<FurmeetCard[]>(() => {
-  const response = furmeets.value ?? [];
+  const response = furmeets.value;
+  if (!response) return [];
+
   const items = Array.isArray(response) ? response : response.data ?? [];
-  if (!items.length) {
-    return defaultFurmeets;
-  }
-  return items.slice(0, 3).map((item, index) => ({
+  if (!items.length) return [];
+
+  return items.slice(0, 3).map((item) => ({
     id: String(item.id),
     title: item.title,
     description: item.description,
-    place: "Tours",
     date: new Date(item.date).toLocaleDateString("fr-FR"),
-    tone: defaultFurmeets[index % defaultFurmeets.length]?.tone,
+    imageURL: `/furmeet/thumbnail/${item.id}.png`,
   }));
 });
+
+const currentAnnouncement = computed<Announcement | null>(() => {
+  const announcement = announcementData.value
+
+  if (!announcement || !announcement.active) {
+    return null
+  }
+  return announcement
+})
+
+// Methods
+const onAnnouncementAction = () => {
+  const url = currentAnnouncement.value?.actionUrl
+  if (!url) return
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    if (import.meta.client) {
+      window.open(url, "_blank")
+    }
+    return
+  }
+
+  router.push(url)
+}
 </script>

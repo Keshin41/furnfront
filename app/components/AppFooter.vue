@@ -24,8 +24,8 @@ const legalLinks = [
     </template>
 
     <template #right>
-      <div class="grid gap-6 text-sm lg:mr-[15vw] md:grid-cols-2  sm:mr-0">
-        <div>
+      <div class="grid gap-6 text-sm lg:mr-[8vw] md:grid-cols-2  sm:mr-0">
+        <div class="mx-8">
           <p class="mb-2 font-semibold">Decouvrir</p>
           <UButton v-for="link in discoverLinks" :key="link.label" :to="link.to" variant="ghost" size="xs"
             class="px-0! grid text-slate-700 hover:text-brand-dark-blue">
@@ -33,7 +33,7 @@ const legalLinks = [
           </UButton>
         </div>
 
-        <div>
+        <div class="mx-8">
           <p class="mb-2 font-semibold">Legal</p>
           <UButton v-for="link in legalLinks" :key="link.label" :to="link.to" variant="ghost" size="xs"
             class="px-0! grid text-slate-700 hover:text-brand-dark-blue">
