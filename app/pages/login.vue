@@ -19,6 +19,7 @@ const state = reactive<Schema>({
 
 async function handleLogin() {
   try {
+    console.log("Attempting login with", state.email, state.password);
     await login(state.email, state.password);
     await navigateTo("/profile");
   } catch {

@@ -87,10 +87,14 @@
           </div>
 
           <UCard v-for="meet in furmeetsList" :key="meet.id" v-else class="overflow-hidden rounded-3xl">
-            <div class="h-44 rounded-2xl bg-cover bg-center"
-              :style="{ backgroundImage: `url(/furmeet/thumbnail/${meet.id}.png)` }"
-              @error="$el.style.backgroundImage = 'url(/furmeet/thumbnail/default.png)'">
-            </div>
+            
+            
+            <ImageWithFallback
+              :src="`/furmeet/thumbnail/${meet.id}.png`"
+              :alt="meet.title"
+              :fallback="`/furmeet/thumbnail/default.png`"
+              class="rounded-2xl bg-cover bg-center"
+            />
             <div class="px-2 pb-4 pt-4">
               <h3 class="text-lg font-semibold">{{ meet.title }}</h3>
               <p class="mt-2 text-sm text-slate-500">{{ meet.description }}</p>
@@ -100,10 +104,18 @@
             </div>
           </UCard>
         </div>
-        <div class="mt-8 flex justify-center">
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
           <CustomButton
+            to="/furmeet"
             label="Voir tous les furmeets"
             bgClass="bg-brand-blue"
+            textClass="text-white"
+            size="lg"
+          />
+          <CustomButton
+            to="/shop"
+            label="Découvrir la boutique"
+            bgClass="bg-brand-green"
             textClass="text-white"
             size="lg"
           />
@@ -204,6 +216,7 @@
 
 <script setup lang="ts">
 import CustomButton from "~/components/CustomButton.vue"
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
 import type { Furmeet, FurmeetCard } from "~/types/furmeet";
 import type { Announcement } from "~/types/announcement";
 
