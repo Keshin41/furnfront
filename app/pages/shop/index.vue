@@ -24,10 +24,13 @@
 
           <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div v-for="product in products" :key="product.id" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <ImageWithFallback
-                :src="product.imageUrl"
-                :alt="product.name"
-                class="h-48 w-full object-cover"></ImageWithFallback>
+              <div class="flex h-48 items-center justify-center bg-slate-50 p-4">
+                <ImageWithFallback
+                  :src="product.imageUrl"
+                  :alt="product.name"
+                  class="max-h-full max-w-full object-contain"
+                />
+              </div>
 
               <div class="p-4">
                 <h2 class="text-xl font-semibold text-brand-dark-blue">{{ product.name }}</h2>
