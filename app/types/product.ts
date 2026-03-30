@@ -5,6 +5,20 @@ export interface ProductSku {
   stock: number;
   trackStock: boolean;
   imageUrl: string | null;
+  options: ProductSkuOption[];
+}
+
+export interface ProductSkuOption {
+  optionValue: ProductSkuOptionValue;
+}
+
+export interface ProductSkuOptionValue {
+  id: string;
+  value: string;
+  optionType: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface ProductOptionValue {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
+import CartDrawer from '~/components/CartDrawer.vue';
 
 const navItems: NavigationMenuItem[] = [
     {
@@ -14,6 +15,9 @@ const navItems: NavigationMenuItem[] = [
     { label: "Boutique", to: "/shop" },
     { label: "Contact", to: "#" },
 ];
+
+const cartOpen = ref(false);
+const { count } = useCart();
 </script>
 
 <template>
@@ -28,17 +32,15 @@ const navItems: NavigationMenuItem[] = [
         }" />
 
         <template #right>
-            <UPopover>
-                <UButton>
-                    <UIcon name="i-lucide-shopping-cart" class="text-white h-5 w-5" />
-                </UButton>
-                <template #content>
-                    <div class="p-4 w-64">
-                        <p class="text-sm text-gray-500">Your cart is empty.</p>
-                    </div>
-                </template>
-            </UPopover>
+            <UButton variant="ghost" @click="cartOpen = true" class="relative">
+                <UIcon name="i-lucide-shopping-cart" class="text-white h-5 w-5" />
+                <span
+                  v-if="count > 0"
+                  class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-brand-blue"
+                >{{ count }}</span>
+            </UButton>
         </template>
-
     </UHeader>
+
+    <CartDrawer v-model="cartOpen" />
 </template>
