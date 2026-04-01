@@ -22,10 +22,6 @@
   --font-display: "DynaPuff", sans-serif;
 }
 
-* {
-  font-family: "Inter", sans-serif; /* ou Roboto, Poppins, etc. */
-}
-
 h1,
 h2,
 h3,
@@ -33,12 +29,13 @@ h4,
 h5,
 h6,
 .font-display {
-  font-family: "DynaPuff", sans-serif;
+  font-family: var(--font-display);
 }
 
+html,
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-sans);
 }
 
 :root {

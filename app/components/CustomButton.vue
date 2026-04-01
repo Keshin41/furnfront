@@ -2,6 +2,8 @@
   <UButton
     :to="to"
     :href="href"
+    :target="target"
+    :rel="rel"
     :class="buttonClass"
     :size="size"
     @click="onClick"
@@ -20,6 +22,8 @@ type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 const props = defineProps({
   to: { type: String, required: false },
   href: { type: String, required: false },
+  target: { type: String, required: false },
+  rel: { type: String, required: false },
   label: { type: String, required: false, default: '' },
   bgClass: { type: String, required: false, default: 'bg-brand-yellow' },
   textClass: { type: String, required: false, default: 'text-brand-green' },

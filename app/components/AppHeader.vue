@@ -7,7 +7,7 @@ const navItems: NavigationMenuItem[] = [
         label: "Notre association",
         children: [
             { label: "Histoire et objectifs", to: "#" },
-            { label: "Qu'est ce qu'un furry", to: "#" },
+            { label: "Qu'est ce qu'un furry", to: "/furry" },
             { label: "Notre équipe", to: "#" },
         ],
     },
