@@ -96,7 +96,7 @@
               class="rounded-2xl bg-cover bg-center"
             />
             <div class="px-2 pb-4 pt-4">
-              <h3 class="text-lg font-semibold">{{ meet.title }}</h3>
+              <h3 class="text-lg font-semibold text-brand-ink">{{ meet.title }}</h3>
               <p class="mt-2 text-sm text-slate-500">{{ meet.description }}</p>
               <div class="mt-4 flex items-center justify-between text-xs font-semibold text-brand-blue">
                 <span>{{ meet.date }}</span>
@@ -139,7 +139,7 @@
             </p>
             <div class="mt-8">
               <CustomButton
-              to="/about"
+              to="/furry"
               label="En savoir plus"
               bgClass="bg-brand-yellow"
               textClass="text-brand-green"
