@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const discoverLinks = [
-  { label: "Furmeets", to: "#" },
+  { label: "Furmeets", to: "/furmeet" },
   { label: "Boutique", to: "/shop" },
-  { label: "Qu'est-ce qu'un furry ?", to: "#" },
+  { label: "Qu'est-ce qu'un furry ?", to: "/furry" },
   { label: "Histoire de l'association", to: "#" },
   { label: "Reseau", to: "#" },
 ];
