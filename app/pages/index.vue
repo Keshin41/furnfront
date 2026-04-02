@@ -27,6 +27,7 @@
             <div class="mt-6 flex flex-wrap gap-3">
               <CustomButton
                 label="Découvrir les furmeets"
+                to="/furmeet"
                 bgClass="bg-brand-dark-blue"
                 textClass="text-white"
                 size="lg"
