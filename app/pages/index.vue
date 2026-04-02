@@ -87,14 +87,11 @@
       </div>
     </section>
 
-    <section class="mx-auto max-w-6xl px-6 py-16">
+    <section class="mx-auto max-w-7xl px-6 py-16">
       <div class="text-center">
         <h2 class="text-3xl font-bold text-brand-dark-blue">Nos furmeets</h2>
-        <p class="mt-2 text-sm text-slate-500">
-          Des rencontres cosy pour partager, apprendre et s'amuser ensemble.
-        </p>
       </div>
-      <div class="mt-10 grid gap-6 md:grid-cols-3">
+      <div class="mt-8 grid gap-6 md:grid-cols-3">
         <div
           v-if="furmeetsList.length === 0"
           class="col-span-full text-center text-slate-500"
@@ -318,7 +315,9 @@ const furmeetsList = computed<FurmeetCard[]>(() => {
     id: String(item.id),
     title: item.title,
     description: item.description,
-    date: new Date(item.date).toLocaleDateString("fr-FR"),
+    date: new Date(item.eventDate ?? item.createdAt).toLocaleDateString(
+      "fr-FR",
+    ),
     imageURL: `/furmeet/thumbnail/${item.id}.png`,
   }));
 });

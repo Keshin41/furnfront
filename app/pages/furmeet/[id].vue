@@ -1,7 +1,5 @@
 <template>
   <div class="min-h-screen bg-brand-white text-brand-ink-deep">
-    <AppHeader />
-
     <main class="mx-auto min-h-screen max-w-4xl px-6 py-12">
       <div class="mb-8">
         <CustomButton
@@ -25,7 +23,10 @@
         Furmeet introuvable.
       </div>
 
-      <article v-else class="overflow-hidden rounded-3xl border border-brand-light-blue/50 bg-brand-white shadow-sm">
+      <article
+        v-else
+        class="overflow-hidden rounded-3xl border border-brand-light-blue/50 bg-brand-white shadow-sm"
+      >
         <ImageWithFallback
           :src="`/furmeet/thumbnail/${furmeet.id}.png`"
           :fallback="'/furmeet/thumbnail/default.png'"
@@ -34,60 +35,122 @@
         />
 
         <div class="p-6 md:p-8">
-          <p class="text-xs font-semibold uppercase tracking-wide text-brand-sky">
-            {{ formatDate(furmeet.publishedAt) }}
+          <div class="mb-4 flex flex-wrap gap-2">
+            <span
+              class="rounded-full px-2.5 py-1 text-xs font-semibold"
+              :class="
+                furmeet.opened
+                  ? 'bg-brand-green/15 text-brand-green'
+                  : 'bg-brand-ink/10 text-brand-ink'
+              "
+            >
+              {{
+                furmeet.opened
+                  ? "Inscriptions ouvertes"
+                  : "Inscriptions fermées"
+              }}
+            </span>
+          </div>
+
+          <p
+            class="text-xs font-semibold uppercase tracking-wide text-brand-sky"
+          >
+            {{ formatDate(furmeet.eventDate) }}
           </p>
-          <h1 class="mt-2 text-4xl font-bold text-brand-dark-blue">{{ furmeet.title }}</h1>
+          <h1 class="mt-2 text-4xl font-bold text-brand-dark-blue">
+            {{ furmeet.title }}
+          </h1>
 
           <p class="mt-6 rounded-2xl bg-brand-light-blue/25 p-4 text-brand-ink">
-            {{ furmeet.description || "Aucune description courte pour cet article." }}
+            {{
+              furmeet.description ||
+              "Aucune description courte pour cet article."
+            }}
           </p>
 
-          <div class="prose prose-slate mt-8 max-w-none prose-headings:text-brand-dark-blue prose-p:text-brand-ink">
-            <p v-for="(paragraph, index) in paragraphs" :key="index" class="leading-relaxed">
-              {{ paragraph }}
-            </p>
+          <div class="mt-8">
+            <h2 class="text-2xl font-bold text-brand-dark-blue">
+              Programme de la meet
+            </h2>
+            <div
+              v-if="furmeet.eventActivities.length === 0"
+              class="mt-4 rounded-2xl bg-brand-light-blue/20 p-4 text-brand-ink"
+            >
+              Le programme détaillé n'est pas encore disponible.
+            </div>
+
+            <ol v-else class="mt-6 space-y-4">
+              <li
+                v-for="activity in furmeet.eventActivities"
+                :key="
+                  activity.id ??
+                  `${activity.order}-${activity.date}-${activity.title}`
+                "
+                class="rounded-2xl border border-brand-light-blue/50 bg-brand-white p-4"
+              >
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    class="rounded-full bg-brand-blue/10 px-2.5 py-1 text-xs font-semibold text-brand-blue"
+                  >
+                    {{ activityTypeLabel(activity.type) }}
+                  </span>
+                  <span
+                    class="text-xs font-semibold uppercase tracking-wide text-brand-sky"
+                  >
+                    {{ formatDateTime(activity.date) }}
+                  </span>
+                </div>
+                <h3 class="mt-2 text-lg font-semibold text-brand-dark-blue">
+                  {{ activity.title }}
+                </h3>
+                <p class="mt-2 text-sm leading-relaxed text-brand-ink">
+                  {{ activity.description }}
+                </p>
+              </li>
+            </ol>
           </div>
         </div>
       </article>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import AppHeader from "~/components/AppHeader.vue";
-import AppFooter from "~/components/AppFooter.vue";
 import CustomButton from "~/components/CustomButton.vue";
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type {
+  Furmeet,
+  FurmeetActivity,
+  FurmeetActivityType,
+} from "~/types/furmeet";
 
-type FurmeetApi = {
-  id: string;
-  title: string;
-  description?: string | null;
-  content?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  date?: string;
-  published?: boolean;
-};
+type FurmeetApi = Furmeet & { content?: string | null };
 
 const route = useRoute();
 const id = route.params.id as string;
 
-const { data, error, pending } = await useAPI<FurmeetApi | null>(`/furmeet/${id}`);
+const { data, error, pending } = await useAPI<FurmeetApi | null>(
+  `/event/${id}`,
+);
 
 const furmeet = computed(() => {
   const item = data.value;
-  if (!item || (item.published === false)) {
+  if (!item || item.published === false) {
     return null;
   }
 
   return {
     ...item,
-    publishedAt: item.date || item.createdAt || item.updatedAt || new Date().toISOString(),
-    body: item.content || item.description || "Article en cours de redaction.",
+    eventDate: item.eventDate || item.createdAt || new Date().toISOString(),
+    opened: item.opened ?? false,
+    eventActivities: [...(item.eventActivities ?? [])].sort(sortActivities),
+    body:
+      item.content ||
+      item.description ||
+      item.eventActivities
+        ?.map((activity) => `${activity.title}\n${activity.description}`)
+        .join("\n\n") ||
+      "Article en cours de redaction.",
   };
 });
 
@@ -101,6 +164,22 @@ const paragraphs = computed(() => {
 
 const loading = computed(() => pending.value);
 
+const sortActivities = (a: FurmeetActivity, b: FurmeetActivity) => {
+  const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+  const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+  if (orderA !== orderB) {
+    return orderA - orderB;
+  }
+  return new Date(a.date).getTime() - new Date(b.date).getTime();
+};
+
+const activityTypeLabel = (type?: FurmeetActivityType) => {
+  if (type === "ACTIVITY") return "Activite";
+  if (type === "RESTAURANT") return "Restaurant";
+  if (type === "BAR") return "Bar";
+  return "Etape";
+};
+
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -108,8 +187,12 @@ const formatDate = (value: string) =>
     year: "numeric",
   });
 
-useSeoMeta({
-  title: computed(() => (furmeet.value ? `${furmeet.value.title} - Furmeet` : "Furmeet - Fur'N'Tours")),
-  description: computed(() => furmeet.value?.description || "Detail d'un furmeet sous forme d'article."),
-});
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 </script>
