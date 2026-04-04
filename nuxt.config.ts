@@ -20,6 +20,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: "http://localhost:3001",
+      stripePublishableKey: process.env.NUXT_STRIPE_PUBLISHABLE_KEY,
     },
   },
   typescript: {
