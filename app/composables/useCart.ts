@@ -1,6 +1,6 @@
-import type { CartItem } from '~/types/cart';
+import type { CartItem } from "~/types/cart";
 
-const STORAGE_KEY = 'furn-cart';
+const STORAGE_KEY = "furn-cart";
 
 const items = ref<CartItem[]>([]);
 let hydrated = false;
@@ -29,14 +29,14 @@ export const useCart = () => {
   hydrate();
 
   const total = computed(() =>
-    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
   );
 
   const count = computed(() =>
-    items.value.reduce((sum, item) => sum + item.quantity, 0)
+    items.value.reduce((sum, item) => sum + item.quantity, 0),
   );
 
-  function addItem(item: Omit<CartItem, 'quantity'>) {
+  function addItem(item: Omit<CartItem, "quantity">) {
     const existing = items.value.find((i) => i.skuId === item.skuId);
     if (existing) {
       existing.quantity += 1;
@@ -68,5 +68,13 @@ export const useCart = () => {
     persist();
   }
 
-  return { items, total, count, addItem, removeItem, updateQuantity, clearCart };
+  return {
+    items,
+    total,
+    count,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+  };
 };

@@ -14,6 +14,7 @@ const toast = useToast();
 const props = defineProps<{
   order: Order;
 }>();
+console.log("🚀 ~ order:", props.order);
 
 const stripeInstance = ref<Stripe | null>(null);
 const elementsInstance = ref<StripeElements | null>(null);
@@ -68,9 +69,12 @@ const handleSubmit = async () => {
         :client-secret="data"
         @ready="onElementsReady"
       >
-        <UForm @submit.prevent="handleSubmit">
+        <UForm class="grid grid-cols-2 gap-8" @submit.prevent="handleSubmit">
           <VueStripePaymentElement />
-          <UButton type="submit">Pay</UButton>
+          <PaymentRecap />
+          <UButton type="submit" class="col-span-2 justify-self-center"
+            >Pay</UButton
+          >
         </UForm>
       </VueStripeElements>
       <div v-else-if="status === 'pending'">Loading...</div>
