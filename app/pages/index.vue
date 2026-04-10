@@ -21,8 +21,8 @@
             </h1>
             <p class="mt-4 max-w-xl text-xl text-white/85 font-family-sans">
               Fur'N'Tours est une association dynamique qui organise des
-              événements tous les deuxième week-end du mois pour les passionnés
-              de la culture furry.
+              événements un samedi par mois pour les passionnés de la culture
+              furry.
             </p>
             <div class="mt-6 flex flex-wrap gap-3">
               <CustomButton

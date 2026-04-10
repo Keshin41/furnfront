@@ -9,16 +9,16 @@ defineProps<{
 const cart = useCart();
 
 const schema = z.object({
-  lastname: z.string().min(1, "Lastname is required"),
-  firstname: z.string().min(1, "Firstname is required"),
-  nickname: z.string().min(1, "Nickname is required"),
-  email: z.email("Invalid email address"),
-  address: z.string().min(1, "Address is required"),
-  city: z.string().min(1, "City is required"),
+  lastname: z.string().min(1, "Le nom est requis"),
+  firstname: z.string().min(1, "Le prénom est requis"),
+  nickname: z.string().min(1, "Le pseudo est requis"),
+  email: z.email("Adresse email invalide"),
+  address: z.string().min(1, "L'adresse est requise"),
+  city: z.string().min(1, "La ville est requise"),
   postalCode: z
     .string()
-    .min(1, "Postal code is required")
-    .max(5, "Postal code must be at most 5 characters"),
+    .min(5, "Le code postal est requis")
+    .max(5, "Le code postal doit comporter au plus 5 caractères"),
 });
 
 type Schema = z.output<typeof schema>;
@@ -55,52 +55,58 @@ const handleClick = () => {
     }"
     @submit="onSubmit"
   >
-    <UFormField label="Firstname" name="firstname">
+    <UFormField label="Prénom" name="firstname">
       <UInput
         v-model="state.firstname"
         type="text"
-        placeholder="Enter your firstname"
+        placeholder="Entrez votre prénom"
       />
     </UFormField>
-    <UFormField label="Lastname" name="lastname">
+    <UFormField label="Nom" name="lastname">
       <UInput
         v-model="state.lastname"
         type="text"
-        placeholder="Enter your lastname"
+        placeholder="Entrez votre nom"
       />
     </UFormField>
     <UFormField label="Email" name="email">
       <UInput
         v-model="state.email"
         type="email"
-        placeholder="Enter your email"
+        placeholder="Entrez votre adresse email"
       />
     </UFormField>
-    <UFormField label="Nickname" name="nickname">
+    <UFormField label="Pseudo" name="nickname">
       <UInput
         v-model="state.nickname"
         type="text"
-        placeholder="Enter your nickname"
+        placeholder="Entrez votre pseudo"
       />
     </UFormField>
-    <UFormField label="Address" name="address">
+    <UFormField label="Adresse" name="address">
       <UInput
         v-model="state.address"
         type="text"
-        placeholder="Enter your address"
+        placeholder="Entrez votre adresse"
       />
     </UFormField>
-    <UFormField label="City" name="city">
-      <UInput v-model="state.city" type="text" placeholder="Enter your city" />
+    <UFormField label="Ville" name="city">
+      <UInput
+        v-model="state.city"
+        type="text"
+        placeholder="Entrez votre ville"
+      />
     </UFormField>
-    <UFormField label="Postal Code" name="postalCode">
+    <UFormField label="Code postal" name="postalCode">
       <UInput
         v-model="state.postalCode"
         type="text"
-        placeholder="Enter your postal code"
+        placeholder="Entrez votre code postal"
       />
     </UFormField>
-    <UButton type="submit" color="primary" class="col-span-2"> Submit </UButton>
+    <UButton type="submit" color="primary" class="col-span-2">
+      Passer au paiement
+    </UButton>
     <UButton color="primary" class="col-span-2" @click="handleClick">
       Ajouter un drap au panier (demo)
     </UButton>

@@ -5,18 +5,22 @@ import type { Order } from "~/types/basket";
 
 const stepperItems: StepperItem[] = [
   {
-    title: "Informations",
-    description: "Enter your information",
+    title: "Informations de facturation",
     slot: "info",
   },
   {
     title: "Paiement",
-    description: "Méthode de paiement",
     slot: "payment",
+  },
+  {
+    title: "Confirmation",
+    slot: "confirmation",
   },
 ];
 
-const activeStep = ref<number>(0);
+const query = useRoute().query;
+
+const activeStep = ref<number>(query.payment === "success" ? 2 : 0);
 const buyerInfo = ref<Order["user"] | null>(null);
 
 const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
@@ -29,7 +33,14 @@ const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
 </script>
 <template>
   <UContainer class="mt-4">
-    <UStepper v-model="activeStep" :items="stepperItems" disabled>
+    <UStepper
+      v-model="activeStep"
+      :items="stepperItems"
+      disabled
+      :ui="{
+        trigger: 'bg-neutral-200',
+      }"
+    >
       <template #info>
         <CheckoutForm :on-submit="handleFormSubmit" />
       </template>
@@ -40,11 +51,20 @@ const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
         <template v-else>
           <StripeWrapperClient
             :order="{
-              user: buyerInfo.value,
+              user: buyerInfo,
               basket: [{ skuId: 'internat-1-sku-draps-oui', quantity: 1 }],
             }"
           />
         </template>
+      </template>
+      <template #confirmation>
+        <div class="text-center">
+          <h2 class="text-2xl font-bold mb-4">Merci pour votre commande !</h2>
+          <p class="text-lg text-gray-700">
+            Votre paiement a été traité avec succès. Nous vous enverrons une
+            confirmation par email sous peu.
+          </p>
+        </div>
       </template>
     </UStepper>
   </UContainer>

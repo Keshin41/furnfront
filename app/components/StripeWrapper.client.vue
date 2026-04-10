@@ -36,8 +36,9 @@ const handleSubmit = async () => {
   if (!stripeInstance.value || !elementsInstance.value) {
     console.error("Stripe.js has not loaded yet.");
     toast.add({
-      title: "Error",
-      description: "Payment form is not ready. Please try again later.",
+      title: "Erreur",
+      description:
+        "Le formulaire de paiement n'est pas encore prêt. Veuillez réessayer dans un instant.",
       type: "foreground",
     });
     return;
@@ -46,15 +47,16 @@ const handleSubmit = async () => {
   const { error } = await stripeInstance.value.confirmPayment({
     elements: elementsInstance.value,
     confirmParams: {
-      return_url: window.location.href,
+      return_url: `${globalThis.location.href}?payment=success`,
     },
   });
 
   if (error) {
     console.error("Payment failed:", error);
     toast.add({
-      title: "Payment Failed",
-      description: error.message || "An error occurred during payment.",
+      title: "Erreur de paiement",
+      description:
+        error.message || "Une erreur s'est produite lors du paiement.",
       type: "foreground",
     });
   }
