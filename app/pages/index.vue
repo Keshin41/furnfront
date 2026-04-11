@@ -1,3 +1,81 @@
+<script setup lang="ts">
+import CustomButton from "~/components/CustomButton.vue";
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type { Announcement } from "~/types/announcement";
+import type { Furmeet, FurmeetCard } from "~/types/furmeet";
+
+// API calls
+const { data: furmeets } = await useAPI<Furmeet[]>("/event/");
+const { data: announcementData } = await useAPI<Announcement>(
+  "/announcement/current",
+);
+
+const router = useRouter();
+
+const toTimestamp = (value?: string | null) => {
+  if (!value) return 0;
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const formatMeetDate = (value?: string | null) => {
+  if (!value) return "Date a venir";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Date a venir";
+  }
+
+  return parsed.toLocaleDateString("fr-FR");
+};
+
+// Computed properties
+const furmeetsList = computed<FurmeetCard[]>(() => {
+  const items = furmeets.value ?? [];
+  if (!items.length) return [];
+
+  return items
+    .filter((item) => item.published)
+    .sort(
+      (a, b) =>
+        toTimestamp(b.eventDate ?? b.createdAt) -
+        toTimestamp(a.eventDate ?? a.createdAt),
+    )
+    .slice(0, 3)
+    .map((item) => ({
+      id: String(item.id),
+      title: item.title,
+      description: item.description || "Programme a venir.",
+      date: formatMeetDate(item.eventDate ?? item.createdAt),
+      imageURL: `/furmeet/thumbnail/${item.id}.png`,
+    }));
+});
+
+const currentAnnouncement = computed<Announcement | null>(() => {
+  const announcement = announcementData.value;
+
+  if (!announcement || !announcement.active) {
+    return null;
+  }
+  return announcement;
+});
+
+// Methods
+const onAnnouncementAction = () => {
+  const url = currentAnnouncement.value?.actionUrl;
+  if (!url) return;
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    if (import.meta.client) {
+      window.open(url, "_blank");
+    }
+    return;
+  }
+
+  router.push(url);
+};
+</script>
+
 <template>
   <div class="min-h-screen bg-brand-white text-slate-900">
     <section
@@ -7,24 +85,24 @@
         :photos="['/meet-shuffle.avif', '/meet-outdoor.jpg', '/meet-duck.jpg']"
       />
 
-      <div class="relative z-10 mx-auto w-full max-w-6xl px-6 py-16">
+      <div class="relative z-10 mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <!-- Contenu principal -->
-        <div class="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
+        <div class="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
           <div class="my-auto">
             <p
-              class="text-l font-semibold uppercase tracking-[0.3em] text-white/70"
+              class="text-sm font-semibold uppercase tracking-[0.2em] text-white/70 sm:tracking-[0.3em]"
             >
               Association furry
             </p>
-            <h1 class="text-8xl font-bold leading-tight md:text-6xl">
+            <h1 class="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Fur'N'Tours
             </h1>
-            <p class="mt-4 max-w-xl text-xl text-white/85 font-family-sans">
+            <p class="mt-4 max-w-xl text-base text-white/85 font-family-sans sm:text-lg md:text-xl">
               Fur'N'Tours est une association dynamique qui organise des
               événements un samedi par mois pour les passionnés de la culture
               furry.
             </p>
-            <div class="mt-6 flex flex-wrap gap-3">
+            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <CustomButton
                 label="Découvrir les furmeets"
                 to="/furmeet"
@@ -41,7 +119,7 @@
             </div>
           </div>
 
-          <div class="relative grid gap-6 my-auto">
+          <div class="relative grid gap-6 my-auto max-w-xs sm:max-w-sm lg:max-w-none mx-auto">
             <MascotFrame
               outer-bg="bg-linear-to-b from-brand-light-blue/90 to-transparent"
               inner-bg="bg-linear-to-b from-brand-green to-brand-green/85"
@@ -51,20 +129,20 @@
 
         <!-- Annonce personnalisée -->
         <Transition name="fade" mode="out-in">
-          <div v-if="currentAnnouncement" class="flex justify-center mt-8">
+          <div v-if="currentAnnouncement" class="flex justify-center mt-6 sm:mt-8">
             <div
-              class="w-full max-w-5xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 shadow-xl"
+              class="w-full max-w-5xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-4 shadow-xl sm:px-6"
             >
-              <div class="flex flex-wrap items-start gap-3">
+              <div class="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap">
                 <UIcon
                   name="i-lucide-megaphone"
                   class="h-5 w-5 text-brand-yellow shrink-0 mt-0.5"
                 />
                 <div class="flex-1">
-                  <h3 class="font-semibold text-xl text-white">
+                  <h3 class="font-semibold text-lg text-white sm:text-xl">
                     {{ currentAnnouncement.title }}
                   </h3>
-                  <p class="mt-1 text-l text-white/90">
+                  <p class="mt-1 text-sm text-white/90 sm:text-base">
                     {{ currentAnnouncement.message }}
                   </p>
                 </div>
@@ -87,9 +165,9 @@
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-6 py-16">
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-brand-dark-blue">Nos furmeets</h2>
+        <h2 class="text-2xl font-bold text-brand-dark-blue sm:text-3xl">Nos furmeets</h2>
       </div>
       <div class="mt-8 grid gap-6 md:grid-cols-3">
         <div
@@ -118,7 +196,7 @@
             :src="`/furmeet/thumbnail/${meet.id}.png`"
             :alt="meet.title"
             :fallback="`/furmeet/thumbnail/default.png`"
-            class="rounded-2xl bg-cover bg-center"
+            class="h-44 w-full rounded-2xl bg-cover bg-center object-cover sm:h-48"
           />
           <div class="px-2 pb-4 pt-4">
             <h3 class="text-lg font-semibold text-brand-ink">
@@ -151,15 +229,15 @@
       </div>
     </section>
 
-    <section class="mx-auto max-w-6xl px-6 pb-16">
+    <section class="mx-auto max-w-6xl px-4 pb-12 sm:px-6 sm:pb-16">
       <div
-        class="grid gap-8 rounded-3xl bg-brand-green p-10 text-white shadow-2xl md:grid-cols-[1.3fr_0.7fr]"
+        class="grid gap-8 rounded-3xl bg-brand-green p-5 text-white shadow-2xl sm:p-8 md:grid-cols-[1.3fr_0.7fr] md:p-10"
       >
         <div class="flex flex-col justify-center">
-          <h2 class="text-4xl font-bold text-brand-yellow">
+          <h2 class="text-3xl font-bold text-brand-yellow sm:text-4xl">
             Qu'est-ce qu'un furry ?
           </h2>
-          <p class="mt-6 text-lg text-white/90">
+          <p class="mt-6 text-base text-white/90 sm:text-lg">
             Le Furry est un mouvement culturel qui célèbre l'amour des animaux
             anthropomorphes - des créatures possédant à la fois des
             caractéristiques humaines et animales. Les furries partagent une
@@ -167,7 +245,7 @@
             personnelle à travers des avatars uniques appelés
             <span class="font-semibold">fursonas</span>.
           </p>
-          <p class="mt-4 text-base text-white/85">
+          <p class="mt-4 text-sm text-white/85 sm:text-base">
             C'est une communauté mondiale, inclusive et créative qui se
             rassemble lors de conventions et d'événements pour célébrer
             l'imagination, la diversité et l'entraide. Des associations comme la
@@ -186,25 +264,25 @@
           </div>
         </div>
         <div class="flex items-center justify-center">
-          <MascotFrame height="h-110" width="w-78" />
+          <MascotFrame height="h-80 sm:h-96 lg:h-110" width="w-56 sm:w-64 lg:w-78" />
         </div>
       </div>
     </section>
 
     <section class="mx-auto">
       <div
-        class="bg-linear-to-br from-brand-light-blue/20 to-brand-light-blue/15 p-10 text-white shadow-2xl md:p-16"
+        class="bg-linear-to-br from-brand-light-blue/20 to-brand-light-blue/15 p-5 text-white shadow-2xl sm:p-8 md:p-16"
       >
-        <div class="text-center mb-10">
-          <h2 class="text-4xl font-bold text-brand-dark-blue">
+        <div class="text-center mb-8 sm:mb-10">
+          <h2 class="text-3xl font-bold text-brand-dark-blue sm:text-4xl">
             Nous contacter
           </h2>
-          <p class="mt-4 text-lg text-brand-dark-blue/90">
+          <p class="mt-4 text-base text-brand-dark-blue/90 sm:text-lg">
             Parle-nous de ton projet ou de ton envie de rejoindre la team !
           </p>
         </div>
 
-        <div class="grid gap-8 md:grid-cols-3 mb-12">
+        <div class="grid gap-6 sm:gap-8 md:grid-cols-3 mb-10 sm:mb-12">
           <div class="flex flex-col items-center text-center">
             <div class="rounded-full bg-brand-blue/20 p-4 mb-3">
               <UIcon
@@ -212,7 +290,7 @@
                 class="h-6 w-6 text-brand-dark-blue"
               />
             </div>
-            <p class="font-semibold text-lg text-brand-dark-blue">Email</p>
+            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">Email</p>
             <p class="text-sm text-brand-dark-blue/80">contact@furntours.fr</p>
           </div>
           <div class="flex flex-col items-center text-center">
@@ -222,7 +300,7 @@
                 class="h-6 w-6 text-brand-dark-blue"
               />
             </div>
-            <p class="font-semibold text-lg text-brand-dark-blue">
+            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">
               Localisation
             </p>
             <p class="text-sm text-brand-dark-blue/80">Tours, France</p>
@@ -234,14 +312,14 @@
                 class="h-6 w-6 text-brand-dark-blue"
               />
             </div>
-            <p class="font-semibold text-lg text-brand-dark-blue">Événements</p>
+            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">Événements</p>
             <p class="text-sm text-brand-dark-blue/80">
               Chaque 2ème week-end du mois
             </p>
           </div>
         </div>
 
-        <form class="grid gap-5 max-w-2xl mx-auto">
+        <form class="grid gap-4 sm:gap-5 max-w-2xl mx-auto">
           <div class="grid gap-4 md:grid-cols-2">
             <UInput
               placeholder="Prénom"
@@ -288,63 +366,3 @@
     </section>
   </div>
 </template>
-
-<script setup lang="ts">
-import CustomButton from "~/components/CustomButton.vue";
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-import type { Announcement } from "~/types/announcement";
-import type { Furmeet, FurmeetCard } from "~/types/furmeet";
-
-// API calls
-const { data: furmeets } = await useAPI<Furmeet[] | { data: Furmeet[] }>(
-  "/furmeet/",
-);
-const { data: announcementData } = await useAPI<Announcement>(
-  "/announcement/current",
-);
-
-const router = useRouter();
-
-// Computed properties
-const furmeetsList = computed<FurmeetCard[]>(() => {
-  const response = furmeets.value;
-  if (!response) return [];
-
-  const items = Array.isArray(response) ? response : (response.data ?? []);
-  if (!items.length) return [];
-
-  return items.slice(0, 3).map((item) => ({
-    id: String(item.id),
-    title: item.title,
-    description: item.description,
-    date: new Date(item.eventDate ?? item.createdAt).toLocaleDateString(
-      "fr-FR",
-    ),
-    imageURL: `/furmeet/thumbnail/${item.id}.png`,
-  }));
-});
-
-const currentAnnouncement = computed<Announcement | null>(() => {
-  const announcement = announcementData.value;
-
-  if (!announcement || !announcement.active) {
-    return null;
-  }
-  return announcement;
-});
-
-// Methods
-const onAnnouncementAction = () => {
-  const url = currentAnnouncement.value?.actionUrl;
-  if (!url) return;
-
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    if (import.meta.client) {
-      window.open(url, "_blank");
-    }
-    return;
-  }
-
-  router.push(url);
-};
-</script>

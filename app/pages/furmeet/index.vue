@@ -1,3 +1,66 @@
+<script setup lang="ts">
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type { Furmeet, FurmeetActivity } from "~/types/furmeet";
+
+type FurmeetPost = {
+  id: string;
+  title: string;
+  excerpt: string;
+  eventDate: string;
+  opened: boolean;
+  activitiesCount: number;
+  firstActivityTitle: string;
+};
+
+const { data, error, pending } = await useAPI<Furmeet[]>("/event/");
+
+const furmeets = computed<FurmeetPost[]>(() => {
+  const raw = data.value ?? [];
+
+  return raw
+    .filter((item) => item.published)
+    .map((item) => {
+      const excerpt = item.description || "Article en cours de redaction.";
+      const eventDate =
+        item.eventDate || item.createdAt || new Date().toISOString();
+      const activities = [...(item.eventActivities ?? [])].sort(sortActivities);
+      const firstActivity = activities[0]?.title ?? "Programme a venir";
+
+      return {
+        id: item.id,
+        title: item.title,
+        excerpt,
+        eventDate,
+        opened: item.opened ?? false,
+        activitiesCount: activities.length,
+        firstActivityTitle: firstActivity,
+      };
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+    );
+});
+
+const sortActivities = (a: FurmeetActivity, b: FurmeetActivity) => {
+  const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+  const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+  if (orderA !== orderB) {
+    return orderA - orderB;
+  }
+  return new Date(a.date).getTime() - new Date(b.date).getTime();
+};
+
+const isLoading = computed(() => pending.value);
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+</script>
+
 <template>
   <div class="min-h-screen bg-brand-white text-brand-ink-deep">
     <main class="mx-auto min-h-screen max-w-6xl px-6 py-12">
@@ -85,66 +148,3 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-import type { Furmeet, FurmeetActivity } from "~/types/furmeet";
-
-type FurmeetPost = {
-  id: string;
-  title: string;
-  excerpt: string;
-  eventDate: string;
-  opened: boolean;
-  activitiesCount: number;
-  firstActivityTitle: string;
-};
-
-const { data, error, pending } = await useAPI<Furmeet[]>("/event/");
-
-const furmeets = computed<FurmeetPost[]>(() => {
-  const raw = data.value ?? [];
-
-  return raw
-    .filter((item) => item.published)
-    .map((item) => {
-      const excerpt = item.description || "Article en cours de redaction.";
-      const eventDate =
-        item.eventDate || item.createdAt || new Date().toISOString();
-      const activities = [...(item.eventActivities ?? [])].sort(sortActivities);
-      const firstActivity = activities[0]?.title ?? "Programme a venir";
-
-      return {
-        id: item.id,
-        title: item.title,
-        excerpt,
-        eventDate,
-        opened: item.opened ?? false,
-        activitiesCount: activities.length,
-        firstActivityTitle: firstActivity,
-      };
-    })
-    .sort(
-      (a, b) =>
-        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
-    );
-});
-
-const sortActivities = (a: FurmeetActivity, b: FurmeetActivity) => {
-  const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
-  const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
-  if (orderA !== orderB) {
-    return orderA - orderB;
-  }
-  return new Date(a.date).getTime() - new Date(b.date).getTime();
-};
-
-const isLoading = computed(() => pending.value);
-
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-</script>

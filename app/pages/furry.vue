@@ -1,3 +1,47 @@
+<script setup lang="ts">
+useSeoMeta({
+  title: "Qu'est-ce que le Furry ? — Fur'N'Tours",
+  description:
+    "Découvrez le mouvement furry, le fandom, les fursonas et les fursuits. Une culture mondiale de créativité et de bienveillance.",
+});
+
+const conventions = [
+  {
+    name: "Anthrocon",
+    location: "Pittsburgh, États-Unis",
+    url: "https://www.anthrocon.org",
+  },
+  {
+    name: "Eurofurence",
+    location: "Hambourg, Allemagne",
+    url: "https://www.eurofurence.org",
+  },
+  {
+    name: "ConFuzzled",
+    location: "Royaume-Uni",
+    url: "https://www.confuzzled.org.uk",
+  },
+];
+
+const regionalAssociations = [
+  {
+    name: "NormandiFurs",
+    region: "Normandie",
+    url: "https://www.normandifurs.fr",
+  },
+  {
+    name: "FBL",
+    region: "Grand Ouest",
+    url: "https://fblacklight.org/",
+  },
+  {
+    name: "Fauntastic",
+    region: "France",
+    url: "https://www.fauntastic.eu",
+  },
+];
+</script>
+
 <template>
   <div class="min-h-screen bg-brand-white text-brand-ink-deep">
     <main>
@@ -269,47 +313,3 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-useSeoMeta({
-  title: "Qu'est-ce que le Furry ? — Fur'N'Tours",
-  description:
-    "Découvrez le mouvement furry, le fandom, les fursonas et les fursuits. Une culture mondiale de créativité et de bienveillance.",
-});
-
-const conventions = [
-  {
-    name: "Anthrocon",
-    location: "Pittsburgh, États-Unis",
-    url: "https://www.anthrocon.org",
-  },
-  {
-    name: "Eurofurence",
-    location: "Hambourg, Allemagne",
-    url: "https://www.eurofurence.org",
-  },
-  {
-    name: "ConFuzzled",
-    location: "Royaume-Uni",
-    url: "https://www.confuzzled.org.uk",
-  },
-];
-
-const regionalAssociations = [
-  {
-    name: "NormandiFurs",
-    region: "Normandie",
-    url: "https://www.normandifurs.fr",
-  },
-  {
-    name: "FBL",
-    region: "Grand Ouest",
-    url: "https://fblacklight.org/",
-  },
-  {
-    name: "Fauntastic",
-    region: "France",
-    url: "https://www.fauntastic.eu",
-  },
-];
-</script>

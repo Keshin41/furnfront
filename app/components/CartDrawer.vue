@@ -1,3 +1,15 @@
+<script setup lang="ts">
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
+
+const open = defineModel<boolean>({ default: false });
+const { items, total, removeItem, updateQuantity, clearCart } = useCart();
+
+const handleGoToCheckout = () => {
+  open.value = false;
+  navigateTo("/checkout");
+};
+</script>
+
 <template>
   <USlideover v-model:open="open" side="right">
     <template #content>
@@ -102,15 +114,3 @@
     </template>
   </USlideover>
 </template>
-
-<script setup lang="ts">
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-
-const open = defineModel<boolean>({ default: false });
-const { items, total, removeItem, updateQuantity, clearCart } = useCart();
-
-const handleGoToCheckout = () => {
-  open.value = false;
-  navigateTo("/checkout");
-};
-</script>

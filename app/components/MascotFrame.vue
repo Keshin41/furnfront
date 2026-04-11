@@ -1,16 +1,3 @@
-<template>
-  <div class="relative" :class="`${height} ${width}`">
-    <div class="absolute inset-0 rounded-full" :class="outerBg" />
-    <div class="absolute inset-6 rounded-[36px] shadow-xl" :class="innerBg">
-      <img
-        :src="imageSrc"
-        :alt="imageAlt"
-        class="h-full w-full object-contain"
-      />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 interface Props {
   imageSrc?: string;
@@ -30,3 +17,16 @@ const props = withDefaults(defineProps<Props>(), {
   width: "w-90",
 });
 </script>
+
+<template>
+  <div class="relative" :class="`${height} ${width}`">
+    <div class="absolute inset-0 rounded-full" :class="outerBg" />
+    <div class="absolute inset-6 rounded-[36px] shadow-xl" :class="innerBg">
+      <img
+        :src="imageSrc"
+        :alt="imageAlt"
+        class="h-full w-full object-contain"
+      />
+    </div>
+  </div>
+</template>

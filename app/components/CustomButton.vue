@@ -1,18 +1,3 @@
-<template>
-  <UButton
-    :to="to"
-    :href="href"
-    :target="target"
-    :rel="rel"
-    :class="buttonClass"
-    :size="size"
-    @click="onClick"
-    v-bind="extraAttrs"
-  >
-    <slot>{{ label }}</slot>
-  </UButton>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAttrs } from 'vue'
@@ -45,3 +30,19 @@ const onClick = (event: Event) => {
   emit('click', event)
 }
 </script>
+
+<template>
+  <UButton
+    :to="to"
+    :href="href"
+    :target="target"
+    :rel="rel"
+    :class="buttonClass"
+    :size="size"
+    @click="onClick"
+    v-bind="extraAttrs"
+  >
+    <slot>{{ label }}</slot>
+  </UButton>
+</template>
+
