@@ -16,7 +16,7 @@ const optionChambre = ref<RadioGroupItem[]>([
 
 const tabs = computed(() =>
   state.items.map((_, i) => ({
-    label: `Ticket n°${i + 1}`,
+    label: `Ticket n°${i + 1}${i === 0 ? ' (payeur)' : ''}`,
     index: i,
   }))
 );
@@ -49,7 +49,10 @@ const state = reactive<Schema>({
 });
 
 const onSubmit = async(event: FormSubmitEvent<{items: InnerSchema[]}>) => {
-  console.log(event.data);
+  useAPI('/internat/procceed', {
+    method: "POST",
+    body: JSON.stringify(event.data),
+  });
 }
 
 const ticketCount = computed({
