@@ -1,12 +1,3 @@
-<template>
-  <img
-    :src="currentSrc"
-    :alt="alt"
-    @error="handleImageError"
-    v-bind="$attrs"
-  />
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue';
 
@@ -26,3 +17,11 @@ const handleImageError = () => {
   currentSrc.value = props.fallback;
 };
 </script>
+<template>
+  <img
+    :src="currentSrc"
+    :alt="alt"
+    @error="handleImageError"
+    v-bind="$attrs"
+  />
+</template>

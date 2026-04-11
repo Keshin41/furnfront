@@ -1,3 +1,115 @@
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import CustomButton from "~/components/CustomButton.vue";
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type { Product } from "~/types/product";
+
+const route = useRoute();
+const id = route.params.id as string;
+
+const { data, error, pending } = await useAPI<Product | null>(`/product/${id}`);
+
+const product = computed(() => data.value);
+const loading = computed(() => pending.value);
+const selectedOptions = ref<Record<string, string>>({});
+
+watch(
+  product,
+  (value) => {
+    if (!value) {
+      selectedOptions.value = {};
+      return;
+    }
+
+    selectedOptions.value = Object.fromEntries(
+      value.optionTypes.map((optionType) => [
+        optionType.id,
+        optionType.optionValues[0]?.id ?? "",
+      ]),
+    );
+  },
+  { immediate: true },
+);
+
+const selectedSku = computed(() => {
+  if (!product.value) {
+    return null;
+  }
+
+  if (!product.value.optionTypes.length) {
+    return product.value.skus[0] ?? null;
+  }
+
+  return (
+    product.value.skus.find((sku) =>
+      product.value?.optionTypes.every((optionType) => {
+        const selectedValueId = selectedOptions.value[optionType.id];
+        return sku.options.some(
+          (option) => option.optionValue.id === selectedValueId,
+        );
+      }),
+    ) ?? null
+  );
+});
+
+const selectedImageUrl = computed(
+  () => selectedSku.value?.imageUrl || product.value?.imageUrl || null,
+);
+
+const selectedPrice = computed(() => {
+  if (!product.value) {
+    return "0.00";
+  }
+
+  return Number(
+    selectedSku.value?.priceOverride ?? product.value.basePrice,
+  ).toFixed(2);
+});
+
+const selectedOptionSummary = computed(() => {
+  if (!selectedSku.value) {
+    return "";
+  }
+
+  return selectedSku.value.options
+    .map((option) => option.optionValue.value)
+    .join(" / ");
+});
+
+const selectOptionValue = (optionTypeId: string, optionValueId: string) => {
+  selectedOptions.value = {
+    ...selectedOptions.value,
+    [optionTypeId]: optionValueId,
+  };
+};
+
+const { addItem } = useCart();
+const addedToCart = ref(false);
+
+watch(selectedSku, () => {
+  addedToCart.value = false;
+});
+
+function handleAddToCart() {
+  if (!selectedSku.value || !product.value) return;
+
+  addItem({
+    skuId: selectedSku.value.id,
+    skuCode: selectedSku.value.skuCode,
+    productId: product.value.id,
+    productName: product.value.name,
+    variantLabel: selectedOptionSummary.value,
+    price: Number(selectedSku.value.priceOverride ?? product.value.basePrice),
+    imageUrl: selectedSku.value.imageUrl ?? product.value.imageUrl ?? null,
+  });
+
+  addedToCart.value = true;
+  setTimeout(() => {
+    addedToCart.value = false;
+  }, 2000);
+}
+</script>
+
 <template>
   <div class="min-h-screen bg-brand-white text-slate-900">
     <main class="mx-auto min-h-screen max-w-4xl px-6 py-12">
@@ -130,115 +242,3 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import CustomButton from "~/components/CustomButton.vue";
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-import type { Product } from "~/types/product";
-
-const route = useRoute();
-const id = route.params.id as string;
-
-const { data, error, pending } = await useAPI<Product | null>(`/product/${id}`);
-
-const product = computed(() => data.value);
-const loading = computed(() => pending.value);
-const selectedOptions = ref<Record<string, string>>({});
-
-watch(
-  product,
-  (value) => {
-    if (!value) {
-      selectedOptions.value = {};
-      return;
-    }
-
-    selectedOptions.value = Object.fromEntries(
-      value.optionTypes.map((optionType) => [
-        optionType.id,
-        optionType.optionValues[0]?.id ?? "",
-      ]),
-    );
-  },
-  { immediate: true },
-);
-
-const selectedSku = computed(() => {
-  if (!product.value) {
-    return null;
-  }
-
-  if (!product.value.optionTypes.length) {
-    return product.value.skus[0] ?? null;
-  }
-
-  return (
-    product.value.skus.find((sku) =>
-      product.value?.optionTypes.every((optionType) => {
-        const selectedValueId = selectedOptions.value[optionType.id];
-        return sku.options.some(
-          (option) => option.optionValue.id === selectedValueId,
-        );
-      }),
-    ) ?? null
-  );
-});
-
-const selectedImageUrl = computed(
-  () => selectedSku.value?.imageUrl || product.value?.imageUrl || null,
-);
-
-const selectedPrice = computed(() => {
-  if (!product.value) {
-    return "0.00";
-  }
-
-  return Number(
-    selectedSku.value?.priceOverride ?? product.value.basePrice,
-  ).toFixed(2);
-});
-
-const selectedOptionSummary = computed(() => {
-  if (!selectedSku.value) {
-    return "";
-  }
-
-  return selectedSku.value.options
-    .map((option) => option.optionValue.value)
-    .join(" / ");
-});
-
-const selectOptionValue = (optionTypeId: string, optionValueId: string) => {
-  selectedOptions.value = {
-    ...selectedOptions.value,
-    [optionTypeId]: optionValueId,
-  };
-};
-
-const { addItem } = useCart();
-const addedToCart = ref(false);
-
-watch(selectedSku, () => {
-  addedToCart.value = false;
-});
-
-function handleAddToCart() {
-  if (!selectedSku.value || !product.value) return;
-
-  addItem({
-    skuId: selectedSku.value.id,
-    skuCode: selectedSku.value.skuCode,
-    productId: product.value.id,
-    productName: product.value.name,
-    variantLabel: selectedOptionSummary.value,
-    price: Number(selectedSku.value.priceOverride ?? product.value.basePrice),
-    imageUrl: selectedSku.value.imageUrl ?? product.value.imageUrl ?? null,
-  });
-
-  addedToCart.value = true;
-  setTimeout(() => {
-    addedToCart.value = false;
-  }, 2000);
-}
-</script>

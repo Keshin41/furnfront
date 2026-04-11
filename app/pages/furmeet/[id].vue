@@ -1,3 +1,85 @@
+<script setup lang="ts">
+import CustomButton from "~/components/CustomButton.vue";
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type {
+  Furmeet,
+  FurmeetActivity,
+  FurmeetActivityType,
+} from "~/types/furmeet";
+
+type FurmeetApi = Furmeet & { content?: string | null };
+
+const route = useRoute();
+const id = route.params.id as string;
+
+const { data, error, pending } = await useAPI<FurmeetApi | null>(
+  `/event/${id}`,
+);
+
+const furmeet = computed(() => {
+  const item = data.value;
+  if (!item || item.published === false) {
+    return null;
+  }
+
+  return {
+    ...item,
+    eventDate: item.eventDate || item.createdAt || new Date().toISOString(),
+    opened: item.opened ?? false,
+    eventActivities: [...(item.eventActivities ?? [])].sort(sortActivities),
+    body:
+      item.content ||
+      item.description ||
+      item.eventActivities
+        ?.map((activity) => `${activity.title}\n${activity.description}`)
+        .join("\n\n") ||
+      "Article en cours de redaction.",
+  };
+});
+
+const paragraphs = computed(() => {
+  const body = furmeet.value?.body ?? "";
+  return body
+    .split(/\n{2,}/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+});
+
+const loading = computed(() => pending.value);
+
+const sortActivities = (a: FurmeetActivity, b: FurmeetActivity) => {
+  const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+  const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+  if (orderA !== orderB) {
+    return orderA - orderB;
+  }
+  return new Date(a.date).getTime() - new Date(b.date).getTime();
+};
+
+const activityTypeLabel = (type?: FurmeetActivityType) => {
+  if (type === "ACTIVITY") return "Activite";
+  if (type === "RESTAURANT") return "Restaurant";
+  if (type === "BAR") return "Bar";
+  return "Etape";
+};
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+</script>
+
 <template>
   <div class="min-h-screen bg-brand-white text-brand-ink-deep">
     <main class="mx-auto min-h-screen max-w-4xl px-6 py-12">
@@ -114,85 +196,3 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import CustomButton from "~/components/CustomButton.vue";
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-import type {
-  Furmeet,
-  FurmeetActivity,
-  FurmeetActivityType,
-} from "~/types/furmeet";
-
-type FurmeetApi = Furmeet & { content?: string | null };
-
-const route = useRoute();
-const id = route.params.id as string;
-
-const { data, error, pending } = await useAPI<FurmeetApi | null>(
-  `/event/${id}`,
-);
-
-const furmeet = computed(() => {
-  const item = data.value;
-  if (!item || item.published === false) {
-    return null;
-  }
-
-  return {
-    ...item,
-    eventDate: item.eventDate || item.createdAt || new Date().toISOString(),
-    opened: item.opened ?? false,
-    eventActivities: [...(item.eventActivities ?? [])].sort(sortActivities),
-    body:
-      item.content ||
-      item.description ||
-      item.eventActivities
-        ?.map((activity) => `${activity.title}\n${activity.description}`)
-        .join("\n\n") ||
-      "Article en cours de redaction.",
-  };
-});
-
-const paragraphs = computed(() => {
-  const body = furmeet.value?.body ?? "";
-  return body
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-});
-
-const loading = computed(() => pending.value);
-
-const sortActivities = (a: FurmeetActivity, b: FurmeetActivity) => {
-  const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
-  const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
-  if (orderA !== orderB) {
-    return orderA - orderB;
-  }
-  return new Date(a.date).getTime() - new Date(b.date).getTime();
-};
-
-const activityTypeLabel = (type?: FurmeetActivityType) => {
-  if (type === "ACTIVITY") return "Activite";
-  if (type === "RESTAURANT") return "Restaurant";
-  if (type === "BAR") return "Bar";
-  return "Etape";
-};
-
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-
-const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-</script>

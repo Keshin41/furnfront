@@ -1,3 +1,27 @@
+<script setup lang="ts">
+import CustomButton from "~/components/CustomButton.vue";
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type { Product } from "~/types/product";
+
+const { data, error, pending } = await useAPI<Product[]>(
+  "/product?virtual=false",
+);
+
+const products = computed(() => data.value ?? []);
+const isLoading = computed(() => pending.value);
+
+const displayMinPrice = (product: Product): string => {
+  const skuPrices = product.skus.map((sku) =>
+    Number(sku.priceOverride ?? product.basePrice),
+  );
+  if (!skuPrices.length) return Number(product.basePrice).toFixed(2);
+  return Math.min(...skuPrices).toFixed(2);
+};
+
+const router = useRouter();
+const goProduct = (id: string) => router.push(`/shop/${id}`);
+</script>
+
 <template>
   <div class="min-h-screen bg-brand-white text-slate-900">
     <main class="mx-auto min-h-screen max-w-6xl px-6 py-12">
@@ -85,27 +109,3 @@
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import CustomButton from "~/components/CustomButton.vue";
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-import type { Product } from "~/types/product";
-
-const { data, error, pending } = await useAPI<Product[]>(
-  "/product?virtual=false",
-);
-
-const products = computed(() => data.value ?? []);
-const isLoading = computed(() => pending.value);
-
-const displayMinPrice = (product: Product): string => {
-  const skuPrices = product.skus.map((sku) =>
-    Number(sku.priceOverride ?? product.basePrice),
-  );
-  if (!skuPrices.length) return Number(product.basePrice).toFixed(2);
-  return Math.min(...skuPrices).toFixed(2);
-};
-
-const router = useRouter();
-const goProduct = (id: string) => router.push(`/shop/${id}`);
-</script>
