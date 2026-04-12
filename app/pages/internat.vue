@@ -1,179 +1,102 @@
 <script setup lang="ts">
-import type { FormSubmitEvent, RadioGroupItem } from "@nuxt/ui";
+import type { FormSubmitEvent, RadioGroupItem, StepperItem } from "@nuxt/ui";
+import InternatStripeWrapperClient from "~/components/InternatStripeWrapper.client.vue";
+import type { Order } from "~/types/basket";
+import { useCart } from "~/composables/useCart";
 import z from "zod";
+import type { InternatOrder } from "~/types/internat";
 
-const optionChambre = ref<RadioGroupItem[]>([
+const stepperItems: StepperItem[] = [
   {
-    label: 'Non',
-    value: false,
+    title: "Tickets",
+    slot: "tickets",
   },
   {
-    label: 'Oui',
-    description: '10€ supplémentaire',
-    value: true,
-  },
-])
-
-const optionGoodies = ref<RadioGroupItem[]>([
-  {
-    label: 'Non',
-    value: false,
+    title: "Paiement",
+    slot: "payment",
   },
   {
-    label: 'Oui',
-    description: '14€ supplémentaire',
-    value: true,
+    title: "Confirmation",
+    slot: "confirmation",
   },
-])
+];
 
-const tabs = computed(() =>
-  state.items.map((_, i) => ({
-    label: `Ticket n°${i + 1}${i === 0 ? ' (payeur)' : ''}`,
-    index: i,
-  }))
-);
+const query = useRoute().query;
+const { items: cartItems } = useCart();
 
-const innerSchema = z.object({
-  surname: z.string().min(2, "2 caractères minimums"),
-  firstname: z.string().min(2, "2 caractères minimums"),
-  nickname: z.string().min(2, "2 caractères minimums"),
-  email: z.email('Format invalide'),
-  optionRoom: z.boolean(),
-  optionGoodies: z.boolean(),
-});
+const activeStep = ref<string | number | undefined>(query.payment === "success" ? 3 : 0);
+const buyerInfo = ref<Order["user"] | null>(null);
+const basket = ref<any>(null);
+const paymentIntent = ref<string>('');
 
-const schema = z.object({
-  items: z.array(innerSchema),
-});
+if (query.payment === "success") {
+  // Clear the cart after successful payment
+  const { clearCart } = useCart();
+  clearCart();
+}
 
-type InnerSchema = z.output<typeof innerSchema>;
-type Schema = z.output<typeof schema>;
-
-const state = reactive<Schema>({
-  items: [
-    {
-      surname: '',
-      firstname: '',
-      nickname: '',
-      email: '',
-      optionRoom: false,
-      optionGoodies: false,
-    },
-  ]
-});
-
-const onSubmit = async(event: FormSubmitEvent<{items: InnerSchema[]}>) => {
-  useAPI('/internat/procceed', {
+const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
+  event.preventDefault();
+  // Handle form submission logic here
+  console.log("Form submitted with data:", event.data);
+  const { data } = await useAPI<InternatOrder>('/internat/checkout', {
     method: "POST",
     body: JSON.stringify(event.data),
   });
-}
-
-const ticketCount = computed({
-  get: () => state.items.length,
-  set: (newVal: number) => {
-    const current = state.items.length
-    if (newVal > current) {
-      state.items.push({ surname: '', firstname: '', nickname: '', email: '', optionRoom: false, optionGoodies: false })
-    } else {
-      state.items.splice(newVal)
-    }
-  }
-})
+  basket.value = data.value?.basket;
+  paymentIntent.value = data.value?.paymentIntent ?? '';
+  activeStep.value = 1; // Move to the next step
+};
 
 </script>
-
 <template>
-  <UContainer>
-    <UPageHeader
-      title="Internat 2026"
-      description="Choississez le nombre de billets voulu ainsi que les informations personnelles" 
-      class="border-0"
-    />
-    
-    <UForm
-      :state="state"
-      :schema="schema"
-      @submit="onSubmit"
+  <UContainer class="mt-4">
+    <UStepper
+      v-model="activeStep"
+      :items="stepperItems"
+      disabled
+      :ui="{
+        trigger: 'bg-neutral-200',
+      }"
     >
-      <div class="grid grid-cols-2 gap-4">
-        <div class="flex flex-col gap-4">
-          <UFormField label="Nombre de billets" orientation="horizontal" class="shrink-0 justify-center">
-            <UInputNumber
-              :min="1"
-              :max="4"
-              :default-value="1"
-              orientation="vertical"
-              v-model="ticketCount"
-            />
-          </UFormField>
-          <UCard class="flex-1">
-            <template #header>
-              <h2>Titre</h2>
-            </template>
-            <p>
-              Lorem ipsum...
-            </p>
-          </UCard>
-        </div>
-        <div>
-          <UTabs :items="tabs">
-            <template #content="{ item }">
-              <UCard>
-                <UForm
-                  :name="`items.${item.index}`"
-                  :schema="innerSchema"
-                  nested
-                >
-                  <div class="grid grid-cols-2 gap-4">
-                    <UFormField label="Nom" name="surname" required>
-                      <UInput v-model="state.items[item.index]!.surname"/>
-                    </UFormField>
-                    <UFormField label="Prenom" name="firstname" required>
-                      <UInput v-model="state.items[item.index]!.firstname"/>
-                    </UFormField>
-                    <UFormField label="Pseudo" name="nickname" required>
-                      <UInput v-model="state.items[item.index]!.nickname"/>
-                    </UFormField>
-                    <UFormField label="Email" name="email" required>
-                      <UInput v-model="state.items[item.index]!.email"/>
-                    </UFormField>
-                  <UFormField label="Option draps" name="optionRoom" required class="col-span-2">
-                    <URadioGroup
-                      variant="table"
-                      :items="optionChambre"
-                      :model-value="state.items[item.index]!.optionRoom"
-                      @update:model-value="val => {
-                        if (val != null)
-                        state.items[item.index]!.optionRoom = val as boolean
-                      }"
-                    />
-                  </UFormField>
-                  <UFormField label="Pack goodies" name="optionRoom" required class="col-span-2">
-                    <URadioGroup
-                      variant="table"
-                      :items="optionGoodies"
-                      :model-value="state.items[item.index]!.optionGoodies"
-                      @update:model-value="val => {
-                        if (val != null)
-                        state.items[item.index]!.optionGoodies = val as boolean
-                      }"
-                    />
-                  </UFormField>
-                  </div>
-                </UForm>
-                
-              </UCard>
-            </template>
-          </UTabs>
-        </div>
-      </div>
-      <div class="flex justify-center mt-4">
-        <UButton type="submit" size="xl">
-          Valider
-        </UButton>
-      </div>
-    </UForm>
-  </UContainer>
+      <template #tickets>
+        <InternatForm :on-submit="handleTicketFormSubmit" />
+      </template>
+      <template #payment>
+        <template v-if="!basket || !paymentIntent"
+          >Merci de compléter d'abord l'étape des informations.</template
+        >
+        <template v-else>
+          <InternatStripeWrapperClient
+            :basket="basket"
+            :payment-intent="paymentIntent"
+          />
+        </template>
+      </template>
+      <template #confirmation>
+        <section
+          class="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 rounded-3xl border border-neutral-200 bg-white/90 px-8 py-16 shadow-sm backdrop-blur text-center md:px-16 md:py-20"
+        >
+          <div class="flex items-center justify-center rounded-full bg-green-50 p-6 ring-12 ring-green-100">
+            <UIcon name="i-heroicons-check-circle-20-solid" class="size-16 text-green-500" />
+          </div>
 
+          <div class="space-y-3">
+            <h2 class="text-3xl font-bold text-neutral-900">Commande confirmée !</h2>
+            <p class="text-base text-neutral-500 max-w-sm mx-auto">
+              Un email de confirmation vous sera envoyé sous peu avec les détails de votre commande.
+            </p>
+          </div>
+
+          <USeparator class="w-full" />
+
+          <div class="flex w-full flex-col gap-3 sm:flex-row">
+            <UButton to="/" color="primary" size="xl" block>
+              Retour à l'accueil
+            </UButton>
+          </div>
+        </section>
+      </template>
+    </UStepper>
+  </UContainer>
 </template>
