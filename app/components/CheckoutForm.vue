@@ -65,7 +65,7 @@ const state = reactive<Partial<Schema>>(
   >
     <div class="mb-6 space-y-1">
       <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-        Checkout
+        Finaliser la commande
       </p>
       <h2 class="text-2xl font-bold text-neutral-900">Informations de facturation</h2>
       <p class="text-sm text-neutral-600">
