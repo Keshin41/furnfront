@@ -8,7 +8,7 @@ const emit = defineEmits<{ submit: [] }>();
   >
     <div class="mb-6 space-y-1">
       <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-        Payement
+        Paiement
       </p>
       <h2 class="text-2xl font-bold text-neutral-900">Récapitulatif de votre commande</h2>
       <p class="text-sm text-neutral-600">
@@ -37,15 +37,10 @@ const emit = defineEmits<{ submit: [] }>();
     </div>
 
     <div class="space-y-2 rounded-xl bg-primary/5 p-4 md:p-6">
-      <div class="flex items-center justify-between text-sm text-neutral-600">
-        <span>Articles ({{ count }})</span>
-        <span>{{ total.toFixed(2) }} €</span>
-      </div>
-      <div class="border-t border-primary/20 pt-3">
         <div class="flex items-center justify-between">
           <span class="text-lg font-bold text-neutral-900">Total à payer</span>
           <span class="text-2xl font-bold text-primary">{{ total.toFixed(2) }} €</span>
-        </div>
+        
       </div>
     </div>
 
