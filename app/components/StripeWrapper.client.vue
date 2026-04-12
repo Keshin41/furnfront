@@ -47,7 +47,7 @@ const handleSubmit = async () => {
   const { error } = await stripeInstance.value.confirmPayment({
     elements: elementsInstance.value,
     confirmParams: {
-      return_url: `${globalThis.location.href}?payment=success`,
+      return_url: `${globalThis.location.origin}${globalThis.location.pathname}?payment=success`,
     },
   });
 
@@ -71,16 +71,15 @@ const handleSubmit = async () => {
         :client-secret="data"
         @ready="onElementsReady"
       >
-        <UForm class="grid grid-cols-2 gap-8" @submit.prevent="handleSubmit">
-          <VueStripePaymentElement />
-          <PaymentRecap />
-          <UButton type="submit" class="col-span-2 justify-self-center"
-            >Pay</UButton
-          >
+        <UForm class="flex flex-col gap-6 mb-12" @submit.prevent="handleSubmit">
+          <div class="grid gap-6 lg:grid-cols-2">
+            <VueStripePaymentElement />
+            <PaymentRecap @submit="handleSubmit" />
+          </div>
         </UForm>
       </VueStripeElements>
-      <div v-else-if="status === 'pending'">Loading...</div>
-      <div v-else-if="status === 'error'">Error loading payment form.</div>
+      <div v-else-if="status === 'pending'">Chargement...</div>
+      <div v-else-if="status === 'error'">Erreur lors du chargement du formulaire de paiement.</div>
     </VueStripeProvider>
   </ClientOnly>
 </template>
