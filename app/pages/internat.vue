@@ -14,6 +14,18 @@ const optionChambre = ref<RadioGroupItem[]>([
   },
 ])
 
+const optionGoodies = ref<RadioGroupItem[]>([
+  {
+    label: 'Non',
+    value: false,
+  },
+  {
+    label: 'Oui',
+    description: '14€ supplémentaire',
+    value: true,
+  },
+])
+
 const tabs = computed(() =>
   state.items.map((_, i) => ({
     label: `Ticket n°${i + 1}${i === 0 ? ' (payeur)' : ''}`,
@@ -27,6 +39,7 @@ const innerSchema = z.object({
   nickname: z.string().min(2, "2 caractères minimums"),
   email: z.email('Format invalide'),
   optionRoom: z.boolean(),
+  optionGoodies: z.boolean(),
 });
 
 const schema = z.object({
@@ -44,6 +57,7 @@ const state = reactive<Schema>({
       nickname: '',
       email: '',
       optionRoom: false,
+      optionGoodies: false,
     },
   ]
 });
@@ -60,7 +74,7 @@ const ticketCount = computed({
   set: (newVal: number) => {
     const current = state.items.length
     if (newVal > current) {
-      state.items.push({ surname: '', firstname: '', nickname: '', email: '', optionRoom: false })
+      state.items.push({ surname: '', firstname: '', nickname: '', email: '', optionRoom: false, optionGoodies: false })
     } else {
       state.items.splice(newVal)
     }
@@ -111,7 +125,7 @@ const ticketCount = computed({
                   :schema="innerSchema"
                   nested
                 >
-                  <div class="grid grid-cols-2">
+                  <div class="grid grid-cols-2 gap-4">
                     <UFormField label="Nom" name="surname" required>
                       <UInput v-model="state.items[item.index]!.surname"/>
                     </UFormField>
@@ -124,8 +138,7 @@ const ticketCount = computed({
                     <UFormField label="Email" name="email" required>
                       <UInput v-model="state.items[item.index]!.email"/>
                     </UFormField>
-                  </div>
-                  <UFormField label="Option" name="optionRoom" required>
+                  <UFormField label="Option draps" name="optionRoom" required class="col-span-2">
                     <URadioGroup
                       variant="table"
                       :items="optionChambre"
@@ -136,6 +149,18 @@ const ticketCount = computed({
                       }"
                     />
                   </UFormField>
+                  <UFormField label="Pack goodies" name="optionRoom" required class="col-span-2">
+                    <URadioGroup
+                      variant="table"
+                      :items="optionGoodies"
+                      :model-value="state.items[item.index]!.optionGoodies"
+                      @update:model-value="val => {
+                        if (val != null)
+                        state.items[item.index]!.optionGoodies = val as boolean
+                      }"
+                    />
+                  </UFormField>
+                  </div>
                 </UForm>
                 
               </UCard>
