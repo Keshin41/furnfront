@@ -78,10 +78,10 @@ const { count } = useCart();
 </script>
 
 <template>
-    <UHeader mode="drawer" :menu="mobileMenuProps" class="sticky top-0 z-20 bg-brand-blue text-white shadow-lg">
+    <UHeader mode="drawer" :menu="mobileMenuProps" class="sticky top-0 z-20 bg-brand-blue text-white shadow-lg h-20">
         <template #left>
             <ULink to="/">
-                <SiteLogo variant="arrow" class="h-30" />
+                <SiteLogo variant="arrow" class="h-25" />
             </ULink>
         </template>
         <UNavigationMenu :items="navItems" color="neutral" variant="link" content-orientation="vertical" :ui="navMenuUi" />
@@ -90,7 +90,7 @@ const { count } = useCart();
             <div class="flex h-full flex-col bg-brand-blue text-white">
                 <div class="border-b border-white/10 px-6 pb-5 pt-6">
                     <ULink to="/">
-                        <SiteLogo variant="arrow" class="h-30" />
+                        <SiteLogo variant="arrow" class="h-25" />
                     </ULink>
                 </div>
 
