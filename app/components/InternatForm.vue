@@ -44,8 +44,8 @@ const innerSchema = z.object({
   firstname: z.string().min(2, "2 caractères minimums"),
   nickname: z.string().min(2, "2 caractères minimums"),
   email: z.email('Format invalide'),
-  optionRoom: z.boolean(),
-  optionGoodies: z.boolean(),
+  drap: z.boolean(),
+  goodies: z.boolean(),
 });
 
 const schema = z.object({
@@ -62,8 +62,8 @@ const state = reactive<Schema>({
       firstname: '',
       nickname: '',
       email: '',
-      optionRoom: false,
-      optionGoodies: false,
+      drap: false,
+      goodies: false,
     },
   ]
 });
@@ -75,7 +75,7 @@ const ticketCount = computed({
     active.value = '0';
     const current = state.items.length
     if (newVal > current) {
-      state.items.push({ surname: '', firstname: '', nickname: '', email: '', optionRoom: false, optionGoodies: false })
+      state.items.push({ surname: '', firstname: '', nickname: '', email: '', drap: false, goodies: false })
     } else {
       state.items.splice(newVal)
     }
@@ -140,10 +140,10 @@ const ticketCount = computed({
                   <URadioGroup
                     variant="table"
                     :items="optionChambre"
-                    :model-value="state.items[item.index]!.optionRoom"
+                    :model-value="state.items[item.index]!.drap"
                     @update:model-value="val => {
                       if (val != null)
-                      state.items[item.index]!.optionRoom = val as boolean
+                      state.items[item.index]!.drap = val as boolean
                     }"
                   />
                 </UFormField>
@@ -151,10 +151,10 @@ const ticketCount = computed({
                   <URadioGroup
                     variant="table"
                     :items="optionGoodies"
-                    :model-value="state.items[item.index]!.optionGoodies"
+                    :model-value="state.items[item.index]!.goodies"
                     @update:model-value="val => {
                       if (val != null)
-                      state.items[item.index]!.optionGoodies = val as boolean
+                      state.items[item.index]!.goodies = val as boolean
                     }"
                   />
                 </UFormField>

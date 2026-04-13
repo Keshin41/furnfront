@@ -24,7 +24,7 @@ const stepperItems: StepperItem[] = [
 const query = useRoute().query;
 const { items: cartItems } = useCart();
 
-const activeStep = ref<string | number | undefined>(query.payment === "success" ? 3 : 0);
+const activeStep = ref<string | number | undefined>(query.payment === "success" ? 2 : 0);
 const buyerInfo = ref<Order["user"] | null>(null);
 const basket = ref<any>(null);
 const paymentIntent = ref<string>('');
@@ -43,9 +43,9 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
     method: "POST",
     body: JSON.stringify(event.data),
   });
-  basket.value = data.value?.basket;
-  paymentIntent.value = data.value?.paymentIntent ?? '';
-  activeStep.value = 1; // Move to the next step
+    basket.value = data.value?.basket;
+    paymentIntent.value = data.value?.paymentIntent ?? '';
+    activeStep.value = 1; // Move to the next step
 };
 
 </script>
