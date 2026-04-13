@@ -14,7 +14,6 @@ const props = defineProps<{
   basket: {name: string, unitPrice: string, quantity: number}[];
   paymentIntent: string;
 }>();
-console.log("🚀 ~ order:", props.basket);
 
 const stripeInstance = ref<Stripe | null>(null);
 const elementsInstance = ref<StripeElements | null>(null);
