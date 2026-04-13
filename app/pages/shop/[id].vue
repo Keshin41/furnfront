@@ -76,10 +76,14 @@ const selectedOptionSummary = computed(() => {
     .join(" / ");
 });
 
+// Détecte si le produit affiché est une adhésion pour adapter le formulaire.
+// Les adhésions nécessitent des infos nominatives et une vérification backend
+// avant d'être ajoutées au panier.
 const isAdhesionProduct = computed(
   () => selectedSku.value?.skuCode.startsWith("ADHESION_") ?? false,
 );
 
+// Données du formulaire nominatif affiché uniquement pour les adhésions.
 const adhesionForm = ref({
   firstname: "",
   lastname: "",
@@ -116,11 +120,13 @@ async function handleAddToCart() {
     const nickname = adhesionForm.value.nickname.trim();
     const email = adhesionForm.value.email.trim().toLowerCase();
 
+    // 1. Champs obligatoires
     if (!firstname || !lastname || !nickname || !email) {
       adhesionFormError.value = "Nom, prenom, pseudo et email sont obligatoires pour une adhesion.";
       return;
     }
 
+    // 2. Doublon dans le panier (même email déjà en attente)
     const alreadyInCart = items.value.some(
       (item) => item.kind === "adhesion" && item.ticketDetails?.email.trim().toLowerCase() === email,
     );
@@ -130,6 +136,7 @@ async function handleAddToCart() {
       return;
     }
 
+    // 3. Vérification backend : email déjà adhérent en DB
     const { error: validationError } = await useAPI<{ ok: boolean }>("/payment/validate-adhesion", {
       method: "POST",
       body: JSON.stringify({ email }),

@@ -5,8 +5,11 @@ import z from "zod";
 
 const props = defineProps<{
   onSubmit: (event: FormSubmitEvent<Schema>) => void;
+  // Liste des types d'options venant de la DB (ex. Draps, Goodies).
   optionTypes: ProductOptionType[];
+  // Surcoût par optionValue ID pour afficher "+X.XX €" dans les radio buttons.
   optionValuePriceAdjustments?: Record<string, number>;
+  // Prix de l'adhésion, affiché dans le bloc d'info pour prévenir l'utilisateur.
   adhesionPrice?: number;
   apiError?: string;
 }>();
@@ -26,6 +29,8 @@ const createEmptyItem = () => ({
   selectedOptions: buildDefaultSelectedOptions(),
 });
 
+// Construit les items RadioGroup pour chaque optionType depuis les données DB.
+// Ajoute une description "+X.XX €" quand l'option fait varier le prix.
 const optionItemsByTypeId = computed<Record<string, RadioGroupItem[]>>(() =>
   Object.fromEntries(
     props.optionTypes.map((optionType) => [
@@ -131,6 +136,8 @@ const ticketCount = computed({
   }
 })
 
+// Validation cross-onglets : détecte les emails dupliqués entre tickets
+// et affiche un message global avant soumission du formulaire.
 const duplicateEmailMessage = computed(() => {
   const seen = new Map<string, number>();
 

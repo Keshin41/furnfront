@@ -4,6 +4,7 @@ import ImageWithFallback from "~/components/ImageWithFallback.vue";
 const open = defineModel<boolean>({ default: false });
 const { items, total, removeItem, updateQuantity, clearCart } = useCart();
 
+// Ferme le drawer avant de naviguer pour éviter le flash du slideover sur la page checkout.
 const handleGoToCheckout = () => {
   open.value = false;
   navigateTo("/checkout");
@@ -52,6 +53,7 @@ const handleGoToCheckout = () => {
               <span v-if="item.variantLabel" class="text-xs text-slate-400">{{
                 item.variantLabel
               }}</span>
+              <!-- Tickets et adhésions : affiche le bénéficiaire nominatif -->
               <span v-if="item.ticketDetails" class="text-xs text-slate-500">
                 {{ item.kind === 'adhesion' ? 'Adhesion pour' : 'Ticket pour' }} {{ item.ticketDetails.firstname }} {{ item.ticketDetails.lastname }} • {{ item.ticketDetails.email }}
               </span>
@@ -59,6 +61,7 @@ const handleGoToCheckout = () => {
                 >{{ (item.price * item.quantity).toFixed(2) }} €</span
               >
 
+              <!-- Produits boutique : contrôles de quantité + suppression -->
               <div v-if="item.kind === 'product'" class="flex items-center gap-2 mt-1">
                 <button
                   type="button"
@@ -85,6 +88,7 @@ const handleGoToCheckout = () => {
                   Supprimer
                 </button>
               </div>
+              <!-- Tickets / adhésions : quantité fixée à 1, pas de stepper -->
               <div v-else class="mt-2 flex items-center justify-between gap-2">
                 <span class="text-xs text-slate-400">Ligne nominative: quantite fixe 1</span>
                 <button

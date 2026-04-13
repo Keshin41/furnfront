@@ -2,15 +2,21 @@ import type { CartItem } from "~/types/cart";
 
 const STORAGE_KEY = "furn-cart";
 
+// Le panier est un singleton module-level : partagé entre tous les composants
+// sans passer par Pinia. Il survit aux re-renders mais pas aux rechargements de page
+// (d'où la persistence localStorage via hydrate/persist).
 const items = ref<CartItem[]>([]);
 let hydrated = false;
 
+// Écrit l'état courant dans localStorage (client uniquement).
 function persist() {
   if (import.meta.client) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value));
   }
 }
 
+// Charge le panier depuis localStorage au premier appel de useCart().
+// Les champs manquants reçoivent des valeurs par défaut pour la rétro-compatibilité.
 function hydrate() {
   if (!hydrated && import.meta.client) {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -56,6 +62,9 @@ export const useCart = () => {
       kind: item.kind ?? 'product',
     };
 
+    // Seuls les articles boutique (kind === 'product') sont fusionnés par skuId.
+    // Les tickets et adhésions sont toujours ajoutés comme lignes séparées
+    // car ils portent des données nominatives différentes.
     const canMerge = nextItem.kind === 'product';
     const existing = canMerge
       ? items.value.find((i) => i.kind === 'product' && i.skuId === nextItem.skuId)

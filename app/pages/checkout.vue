@@ -4,6 +4,9 @@ import StripeWrapperClient from "~/components/StripeWrapper.client.vue";
 import type { Order } from "~/types/basket";
 import { useCart } from "~/composables/useCart";
 
+// The checkout flow has 3 steps: billing info → Stripe payment → confirmation.
+// Steps are controlled by `activeStep`. The stepper is set to `disabled` so the
+// user can't jump ahead manually; navigation is driven by the code below.
 const stepperItems: StepperItem[] = [
   {
     title: "Informations de facturation",
@@ -22,21 +25,41 @@ const stepperItems: StepperItem[] = [
 const query = useRoute().query;
 const { items: cartItems } = useCart();
 
+// When Stripe redirects back after payment it appends ?payment=success&payment_intent=pi_xxx.
+// We go directly to step 2 (index 2 = confirmation) and start verifying the payment.
 const activeStep = ref<string | number | undefined>(query.payment === "success" ? 2 : 0);
+
+// Filled at step 0 (billing form); passed to StripeWrapper at step 1 to create the PaymentIntent.
 const buyerInfo = ref<Order["user"] | null>(null);
+
+// Drives the UI shown in the confirmation step.
 const paymentConfirmationState = ref<"idle" | "pending" | "success" | "error">(
   query.payment === "success" ? "pending" : "idle",
 );
 const paymentConfirmationMessage = ref("");
+
+// Stripe charge details returned by the backend after confirming the payment intent.
 const paymentTicket = ref<{
   paymentIntentId: string;
   chargeId: string | null;
   receiptUrl: string | null;
-  amount: number;
+  amount: number; // in smallest currency unit (cents)
   currency: string;
 } | null>(null);
 
+// Order lines fetched from the DB after payment confirmation — the source of truth for what was paid.
+const paymentOrderItems = ref<Array<{
+  productName: string;
+  skuCode: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}>>([]); 
+
 if (query.payment === "success") {
+  // The `payment_intent` query param is the Stripe PaymentIntent ID.
+  // We forward it to the backend which verifies the payment status, marks the
+  // order as PAID in the DB, creates tickets/adhesions, and returns the order summary.
   const paymentIntentId = typeof query.payment_intent === "string" ? query.payment_intent : "";
 
   if (!paymentIntentId) {
@@ -45,6 +68,13 @@ if (query.payment === "success") {
   } else {
     const { data, error } = await useAPI<{
       ok: boolean;
+      orderItems: Array<{
+        productName: string;
+        skuCode: string;
+        quantity: number;
+        unitPrice: number;
+        totalPrice: number;
+      }>;
       paymentTicket: {
         paymentIntentId: string;
         chargeId: string | null;
@@ -66,6 +96,8 @@ if (query.payment === "success") {
     } else {
       paymentConfirmationState.value = "success";
       paymentTicket.value = data.value?.paymentTicket ?? null;
+      paymentOrderItems.value = data.value?.orderItems ?? [];
+      // Cart is only cleared once the backend confirms the payment, not on Stripe redirect.
       const { clearCart } = useCart();
       clearCart();
     }
@@ -74,10 +106,9 @@ if (query.payment === "success") {
 
 const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
-  // Handle form submission logic here
-  console.log("Form submitted with data:", event.data);
-  buyerInfo.value = event.data as Order["user"]; // Store buyer info for later use
-  activeStep.value = 1; // Move to the next step
+  buyerInfo.value = event.data as Order["user"];
+  // Advance to the Stripe payment step.
+  activeStep.value = 1;
 };
 </script>
 <template>
@@ -152,20 +183,38 @@ const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
             </p>
           </div>
 
-          <div v-if="paymentTicket" class="w-full rounded-2xl bg-neutral-50 p-4 text-left text-sm text-neutral-700">
-            <p class="font-semibold text-neutral-900">Ticket de paiement</p>
-            <p>
-              Montant: {{ (paymentTicket.amount / 100).toFixed(2) }} {{ paymentTicket.currency }}
-            </p>
+          <div v-if="paymentOrderItems.length > 0" class="w-full rounded-2xl border border-neutral-200 bg-neutral-50 text-left text-sm overflow-hidden">
+            <div class="px-4 py-3 border-b border-neutral-200">
+              <p class="font-semibold text-neutral-900">Récapitulatif de commande</p>
+            </div>
+            <ul class="divide-y divide-neutral-100">
+              <li
+                v-for="item in paymentOrderItems"
+                :key="item.skuCode"
+                class="flex items-center justify-between gap-4 px-4 py-2.5 text-neutral-700"
+              >
+                <span class="flex-1 min-w-0">
+                  <span class="font-medium text-neutral-900">{{ item.productName }}</span>
+                  <span v-if="item.quantity > 1" class="ml-1.5 text-neutral-500">× {{ item.quantity }}</span>
+                </span>
+                <span class="shrink-0 tabular-nums text-neutral-700">
+                  {{ item.totalPrice.toFixed(2) }} {{ paymentTicket?.currency }}
+                </span>
+              </li>
+            </ul>
+            <div class="flex items-center justify-between gap-4 border-t border-neutral-200 px-4 py-3 font-semibold text-neutral-900">
+              <span>Total</span>
+              <span class="tabular-nums" v-if="paymentTicket">{{ (paymentTicket.amount / 100).toFixed(2) }} {{ paymentTicket.currency }}</span>
+            </div>
+          </div>
+          <div v-if="paymentTicket?.receiptUrl" class="w-full text-center">
             <UButton
-              v-if="paymentTicket.receiptUrl"
               :to="paymentTicket.receiptUrl"
               target="_blank"
               rel="noopener noreferrer"
               variant="soft"
               color="neutral"
               size="sm"
-              class="mt-3"
             >
               Voir le reçu Stripe
             </UButton>
