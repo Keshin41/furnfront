@@ -2,8 +2,7 @@
 import { z } from "zod";
 const { login, token } = useAuth();
 
-if (token.value)
-  navigateTo("/profile");
+if (token.value) navigateTo("/admin");
 
 const schema = z.object({
   email: z.email("Adresse email invalide"),
@@ -21,7 +20,7 @@ async function handleLogin() {
   try {
     console.log("Attempting login with", state.email, state.password);
     await login(state.email, state.password);
-    await navigateTo("/profile");
+    await navigateTo("/admin");
   } catch {
     console.error("Login failed");
   }
