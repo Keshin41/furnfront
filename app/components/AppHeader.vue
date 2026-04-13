@@ -5,7 +5,7 @@ import CartDrawer from '~/components/CartDrawer.vue';
 const route = useRoute();
 
 const isShopSection = computed(() => {
-    return route.path.startsWith('/shop') || route.path.startsWith('/checkout');
+    return route.path.startsWith('/shop') || route.path.startsWith('/checkout') || route.path.startsWith('/internat');
 });
 
 const associationChildren = computed<NavigationMenuItem[]>(() => {

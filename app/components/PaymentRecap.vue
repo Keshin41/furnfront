@@ -20,11 +20,14 @@ const emit = defineEmits<{ submit: [] }>();
       <ul class="space-y-3">
         <li
           v-for="item in items"
-          :key="item.skuId"
+          :key="item.lineId"
           class="flex items-center justify-between border-b border-neutral-200 pb-3 last:border-b-0"
         >
           <div class="flex flex-col gap-1">
             <p class="font-medium text-neutral-900">{{ item.productName }}</p>
+            <p v-if="item.ticketDetails" class="text-xs text-neutral-500">
+              {{ item.ticketDetails.firstname }} {{ item.ticketDetails.lastname }} • {{ item.ticketDetails.email }}
+            </p>
             <p class="text-xs text-neutral-600">
               {{ item.quantity }} × {{ item.price.toFixed(2) }} €
             </p>

@@ -38,7 +38,7 @@ const handleGoToCheckout = () => {
           v-else
           class="flex-1 overflow-y-auto divide-y divide-slate-100 px-5"
         >
-          <li v-for="item in items" :key="item.skuId" class="flex gap-4 py-4">
+          <li v-for="item in items" :key="item.lineId" class="flex gap-4 py-4">
             <ImageWithFallback
               :src="item.imageUrl"
               :alt="item.productName"
@@ -52,15 +52,18 @@ const handleGoToCheckout = () => {
               <span v-if="item.variantLabel" class="text-xs text-slate-400">{{
                 item.variantLabel
               }}</span>
+              <span v-if="item.ticketDetails" class="text-xs text-slate-500">
+                Ticket pour {{ item.ticketDetails.firstname }} {{ item.ticketDetails.lastname }} • {{ item.ticketDetails.email }}
+              </span>
               <span class="text-sm font-bold text-brand-blue"
                 >{{ (item.price * item.quantity).toFixed(2) }} €</span
               >
 
-              <div class="flex items-center gap-2 mt-1">
+              <div v-if="item.kind !== 'internat-ticket'" class="flex items-center gap-2 mt-1">
                 <button
                   type="button"
                   class="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100"
-                  @click="updateQuantity(item.skuId, item.quantity - 1)"
+                  @click="updateQuantity(item.lineId, item.quantity - 1)"
                 >
                   −
                 </button>
@@ -70,14 +73,24 @@ const handleGoToCheckout = () => {
                 <button
                   type="button"
                   class="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100"
-                  @click="updateQuantity(item.skuId, item.quantity + 1)"
+                  @click="updateQuantity(item.lineId, item.quantity + 1)"
                 >
                   +
                 </button>
                 <button
                   type="button"
                   class="ml-auto text-xs text-red-400 hover:text-red-600"
-                  @click="removeItem(item.skuId)"
+                  @click="removeItem(item.lineId)"
+                >
+                  Supprimer
+                </button>
+              </div>
+              <div v-else class="mt-2 flex items-center justify-between gap-2">
+                <span class="text-xs text-slate-400">Quantite fixe: 1 ticket</span>
+                <button
+                  type="button"
+                  class="text-xs text-red-400 hover:text-red-600"
+                  @click="removeItem(item.lineId)"
                 >
                   Supprimer
                 </button>

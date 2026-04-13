@@ -10,3 +10,15 @@ export type InternatOrder = {
   paymentIntent: string;
   basket: InternatBasket;
 };
+
+export type InternatTicketListItem = {
+  email: string;
+  firstname: string;
+  lastname: string;
+  nickname: string;
+  skuCode: string;
+  productName: string;
+  unitPrice: string;
+  drap: boolean;
+  goodies: boolean;
+};

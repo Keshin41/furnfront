@@ -4,6 +4,7 @@ import z from "zod";
 
 defineProps<{
   onSubmit: (event: FormSubmitEvent<Schema>) => void;
+  apiError?: string;
 }>();
 
 const optionChambre = ref<RadioGroupItem[]>([
@@ -48,9 +49,29 @@ const innerSchema = z.object({
   optionGoodies: z.boolean(),
 });
 
-const schema = z.object({
-  items: z.array(innerSchema),
-});
+const schema = z
+  .object({
+    items: z.array(innerSchema),
+  })
+  .superRefine((data, ctx) => {
+    const seen = new Map<string, number>();
+
+    data.items.forEach((item, index) => {
+      const email = item.email.trim().toLowerCase();
+      const previousIndex = seen.get(email);
+
+      if (previousIndex !== undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['items', index, 'email'],
+          message: `Email deja utilise pour le ticket n°${previousIndex + 1}`,
+        });
+        return;
+      }
+
+      seen.set(email, index);
+    });
+  });
 
 type InnerSchema = z.output<typeof innerSchema>;
 type Schema = z.output<typeof schema>;
@@ -82,6 +103,26 @@ const ticketCount = computed({
   }
 })
 
+const duplicateEmailMessage = computed(() => {
+  const seen = new Map<string, number>();
+
+  for (let i = 0; i < state.items.length; i += 1) {
+    const email = state.items[i]!.email.trim().toLowerCase();
+    if (!email) {
+      continue;
+    }
+
+    const previousIndex = seen.get(email);
+    if (previousIndex !== undefined) {
+      return `L'email ${state.items[i]!.email} est deja utilise pour le ticket n°${previousIndex + 1}.`;
+    }
+
+    seen.set(email, i);
+  }
+
+  return '';
+});
+
 </script>
 <template>
   <UPageHeader
@@ -94,6 +135,22 @@ const ticketCount = computed({
     :schema="schema"
     @submit="onSubmit"
   >
+    <UAlert
+      v-if="apiError"
+      color="error"
+      variant="soft"
+      icon="i-lucide-circle-alert"
+      class="mb-4"
+      :title="apiError"
+    />
+    <UAlert
+      v-if="duplicateEmailMessage"
+      color="warning"
+      variant="soft"
+      icon="i-lucide-triangle-alert"
+      class="mb-4"
+      :title="duplicateEmailMessage"
+    />
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-4">
         <UFormField label="Nombre de billets" orientation="horizontal" class="shrink-0 justify-center">
@@ -118,25 +175,20 @@ const ticketCount = computed({
         <UTabs :items="tabs" v-model="active">
           <template #content="{ item }">
             <UCard>
-              <UForm
-                :name="`items.${item.index}`"
-                :schema="innerSchema"
-                nested
-              >
-                <div class="grid grid-cols-2 gap-4">
-                  <UFormField label="Nom" name="surname" required>
-                    <UInput v-model="state.items[item.index]!.surname"/>
-                  </UFormField>
-                  <UFormField label="Prenom" name="firstname" required>
-                    <UInput v-model="state.items[item.index]!.firstname"/>
-                  </UFormField>
-                  <UFormField label="Pseudo" name="nickname" required>
-                    <UInput v-model="state.items[item.index]!.nickname"/>
-                  </UFormField>
-                  <UFormField label="Email" name="email" required>
-                    <UInput v-model="state.items[item.index]!.email"/>
-                  </UFormField>
-                <UFormField label="Option draps" name="optionRoom" required class="col-span-2">
+              <div class="grid grid-cols-2 gap-4">
+                <UFormField label="Nom" :name="`items.${item.index}.surname`" required>
+                  <UInput v-model="state.items[item.index]!.surname"/>
+                </UFormField>
+                <UFormField label="Prenom" :name="`items.${item.index}.firstname`" required>
+                  <UInput v-model="state.items[item.index]!.firstname"/>
+                </UFormField>
+                <UFormField label="Pseudo" :name="`items.${item.index}.nickname`" required>
+                  <UInput v-model="state.items[item.index]!.nickname"/>
+                </UFormField>
+                <UFormField label="Email" :name="`items.${item.index}.email`" required>
+                  <UInput v-model="state.items[item.index]!.email"/>
+                </UFormField>
+                <UFormField label="Option draps" :name="`items.${item.index}.optionRoom`" required class="col-span-2">
                   <URadioGroup
                     variant="table"
                     :items="optionChambre"
@@ -147,7 +199,7 @@ const ticketCount = computed({
                     }"
                   />
                 </UFormField>
-                <UFormField label="Pack goodies" name="optionRoom" required class="col-span-2">
+                <UFormField label="Pack goodies" :name="`items.${item.index}.optionGoodies`" required class="col-span-2">
                   <URadioGroup
                     variant="table"
                     :items="optionGoodies"
@@ -158,16 +210,14 @@ const ticketCount = computed({
                     }"
                   />
                 </UFormField>
-                </div>
-              </UForm>
-              
+              </div>
             </UCard>
           </template>
         </UTabs>
       </div>
     </div>
     <div class="flex justify-center mt-4">
-      <UButton type="submit" size="xl">
+      <UButton type="submit" size="xl" :disabled="Boolean(duplicateEmailMessage)">
         Valider
       </UButton>
     </div>

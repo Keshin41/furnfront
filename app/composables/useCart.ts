@@ -16,7 +16,19 @@ function hydrate() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        items.value = JSON.parse(stored) as CartItem[];
+        items.value = (JSON.parse(stored) as Partial<CartItem>[]).map((item) => ({
+          lineId: item.lineId ?? item.skuId ?? crypto.randomUUID(),
+          skuId: item.skuId ?? '',
+          skuCode: item.skuCode ?? '',
+          productId: item.productId ?? '',
+          productName: item.productName ?? '',
+          variantLabel: item.variantLabel ?? '',
+          price: item.price ?? 0,
+          imageUrl: item.imageUrl ?? null,
+          quantity: item.quantity ?? 1,
+          kind: item.kind ?? 'product',
+          ticketDetails: item.ticketDetails,
+        }));
       } catch {
         items.value = [];
       }
@@ -36,27 +48,38 @@ export const useCart = () => {
     items.value.reduce((sum, item) => sum + item.quantity, 0),
   );
 
-  function addItem(item: Omit<CartItem, "quantity">) {
-    const existing = items.value.find((i) => i.skuId === item.skuId);
+  function addItem(item: Omit<CartItem, "quantity" | "lineId"> & { quantity?: number; lineId?: string }) {
+    const nextItem: CartItem = {
+      ...item,
+      lineId: item.lineId ?? item.skuId,
+      quantity: item.quantity ?? 1,
+      kind: item.kind ?? 'product',
+    };
+
+    const canMerge = nextItem.kind !== 'internat-ticket';
+    const existing = canMerge
+      ? items.value.find((i) => i.kind !== 'internat-ticket' && i.skuId === nextItem.skuId)
+      : undefined;
+
     if (existing) {
-      existing.quantity += 1;
+      existing.quantity += nextItem.quantity;
     } else {
-      items.value.push({ ...item, quantity: 1 });
+      items.value.push(nextItem);
     }
     persist();
   }
 
-  function removeItem(skuId: string) {
-    items.value = items.value.filter((i) => i.skuId !== skuId);
+  function removeItem(lineId: string) {
+    items.value = items.value.filter((i) => i.lineId !== lineId);
     persist();
   }
 
-  function updateQuantity(skuId: string, quantity: number) {
+  function updateQuantity(lineId: string, quantity: number) {
     if (quantity <= 0) {
-      removeItem(skuId);
+      removeItem(lineId);
       return;
     }
-    const item = items.value.find((i) => i.skuId === skuId);
+    const item = items.value.find((i) => i.lineId === lineId);
     if (item) {
       item.quantity = quantity;
       persist();
