@@ -276,6 +276,7 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
       :api-error="ticketErrorMessage"
       :option-types="internatProduct?.optionTypes ?? []"
       :option-value-price-adjustments="optionValuePriceAdjustments"
+      :adhesion-price="adhesionSku ? Number(adhesionSku.priceOverride ?? adhesionProduct?.basePrice) : undefined"
     />
   </UContainer>
 </template>

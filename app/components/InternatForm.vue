@@ -7,6 +7,7 @@ const props = defineProps<{
   onSubmit: (event: FormSubmitEvent<Schema>) => void;
   optionTypes: ProductOptionType[];
   optionValuePriceAdjustments?: Record<string, number>;
+  adhesionPrice?: number;
   apiError?: string;
 }>();
 
@@ -198,6 +199,21 @@ const duplicateEmailMessage = computed(() => {
           <p class="text-sm leading-6 text-neutral-600">
             Remplis les informations de chaque participant. Chaque ticket garde ses propres options et ses propres coordonnees.
           </p>
+          <UAlert
+            color="info"
+            variant="soft"
+            icon="i-lucide-badge-info"
+            class="mt-4"
+          >
+            <template #description>
+              <p>L'adhésion à l'association est <strong>obligatoire</strong> pour participer à l'internat.</p>
+              <ul class="mt-1 list-disc list-inside space-y-1">
+                <li v-if="adhesionPrice !== undefined">Si vous n'êtes pas encore adhérent·e, <strong>+{{ adhesionPrice.toFixed(2) }}&nbsp;€</strong> seront ajoutés automatiquement par participant.</li>
+                <li v-else>Si vous n'êtes pas encore adhérent·e, une adhésion sera ajoutée automatiquement par participant.</li>
+                <li>Si vous êtes déjà adhérent·e, utilisez l'adresse mail liée à votre adhésion.</li>
+              </ul>
+            </template>
+          </UAlert>
         </UCard>
       </div>
       <div class="order-2 min-w-0">
