@@ -1,37 +1,45 @@
 <script setup lang="ts">
 import type { FormSubmitEvent, RadioGroupItem } from "@nuxt/ui";
+import type { ProductOptionType } from "~/types/product";
 import z from "zod";
 
-defineProps<{
+const props = defineProps<{
   onSubmit: (event: FormSubmitEvent<Schema>) => void;
+  optionTypes: ProductOptionType[];
+  optionValuePriceAdjustments?: Record<string, number>;
   apiError?: string;
 }>();
 
-const optionChambre = ref<RadioGroupItem[]>([
-  {
-    label: 'Non',
-    value: false,
-  },
-  {
-    label: 'Oui',
-    description: '6€ supplémentaire',
-    value: true,
-  },
-])
-
-const optionGoodies = ref<RadioGroupItem[]>([
-  {
-    label: 'Non',
-    value: false,
-  },
-  {
-    label: 'Oui',
-    description: '14€ supplémentaire',
-    value: true,
-  },
-])
-
 const active = ref<string | number>('0');
+
+const buildDefaultSelectedOptions = () =>
+  Object.fromEntries(
+    props.optionTypes.map((optionType) => [optionType.id, optionType.optionValues[0]?.id ?? '']),
+  );
+
+const createEmptyItem = () => ({
+  surname: '',
+  firstname: '',
+  nickname: '',
+  email: '',
+  selectedOptions: buildDefaultSelectedOptions(),
+});
+
+const optionItemsByTypeId = computed<Record<string, RadioGroupItem[]>>(() =>
+  Object.fromEntries(
+    props.optionTypes.map((optionType) => [
+      optionType.id,
+      optionType.optionValues.map((optionValue) => ({
+        label: optionValue.value,
+        description:
+          (props.optionValuePriceAdjustments?.[optionValue.id] ?? 0) > 0
+            ? `+${(props.optionValuePriceAdjustments?.[optionValue.id] ?? 0).toFixed(2)} €`
+            : undefined,
+        value: optionValue.id,
+      })),
+    ]),
+  ),
+);
 
 const tabs = computed(() =>
   state.items.map((_, i) => ({
@@ -45,8 +53,7 @@ const innerSchema = z.object({
   firstname: z.string().min(2, "2 caractères minimums"),
   nickname: z.string().min(2, "2 caractères minimums"),
   email: z.email('Format invalide'),
-  optionRoom: z.boolean(),
-  optionGoodies: z.boolean(),
+  selectedOptions: z.record(z.string(), z.string()),
 });
 
 const schema = z
@@ -71,6 +78,18 @@ const schema = z
 
       seen.set(email, index);
     });
+
+    data.items.forEach((item, index) => {
+      props.optionTypes.forEach((optionType) => {
+        if (!item.selectedOptions[optionType.id]) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['items', index, 'selectedOptions', optionType.id],
+            message: `Choix requis pour ${optionType.name}`,
+          });
+        }
+      });
+    });
   });
 
 type InnerSchema = z.output<typeof innerSchema>;
@@ -78,16 +97,24 @@ type Schema = z.output<typeof schema>;
 
 const state = reactive<Schema>({
   items: [
-    {
-      surname: '',
-      firstname: '',
-      nickname: '',
-      email: '',
-      optionRoom: false,
-      optionGoodies: false,
-    },
+    createEmptyItem(),
   ]
 });
+
+watch(
+  () => props.optionTypes,
+  () => {
+    const defaultOptions = buildDefaultSelectedOptions();
+
+    state.items.forEach((item) => {
+      item.selectedOptions = {
+        ...defaultOptions,
+        ...item.selectedOptions,
+      };
+    });
+  },
+  { immediate: true, deep: true },
+);
 
 
 const ticketCount = computed({
@@ -96,7 +123,7 @@ const ticketCount = computed({
     active.value = '0';
     const current = state.items.length
     if (newVal > current) {
-      state.items.push({ surname: '', firstname: '', nickname: '', email: '', optionRoom: false, optionGoodies: false })
+      state.items.push(createEmptyItem())
     } else {
       state.items.splice(newVal)
     }
@@ -128,12 +155,14 @@ const duplicateEmailMessage = computed(() => {
   <UPageHeader
     title="Internat 2026"
     class="border-0"
+    :ui="{ title: 'text-2xl sm:text-3xl' }"
   />
   
   <UForm
     :state="state"
     :schema="schema"
     @submit="onSubmit"
+    class="space-y-4 sm:space-y-6"
   >
     <UAlert
       v-if="apiError"
@@ -151,9 +180,9 @@ const duplicateEmailMessage = computed(() => {
       class="mb-4"
       :title="duplicateEmailMessage"
     />
-    <div class="grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-4">
-        <UFormField label="Nombre de billets" orientation="horizontal" class="shrink-0 justify-center">
+    <div class="grid gap-4 lg:grid-cols-[minmax(18rem,24rem)_1fr] lg:items-start">
+      <div class="flex flex-col gap-4 order-1">
+        <UFormField label="Nombre de billets" orientation="horizontal" class="shrink-0 rounded-2xl border border-neutral-200 bg-white p-4 justify-between">
           <UInputNumber
             :min="1"
             :max="4"
@@ -164,18 +193,18 @@ const duplicateEmailMessage = computed(() => {
         </UFormField>
         <UCard class="flex-1">
           <template #header>
-            <h2>Titre</h2>
+            <h2 class="text-base font-semibold">Informations</h2>
           </template>
-          <p>
-            Lorem ipsum...
+          <p class="text-sm leading-6 text-neutral-600">
+            Remplis les informations de chaque participant. Chaque ticket garde ses propres options et ses propres coordonnees.
           </p>
         </UCard>
       </div>
-      <div>
-        <UTabs :items="tabs" v-model="active">
+      <div class="order-2 min-w-0">
+        <UTabs :items="tabs" v-model="active" class="min-w-0">
           <template #content="{ item }">
-            <UCard>
-              <div class="grid grid-cols-2 gap-4">
+            <UCard class="min-w-0">
+              <div class="grid gap-4 sm:grid-cols-2">
                 <UFormField label="Nom" :name="`items.${item.index}.surname`" required>
                   <UInput v-model="state.items[item.index]!.surname"/>
                 </UFormField>
@@ -188,25 +217,22 @@ const duplicateEmailMessage = computed(() => {
                 <UFormField label="Email" :name="`items.${item.index}.email`" required>
                   <UInput v-model="state.items[item.index]!.email"/>
                 </UFormField>
-                <UFormField label="Option draps" :name="`items.${item.index}.optionRoom`" required class="col-span-2">
+                <UFormField
+                  v-for="optionType in props.optionTypes"
+                  :key="optionType.id"
+                  :label="optionType.name"
+                  :name="`items.${item.index}.selectedOptions.${optionType.id}`"
+                  required
+                  class="sm:col-span-2"
+                >
                   <URadioGroup
                     variant="table"
-                    :items="optionChambre"
-                    :model-value="state.items[item.index]!.optionRoom"
+                    :items="optionItemsByTypeId[optionType.id] ?? []"
+                    :model-value="state.items[item.index]!.selectedOptions[optionType.id]"
                     @update:model-value="val => {
-                      if (val != null)
-                      state.items[item.index]!.optionRoom = val as boolean
-                    }"
-                  />
-                </UFormField>
-                <UFormField label="Pack goodies" :name="`items.${item.index}.optionGoodies`" required class="col-span-2">
-                  <URadioGroup
-                    variant="table"
-                    :items="optionGoodies"
-                    :model-value="state.items[item.index]!.optionGoodies"
-                    @update:model-value="val => {
-                      if (val != null)
-                      state.items[item.index]!.optionGoodies = val as boolean
+                      if (val != null) {
+                        state.items[item.index]!.selectedOptions[optionType.id] = String(val)
+                      }
                     }"
                   />
                 </UFormField>
@@ -216,8 +242,8 @@ const duplicateEmailMessage = computed(() => {
         </UTabs>
       </div>
     </div>
-    <div class="flex justify-center mt-4">
-      <UButton type="submit" size="xl" :disabled="Boolean(duplicateEmailMessage)">
+    <div class="flex justify-stretch sm:justify-center mt-4">
+      <UButton type="submit" size="xl" block class="sm:w-auto" :disabled="Boolean(duplicateEmailMessage)">
         Valider
       </UButton>
     </div>

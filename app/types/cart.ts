@@ -17,6 +17,6 @@ export interface CartItem {
   price: number;
   imageUrl: string | null;
   quantity: number;
-  kind?: "product" | "internat-ticket";
+  kind?: "product" | "internat-ticket" | "adhesion";
   ticketDetails?: CartTicketDetails;
 }

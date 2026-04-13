@@ -53,13 +53,13 @@ const handleGoToCheckout = () => {
                 item.variantLabel
               }}</span>
               <span v-if="item.ticketDetails" class="text-xs text-slate-500">
-                Ticket pour {{ item.ticketDetails.firstname }} {{ item.ticketDetails.lastname }} • {{ item.ticketDetails.email }}
+                {{ item.kind === 'adhesion' ? 'Adhesion pour' : 'Ticket pour' }} {{ item.ticketDetails.firstname }} {{ item.ticketDetails.lastname }} • {{ item.ticketDetails.email }}
               </span>
               <span class="text-sm font-bold text-brand-blue"
                 >{{ (item.price * item.quantity).toFixed(2) }} €</span
               >
 
-              <div v-if="item.kind !== 'internat-ticket'" class="flex items-center gap-2 mt-1">
+              <div v-if="item.kind === 'product'" class="flex items-center gap-2 mt-1">
                 <button
                   type="button"
                   class="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100"
@@ -86,7 +86,7 @@ const handleGoToCheckout = () => {
                 </button>
               </div>
               <div v-else class="mt-2 flex items-center justify-between gap-2">
-                <span class="text-xs text-slate-400">Quantite fixe: 1 ticket</span>
+                <span class="text-xs text-slate-400">Ligne nominative: quantite fixe 1</span>
                 <button
                   type="button"
                   class="text-xs text-red-400 hover:text-red-600"

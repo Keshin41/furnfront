@@ -8,15 +8,19 @@ type InternatFormPayload = {
     firstname: string;
     nickname: string;
     email: string;
-    optionRoom: boolean;
-    optionGoodies: boolean;
+    selectedOptions: Record<string, string>;
   }>;
 };
 
 const { addItem, items } = useCart();
 const ticketErrorMessage = ref("");
+const adhesionInfoMessage = ref("");
 
 const { data, error } = await useAPI<Product[]>("/product?virtual=true", {
+  method: "GET",
+});
+
+const { data: adhesionProductData } = await useAPI<Product | null>("/product/adhesion-2026", {
   method: "GET",
 });
 
@@ -31,6 +35,12 @@ const skuByCode = computed(() => {
   return new Map(product?.skus.map((sku) => [sku.skuCode, sku]) ?? []);
 });
 
+const adhesionProduct = computed(() => adhesionProductData.value ?? null);
+
+const adhesionSku = computed(() =>
+  adhesionProduct.value?.skus.find((sku) => sku.skuCode === "ADHESION_2026") ?? null,
+);
+
 const existingTicketEmails = computed(() =>
   items.value
     .filter((item) => item.kind === "internat-ticket" && item.ticketDetails)
@@ -40,9 +50,78 @@ const existingTicketEmails = computed(() =>
 const createLineId = () =>
   globalThis.crypto?.randomUUID?.() ?? `internat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+const resolveInternatSku = (selectedOptions: Record<string, string>) => {
+  if (!internatProduct.value) {
+    return null;
+  }
+
+  if (!internatProduct.value.optionTypes.length) {
+    return internatProduct.value.skus[0] ?? null;
+  }
+
+  return (
+    internatProduct.value.skus.find((sku) =>
+      internatProduct.value?.optionTypes.every((optionType) => {
+        const selectedValueId = selectedOptions[optionType.id];
+        return sku.options.some((option) => option.optionValue.id === selectedValueId);
+      }),
+    ) ?? null
+  );
+};
+
+const buildVariantLabel = (sku: Product["skus"][number]) =>
+  sku.options.map((option) => option.optionValue.value).join(" • ");
+
+const baseInternatPrice = computed(() => {
+  if (!internatProduct.value) {
+    return 0;
+  }
+
+  const prices = internatProduct.value.skus.map((sku) =>
+    Number(sku.priceOverride ?? internatProduct.value!.basePrice),
+  );
+
+  return prices.length > 0 ? Math.min(...prices) : Number(internatProduct.value.basePrice);
+});
+
+const optionValuePriceAdjustments = computed<Record<string, number>>(() => {
+  if (!internatProduct.value) {
+    return {};
+  }
+
+  const basePrice = baseInternatPrice.value;
+
+  return Object.fromEntries(
+    internatProduct.value.optionTypes.flatMap((optionType) =>
+      optionType.optionValues.map((optionValue) => {
+        const matchingPrices = internatProduct.value!.skus
+          .filter((sku) => sku.options.some((option) => option.optionValue.id === optionValue.id))
+          .map((sku) => Number(sku.priceOverride ?? internatProduct.value!.basePrice));
+
+        const valuePrice = matchingPrices.length > 0 ? Math.min(...matchingPrices) : basePrice;
+
+        return [optionValue.id, Math.max(valuePrice - basePrice, 0)];
+      }),
+    ),
+  );
+});
+
+const hasPositiveOption = (sku: Product["skus"][number], optionTypeName: string) => {
+  const selectedValue = sku.options.find(
+    (option) => option.optionValue.optionType.name.toLowerCase() === optionTypeName.toLowerCase(),
+  )?.optionValue.value;
+
+  if (!selectedValue) {
+    return false;
+  }
+
+  return !selectedValue.toLowerCase().startsWith("sans");
+};
+
 const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
   ticketErrorMessage.value = "";
+  adhesionInfoMessage.value = "";
 
   if (error.value || !internatProduct.value) {
     ticketErrorMessage.value = "Les produits internat ne sont pas disponibles pour le moment.";
@@ -54,9 +133,23 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
     firstname: item.firstname.trim(),
     nickname: item.nickname.trim(),
     email: item.email.trim().toLowerCase(),
-    optionRoom: item.optionRoom,
-    optionGoodies: item.optionGoodies,
+    selectedOptions: item.selectedOptions,
   }));
+
+  const preparedItems = submittedItems.map((item) => {
+    const sku = resolveInternatSku(item.selectedOptions);
+
+    return {
+      ...item,
+      sku,
+    };
+  });
+
+  const missingSkuItem = preparedItems.find((item) => !item.sku);
+  if (missingSkuItem) {
+    ticketErrorMessage.value = "Une combinaison d'options internat est introuvable.";
+    return;
+  }
 
   const duplicateCartEmails = submittedItems
     .map((item) => item.email)
@@ -69,17 +162,20 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   }
 
   const validationPayload = {
-    items: submittedItems.map((item) => ({
+    items: preparedItems.map((item) => ({
       surname: item.surname,
       firstname: item.firstname,
       nickname: item.nickname,
       email: item.email,
-      drap: item.optionRoom,
-      goodies: item.optionGoodies,
+      drap: hasPositiveOption(item.sku!, "Draps"),
+      goodies: hasPositiveOption(item.sku!, "Goodies"),
     })),
   };
 
-  const { error: validationError } = await useAPI<{ ok: boolean }>("/internat/validate", {
+  const { data: validationData, error: validationError } = await useAPI<{
+    ok: boolean;
+    nonAdherentEmails: string[];
+  }>("/internat/validate", {
     method: "POST",
     body: JSON.stringify(validationPayload),
   });
@@ -93,16 +189,10 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
     return;
   }
 
-  for (const item of submittedItems) {
-    const skuCode = item.optionRoom
-      ? (item.optionGoodies ? "INTERNAT_2026_DRAP_GOODIES" : "INTERNAT_2026_DRAP")
-      : (item.optionGoodies ? "INTERNAT_2026_GOODIES" : "INTERNAT_2026");
-    const sku = skuByCode.value.get(skuCode);
+  const nonAdherentEmails = validationData.value?.nonAdherentEmails ?? [];
 
-    if (!sku) {
-      ticketErrorMessage.value = `Le pack ${skuCode} est introuvable.`;
-      return;
-    }
+  for (const item of preparedItems) {
+    const sku = item.sku!;
 
     addItem({
       lineId: createLineId(),
@@ -110,7 +200,7 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
       skuCode: sku.skuCode,
       productId: internatProduct.value.id,
       productName: internatProduct.value.name,
-      variantLabel: `${item.optionRoom ? "Draps" : "Sans draps"} • ${item.optionGoodies ? "Goodies" : "Sans goodies"}`,
+      variantLabel: buildVariantLabel(sku),
       price: Number(sku.priceOverride ?? internatProduct.value.basePrice),
       imageUrl: internatProduct.value.imageUrl ?? null,
       kind: "internat-ticket",
@@ -119,10 +209,42 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
         firstname: item.firstname,
         lastname: item.surname,
         nickname: item.nickname,
-        drap: item.optionRoom,
-        goodies: item.optionGoodies,
+        drap: hasPositiveOption(sku, "Draps"),
+        goodies: hasPositiveOption(sku, "Goodies"),
       },
     });
+  }
+
+  if (nonAdherentEmails.length > 0) {
+    if (!adhesionProduct.value || !adhesionSku.value) {
+      ticketErrorMessage.value = "Impossible d'ajouter l'adhesion automatique (SKU introuvable).";
+      return;
+    }
+
+    for (const item of submittedItems.filter((submittedItem) => nonAdherentEmails.includes(submittedItem.email))) {
+      addItem({
+        lineId: createLineId(),
+        skuId: adhesionSku.value.id,
+        skuCode: adhesionSku.value.skuCode,
+        productId: adhesionProduct.value.id,
+        productName: adhesionProduct.value.name,
+        variantLabel: "Adhesion annuelle",
+        price: Number(adhesionSku.value.priceOverride ?? adhesionProduct.value.basePrice),
+        imageUrl: adhesionProduct.value.imageUrl ?? null,
+        quantity: 1,
+        kind: "adhesion",
+        ticketDetails: {
+          email: item.email,
+          firstname: item.firstname,
+          lastname: item.surname,
+          nickname: item.nickname,
+          drap: false,
+          goodies: false,
+        },
+      });
+    }
+
+    adhesionInfoMessage.value = `${nonAdherentEmails.length} adhesion${nonAdherentEmails.length > 1 ? "s" : ""} ajoutee${nonAdherentEmails.length > 1 ? "s" : ""} automatiquement au panier.`;
   }
 
   await navigateTo("/checkout");
@@ -140,6 +262,20 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
       title="Impossible de charger les packs internat."
     />
 
-    <InternatForm :on-submit="handleTicketFormSubmit" :api-error="ticketErrorMessage" />
+    <UAlert
+      v-if="adhesionInfoMessage"
+      color="info"
+      variant="soft"
+      icon="i-lucide-badge-info"
+      class="mb-4"
+      :title="adhesionInfoMessage"
+    />
+
+    <InternatForm
+      :on-submit="handleTicketFormSubmit"
+      :api-error="ticketErrorMessage"
+      :option-types="internatProduct?.optionTypes ?? []"
+      :option-value-price-adjustments="optionValuePriceAdjustments"
+    />
   </UContainer>
 </template>

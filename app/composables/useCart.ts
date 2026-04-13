@@ -56,9 +56,9 @@ export const useCart = () => {
       kind: item.kind ?? 'product',
     };
 
-    const canMerge = nextItem.kind !== 'internat-ticket';
+    const canMerge = nextItem.kind === 'product';
     const existing = canMerge
-      ? items.value.find((i) => i.kind !== 'internat-ticket' && i.skuId === nextItem.skuId)
+      ? items.value.find((i) => i.kind === 'product' && i.skuId === nextItem.skuId)
       : undefined;
 
     if (existing) {

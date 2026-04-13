@@ -76,6 +76,21 @@ const selectedOptionSummary = computed(() => {
     .join(" / ");
 });
 
+const isAdhesionProduct = computed(
+  () => selectedSku.value?.skuCode.startsWith("ADHESION_") ?? false,
+);
+
+const adhesionForm = ref({
+  firstname: "",
+  lastname: "",
+  nickname: "",
+  email: "",
+});
+const adhesionFormError = ref("");
+
+const createLineId = () =>
+  globalThis.crypto?.randomUUID?.() ?? `adhesion-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 const selectOptionValue = (optionTypeId: string, optionValueId: string) => {
   selectedOptions.value = {
     ...selectedOptions.value,
@@ -83,15 +98,77 @@ const selectOptionValue = (optionTypeId: string, optionValueId: string) => {
   };
 };
 
-const { addItem } = useCart();
+const { addItem, items } = useCart();
 const addedToCart = ref(false);
 
 watch(selectedSku, () => {
   addedToCart.value = false;
 });
 
-function handleAddToCart() {
+async function handleAddToCart() {
   if (!selectedSku.value || !product.value) return;
+
+  adhesionFormError.value = "";
+
+  if (isAdhesionProduct.value) {
+    const firstname = adhesionForm.value.firstname.trim();
+    const lastname = adhesionForm.value.lastname.trim();
+    const nickname = adhesionForm.value.nickname.trim();
+    const email = adhesionForm.value.email.trim().toLowerCase();
+
+    if (!firstname || !lastname || !nickname || !email) {
+      adhesionFormError.value = "Nom, prenom, pseudo et email sont obligatoires pour une adhesion.";
+      return;
+    }
+
+    const alreadyInCart = items.value.some(
+      (item) => item.kind === "adhesion" && item.ticketDetails?.email.trim().toLowerCase() === email,
+    );
+
+    if (alreadyInCart) {
+      adhesionFormError.value = "Une adhesion pour cet email est deja presente dans le panier.";
+      return;
+    }
+
+    const { error: validationError } = await useAPI<{ ok: boolean }>("/payment/validate-adhesion", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    if (validationError.value) {
+      const payload = validationError.value.data as { message?: string | string[] } | undefined;
+      adhesionFormError.value = Array.isArray(payload?.message)
+        ? payload.message.join(", ")
+        : (payload?.message ?? "Impossible de verifier cette adhesion.");
+      return;
+    }
+
+    addItem({
+      lineId: createLineId(),
+      skuId: selectedSku.value.id,
+      skuCode: selectedSku.value.skuCode,
+      productId: product.value.id,
+      productName: product.value.name,
+      variantLabel: selectedOptionSummary.value || "Adhesion annuelle",
+      price: Number(selectedSku.value.priceOverride ?? product.value.basePrice),
+      imageUrl: selectedSku.value.imageUrl ?? product.value.imageUrl ?? null,
+      kind: "adhesion",
+      ticketDetails: {
+        email,
+        firstname,
+        lastname,
+        nickname,
+        drap: false,
+        goodies: false,
+      },
+    });
+
+    addedToCart.value = true;
+    setTimeout(() => {
+      addedToCart.value = false;
+    }, 2000);
+    return;
+  }
 
   addItem({
     skuId: selectedSku.value.id,
@@ -191,6 +268,48 @@ function handleAddToCart() {
                 </button>
               </div>
             </div>
+          </div>
+
+          <div v-if="isAdhesionProduct" class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+            <div>
+              <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Informations de l'adherent
+              </h2>
+              <p class="mt-1 text-sm text-slate-500">
+                Ces informations seront utilisees pour creer l'adhesion apres le paiement.
+              </p>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <input
+                v-model="adhesionForm.firstname"
+                type="text"
+                placeholder="Prenom"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-blue"
+              >
+              <input
+                v-model="adhesionForm.lastname"
+                type="text"
+                placeholder="Nom"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-blue"
+              >
+              <input
+                v-model="adhesionForm.nickname"
+                type="text"
+                placeholder="Pseudo"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-blue"
+              >
+              <input
+                v-model="adhesionForm.email"
+                type="email"
+                placeholder="Email"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-brand-blue"
+              >
+            </div>
+
+            <p v-if="adhesionFormError" class="text-sm text-red-500">
+              {{ adhesionFormError }}
+            </p>
           </div>
 
           <div class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
