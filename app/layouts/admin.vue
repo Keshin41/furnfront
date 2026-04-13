@@ -18,9 +18,7 @@ const open = ref(true);
     <UMain class="flex flex-1">
       <USidebar :open="open" collapsible="icon">
         <template #header>
-          <UButton variant="ghost" @click="open = !open" class="mb-4">
-            <UIcon name="i-logos-nuxt-icon" class="size-8" />
-          </UButton>
+          <SiteLogo variant="arrow" />
         </template>
         <UNavigationMenu
           :items="sidebarItems"
