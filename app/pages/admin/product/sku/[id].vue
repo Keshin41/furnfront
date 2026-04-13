@@ -16,7 +16,7 @@ const { data, error, pending, refresh } = await useAPI<Product>(
 
 const skuSchema = z.object({
   skuCode: z.string().min(1, "Le code SKU est requis"),
-  priceOverride: z.string().optional(),
+  priceOverride: z.coerce.number().optional(),
   stock: z.coerce.number().int().min(0, "Le stock doit être positif"),
   trackStock: z.boolean(),
 });
@@ -27,7 +27,7 @@ type SkuState = z.output<typeof skuSchema>;
 const editingSkuId = ref<string | null>(null);
 const editingSkuState = reactive<SkuState>({
   skuCode: "",
-  priceOverride: "",
+  priceOverride: undefined,
   stock: 0,
   trackStock: true,
 });
@@ -35,7 +35,8 @@ const editingSkuState = reactive<SkuState>({
 const startEditSku = (sku: ProductSku) => {
   editingSkuId.value = sku.id;
   editingSkuState.skuCode = sku.skuCode;
-  editingSkuState.priceOverride = sku.priceOverride ?? "";
+  editingSkuState.priceOverride =
+    Number.parseFloat(sku.priceOverride ?? "") || undefined;
   editingSkuState.stock = sku.stock;
   editingSkuState.trackStock = sku.trackStock;
 };
@@ -46,6 +47,7 @@ const cancelEditSku = () => {
 
 const saveSku = async (skuId: string) => {
   const parsed = skuSchema.safeParse(editingSkuState);
+  console.log("🚀 ~ saveSku ~ parsed:", parsed);
   if (!parsed.success) {
     return;
   }
@@ -53,7 +55,7 @@ const saveSku = async (skuId: string) => {
     method: "PUT",
     body: {
       skuCode: parsed.data.skuCode,
-      priceOverride: parsed.data.priceOverride || null,
+      priceOverride: parsed.data.priceOverride,
       stock: parsed.data.stock,
       trackStock: parsed.data.trackStock,
     },
@@ -145,7 +147,6 @@ const effectivePrice = (sku: ProductSku, product: Product) =>
               <UBadge
                 :color="sku.trackStock ? 'success' : 'neutral'"
                 variant="soft"
-                size="xs"
               >
                 {{ sku.trackStock ? "Oui" : "Non" }}
               </UBadge>
@@ -155,40 +156,42 @@ const effectivePrice = (sku: ProductSku, product: Product) =>
 
         <!-- Edit mode -->
         <template v-else>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-3">
-            <UFormField label="Code SKU" name="skuCode">
-              <UInput
-                v-model="editingSkuState.skuCode"
-                placeholder="Ex : PROD-RED-M"
-                class="font-mono"
-              />
-            </UFormField>
+          <UForm :schema="skuSchema" :state="editingSkuState">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-3">
+              <UFormField label="Code SKU" name="skuCode">
+                <UInput
+                  v-model="editingSkuState.skuCode"
+                  placeholder="Ex : PROD-RED-M"
+                  class="font-mono"
+                />
+              </UFormField>
 
-            <UFormField label="Prix (override)" name="priceOverride">
-              <UInput
-                v-model="editingSkuState.priceOverride"
-                placeholder="Laisser vide = prix de base"
-                type="number"
-                min="0"
-                step="0.01"
-              />
-            </UFormField>
+              <UFormField label="Prix (override)" name="priceOverride">
+                <UInput
+                  v-model="editingSkuState.priceOverride"
+                  placeholder="Laisser vide = prix de base"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                />
+              </UFormField>
 
-            <UFormField label="Stock" name="stock">
-              <UInput
-                v-model="editingSkuState.stock"
-                type="number"
-                min="0"
-                step="1"
-              />
-            </UFormField>
+              <UFormField label="Stock" name="stock">
+                <UInput
+                  v-model="editingSkuState.stock"
+                  type="number"
+                  min="0"
+                  step="1"
+                />
+              </UFormField>
 
-            <UFormField label="Suivi du stock" name="trackStock">
-              <div class="flex items-center h-full pt-1">
-                <USwitch v-model="editingSkuState.trackStock" />
-              </div>
-            </UFormField>
-          </div>
+              <UFormField label="Suivi du stock" name="trackStock">
+                <div class="flex items-center h-full pt-1">
+                  <USwitch v-model="editingSkuState.trackStock" />
+                </div>
+              </UFormField>
+            </div>
+          </UForm>
         </template>
       </div>
 
