@@ -5,7 +5,6 @@ import {
   VueStripePaymentElement,
   VueStripeProvider,
 } from "@vue-stripe/vue-stripe";
-import type { Order } from "~/types/basket";
 
 const config = useRuntimeConfig();
 const publishableKey = config.public.stripePublishableKey;
