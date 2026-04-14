@@ -85,7 +85,9 @@ const onAnnouncementAction = () => {
         :photos="['/meet-shuffle.avif', '/meet-outdoor.jpg', '/meet-duck.jpg']"
       />
 
-      <div class="relative z-10 mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+      <div
+        class="relative z-10 mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16"
+      >
         <!-- Contenu principal -->
         <div class="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-10">
           <div class="my-auto">
@@ -94,10 +96,14 @@ const onAnnouncementAction = () => {
             >
               Association furry
             </p>
-            <h1 class="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1
+              class="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl lg:text-7xl"
+            >
               Fur'N'Tours
             </h1>
-            <p class="mt-4 max-w-xl text-base text-white/85 font-family-sans sm:text-lg md:text-xl">
+            <p
+              class="mt-4 max-w-xl text-base text-white/85 font-family-sans sm:text-lg md:text-xl"
+            >
               Fur'N'Tours est une association dynamique qui organise des
               événements un samedi par mois pour les passionnés de la culture
               furry.
@@ -119,7 +125,9 @@ const onAnnouncementAction = () => {
             </div>
           </div>
 
-          <div class="relative grid gap-6 my-auto max-w-xs sm:max-w-sm lg:max-w-none mx-auto">
+          <div
+            class="relative grid gap-6 my-auto max-w-xs sm:max-w-sm lg:max-w-none mx-auto"
+          >
             <MascotFrame
               outer-bg="bg-linear-to-b from-brand-light-blue/90 to-transparent"
               inner-bg="bg-linear-to-b from-brand-green to-brand-green/85"
@@ -129,11 +137,16 @@ const onAnnouncementAction = () => {
 
         <!-- Annonce personnalisée -->
         <Transition name="fade" mode="out-in">
-          <div v-if="currentAnnouncement" class="flex justify-center mt-6 sm:mt-8">
+          <div
+            v-if="currentAnnouncement"
+            class="flex justify-center mt-6 sm:mt-8"
+          >
             <div
               class="w-full max-w-5xl bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-4 shadow-xl sm:px-6"
             >
-              <div class="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap">
+              <div
+                class="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap"
+              >
                 <UIcon
                   name="i-lucide-megaphone"
                   class="h-5 w-5 text-brand-yellow shrink-0 mt-0.5"
@@ -167,7 +180,9 @@ const onAnnouncementAction = () => {
 
     <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-brand-dark-blue sm:text-3xl">Nos furmeets</h2>
+        <h2 class="text-2xl font-bold text-brand-dark-blue sm:text-3xl">
+          Nos furmeets
+        </h2>
       </div>
       <div class="mt-8 grid gap-6 md:grid-cols-3">
         <div
@@ -238,12 +253,12 @@ const onAnnouncementAction = () => {
             Qu'est-ce qu'un furry ?
           </h2>
           <p class="mt-6 text-base text-white/90 sm:text-lg">
-            Le Furry est un mouvement culturel qui célèbre l'amour des animaux
-            anthropomorphes - des créatures possédant à la fois des
-            caractéristiques humaines et animales. Les furries partagent une
-            passion pour l'art, la création de personnages et l'expression
-            personnelle à travers des avatars uniques appelés
-            <span class="font-semibold">fursonas</span>.
+            Le mouvement furry se caractérise par un intérêt pour des animaux
+            anthropomorphiques, ayant des caractéristiques humaines comme la
+            parole, le style de vie, la bipédie, etc. Les membres de cette
+            communauté sont appelés furries et ont pour intérêt commun la
+            création artistique, l'imaginaire, ou encore l'expression de soi à
+            travers des personnages originaux et souvent colorés.
           </p>
           <p class="mt-4 text-sm text-white/85 sm:text-base">
             C'est une communauté mondiale, inclusive et créative qui se
@@ -264,7 +279,10 @@ const onAnnouncementAction = () => {
           </div>
         </div>
         <div class="flex items-center justify-center">
-          <MascotFrame height="h-80 sm:h-96 lg:h-110" width="w-56 sm:w-64 lg:w-78" />
+          <MascotFrame
+            height="h-80 sm:h-96 lg:h-110"
+            width="w-56 sm:w-64 lg:w-78"
+          />
         </div>
       </div>
     </section>
@@ -290,7 +308,9 @@ const onAnnouncementAction = () => {
                 class="h-6 w-6 text-brand-dark-blue"
               />
             </div>
-            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">Email</p>
+            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">
+              Email
+            </p>
             <p class="text-sm text-brand-dark-blue/80">contact@furntours.fr</p>
           </div>
           <div class="flex flex-col items-center text-center">
@@ -312,7 +332,9 @@ const onAnnouncementAction = () => {
                 class="h-6 w-6 text-brand-dark-blue"
               />
             </div>
-            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">Événements</p>
+            <p class="font-semibold text-base text-brand-dark-blue sm:text-lg">
+              Événements
+            </p>
             <p class="text-sm text-brand-dark-blue/80">
               Chaque 2ème week-end du mois
             </p>

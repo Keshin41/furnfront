@@ -81,17 +81,20 @@ const regionalAssociations = [
               Qu'est-ce que le Furry&nbsp;?
             </h2>
             <p class="mt-4 leading-relaxed text-brand-ink">
-              Le Furry est un mouvement culturel qui célèbre l'amour des animaux
-              anthropomorphes — des créatures mêlant caractéristiques humaines
-              et animales. Les membres de cette communauté, appelés
-              <strong>furries</strong>, partagent un intérêt commun pour la
-              création artistique, l'imaginaire et l'expression personnelle à
-              travers des personnages originaux souvent très colorés.
+              Le mouvement furry se caractérise par un intérêt pour des animaux
+              anthropomorphiques, ayant des caractéristiques humaines comme la
+              parole, le style de vie, la bipédie, etc. Les membres de cette
+              communauté sont appelés furries et ont pour intérêt commun la
+              création artistique, l'imaginaire, ou encore
+              <strong>l'expression de soi</strong> à travers des personnages
+              originaux et souvent colorés.
             </p>
             <p class="mt-4 leading-relaxed text-brand-ink">
-              C'est avant tout un espace de
-              <strong>créativité et de bienveillance</strong>, où chacun est
-              libre d'exprimer son identité et son univers.
+              Le mouvement furry est avant tout un
+              <strong
+                >espace d'inclusivité, de bienveillance et de liberté</strong
+              >
+              où chacun peut s'exprimer.
             </p>
           </div>
 
@@ -173,7 +176,7 @@ const regionalAssociations = [
             <div
               class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-green/10 text-brand-green"
             >
-              <UIcon name="i-lucide-shirt" class="h-6 w-6" />
+              <UIcon name="i-tabler-paw" class="h-6 w-6" />
             </div>
             <h3 class="text-2xl font-bold text-brand-green">
               Et une fursuit&nbsp;?
