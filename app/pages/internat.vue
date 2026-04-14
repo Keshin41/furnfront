@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { FormSubmitEvent, StepperItem } from "@nuxt/ui";
-import InternatStripeWrapperClient from "~/components/InternatStripeWrapper.client.vue";
-import { useCart } from "~/composables/useCart";
 import type { Order } from "~/types/basket";
+import type { FormSubmitEvent, RadioGroupItem, StepperItem } from "@nuxt/ui";
+import InternatStripeWrapperClient from "~/components/InternatStripeWrapper.client.vue";
 import type { InternatOrder } from "~/types/internat";
 
 const stepperItems: StepperItem[] = [
@@ -30,6 +29,11 @@ const buyerInfo = ref<Order["user"] | null>(null);
 const basket = ref<any>(null);
 const paymentIntent = ref<string>("");
 
+const { data } = await useAPI<any>('/internat/maxTickets', {
+  method: 'GET',
+});
+const maxTickets = data.value.max;
+console.log('data', data.value.max);
 
 const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
@@ -59,7 +63,7 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
       }"
     >
       <template #tickets>
-        <InternatForm :on-submit="handleTicketFormSubmit" />
+        <InternatForm :on-submit="handleTicketFormSubmit" :maxTickets="maxTickets"/>
       </template>
       <template #payment>
         <template v-if="!basket || !paymentIntent"

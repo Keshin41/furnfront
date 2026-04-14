@@ -4,6 +4,7 @@ import z from "zod";
 
 defineProps<{
   onSubmit: (event: FormSubmitEvent<Schema>) => void;
+  maxTickets: number;
 }>();
 
 const optionChambre = ref<RadioGroupItem[]>([
@@ -100,9 +101,9 @@ const ticketCount = computed({
           class="shrink-0 justify-center"
         >
           <UInputNumber
-            :min="1"
-            :max="4"
-            :default-value="1"
+            :min="maxTickets > 0 ? 1 : 0"
+            :max="maxTickets"
+            :default-value="maxTickets > 0 ? 1 : 0"
             orientation="vertical"
             v-model="ticketCount"
           />
@@ -195,7 +196,7 @@ const ticketCount = computed({
           </p>
         </UCard>
       </div>
-      <div>
+      <div v-if="maxTickets > 0">
         <UTabs v-model="active" :items="tabs" :ui="{ label: 'text-white', trigger: 'data-[state=inactive]:bg-brand-blue/30' }">
           <template #content="{ item }">
             <UCard>
@@ -254,12 +255,15 @@ const ticketCount = computed({
             </UCard>
           </template>
         </UTabs>
-            <div class="my-4 flex justify-center">
-      <UButton class="w-full justify-center text-white sm:w-auto" type="submit" size="xl">
+      </div>
+      <div v-else>
+        Aucun billet disponible pour le moment, veuillez réessayer plus tard
+      </div>
+    </div>
+    <div class="flex justify-center mt-4">
+      <UButton v-if="maxTickets > 0" type="submit" size="xl">
         Valider
       </UButton>
-    </div>
-      </div>
     </div>
 
   </UForm>
