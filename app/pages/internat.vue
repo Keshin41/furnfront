@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import type { FormSubmitEvent, RadioGroupItem, StepperItem } from "@nuxt/ui";
+import type { FormSubmitEvent, StepperItem } from "@nuxt/ui";
 import InternatStripeWrapperClient from "~/components/InternatStripeWrapper.client.vue";
-import type { Order } from "~/types/basket";
 import { useCart } from "~/composables/useCart";
-import z from "zod";
+import type { Order } from "~/types/basket";
 import type { InternatOrder } from "~/types/internat";
 
 const stepperItems: StepperItem[] = [
@@ -24,10 +23,12 @@ const stepperItems: StepperItem[] = [
 const query = useRoute().query;
 const { items: cartItems } = useCart();
 
-const activeStep = ref<string | number | undefined>(query.payment === "success" ? 2 : 0);
+const activeStep = ref<string | number | undefined>(
+  query.payment === "success" ? 2 : 0,
+);
 const buyerInfo = ref<Order["user"] | null>(null);
 const basket = ref<any>(null);
-const paymentIntent = ref<string>('');
+const paymentIntent = ref<string>("");
 
 if (query.payment === "success") {
   // Clear the cart after successful payment
@@ -39,15 +40,14 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
   // Handle form submission logic here
   console.log("Form submitted with data:", event.data);
-  const { data } = await useAPI<InternatOrder>('/internat/checkout', {
+  const { data } = await useAPI<InternatOrder>("/internat/checkout", {
     method: "POST",
     body: JSON.stringify(event.data),
   });
-    basket.value = data.value?.basket;
-    paymentIntent.value = data.value?.paymentIntent ?? '';
-    activeStep.value = 1; // Move to the next step
+  basket.value = data.value?.basket;
+  paymentIntent.value = data.value?.paymentIntent ?? "";
+  activeStep.value = 1; // Move to the next step
 };
-
 </script>
 <template>
   <UContainer class="mt-4">
@@ -77,14 +77,22 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
         <section
           class="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 rounded-3xl border border-neutral-200 bg-white/90 px-8 py-16 shadow-sm backdrop-blur text-center md:px-16 md:py-20"
         >
-          <div class="flex items-center justify-center rounded-full bg-green-50 p-6 ring-12 ring-green-100">
-            <UIcon name="i-heroicons-check-circle-20-solid" class="size-16 text-green-500" />
+          <div
+            class="flex items-center justify-center rounded-full bg-green-50 p-6 ring-12 ring-green-100"
+          >
+            <UIcon
+              name="i-heroicons-check-circle-20-solid"
+              class="size-16 text-green-500"
+            />
           </div>
 
           <div class="space-y-3">
-            <h2 class="text-3xl font-bold text-neutral-900">Commande confirmée !</h2>
+            <h2 class="text-3xl font-bold text-neutral-900">
+              Commande confirmée !
+            </h2>
             <p class="text-base text-neutral-500 max-w-sm mx-auto">
-              Un email de confirmation vous sera envoyé sous peu avec les détails de votre commande.
+              Un email de confirmation vous sera envoyé sous peu avec les
+              détails de votre commande.
             </p>
           </div>
 
