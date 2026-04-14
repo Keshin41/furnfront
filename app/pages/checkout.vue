@@ -27,12 +27,6 @@ const activeStep = ref<number | string | undefined>(
 );
 const buyerInfo = ref<Order["user"] | null>(null);
 
-if (query.payment === "success") {
-  // Clear the cart after successful payment
-  const { clearCart } = useCart();
-  clearCart();
-}
-
 const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
   // Handle form submission logic here
@@ -71,39 +65,11 @@ const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
         </template>
       </template>
       <template #confirmation>
-        <section
-          class="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 rounded-3xl border border-neutral-200 bg-white/90 px-8 py-16 shadow-sm backdrop-blur text-center md:px-16 md:py-20"
-        >
-          <div
-            class="flex items-center justify-center rounded-full bg-green-50 p-6 ring-12 ring-green-100"
-          >
-            <UIcon
-              name="i-heroicons-check-circle-20-solid"
-              class="size-16 text-green-500"
-            />
-          </div>
-
-          <div class="space-y-3">
-            <h2 class="text-3xl font-bold text-neutral-900">
-              Commande confirmée !
-            </h2>
-            <p class="text-base text-neutral-500 max-w-sm mx-auto">
-              Un email de confirmation vous sera envoyé sous peu avec les
-              détails de votre commande.
-            </p>
-          </div>
-
-          <USeparator class="w-full" />
-
-          <div class="flex w-full flex-col gap-3 sm:flex-row">
-            <UButton to="/" color="primary" size="xl" block>
-              Retour à l'accueil
-            </UButton>
-            <UButton to="/shop" color="neutral" variant="soft" size="xl" block>
-              Continuer mes achats
-            </UButton>
-          </div>
-        </section>
+        <template v-if="query.payment_intent_client_secret">
+          <StripeConfirm
+            :client-secret="query.payment_intent_client_secret.toString()"
+          />
+        </template>
       </template>
     </UStepper>
   </UContainer>
