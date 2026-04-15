@@ -51,6 +51,7 @@ const innerSchema = z.object({
 
 const schema = z.object({
   items: z.array(innerSchema),
+  termsAccepted: z.union([z.boolean(),z.literal('indeterminate')]),
 });
 
 type InnerSchema = z.output<typeof innerSchema>;
@@ -67,6 +68,7 @@ const state = reactive<Schema>({
       goodies: false,
     },
   ],
+  termsAccepted: false
 });
 
 const ticketCount = computed({
@@ -260,8 +262,9 @@ const ticketCount = computed({
         Aucun billet disponible pour le moment, veuillez réessayer plus tard
       </div>
     </div>
-    <div class="flex justify-center mt-4">
-      <UButton v-if="maxTickets > 0" type="submit" size="xl">
+    <div class="flex justify-between mt-4">
+      <UCheckbox v-model="state.termsAccepted" color="error" variant="card" class="border-red-500" label="Je certifie avoir lu et m'engage à respecter le réglement de l'internat ainsi que le réglement de l'association" required />
+      <UButton v-if="maxTickets > 0" type="submit" size="xl" :disabled="state.termsAccepted !== true">
         Valider
       </UButton>
     </div>
