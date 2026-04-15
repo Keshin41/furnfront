@@ -14,3 +14,33 @@ export type OrderListDTO = {
   status: OrderStatus;
   buyer: string;
 };
+
+export type OrderItemDetailDTO = {
+  id: string;
+  quantity: number;
+  unitPrice: number;
+  sku: {
+    id: string;
+    skuCode: string;
+    product: {
+      id: string;
+      name: string;
+      imageUrl: string | null;
+    };
+  };
+};
+
+export type OrderDetailDTO = {
+  id: string;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+  paymentIntentId: string | null;
+  buyer: {
+    id: string;
+    nickname: string;
+    email: string;
+  };
+  items: OrderItemDetailDTO[];
+  total: number;
+};
