@@ -47,7 +47,7 @@ const handleSubmit = async () => {
   const { error } = await stripeInstance.value.confirmPayment({
     elements: elementsInstance.value,
     confirmParams: {
-      return_url: `${globalThis.location.origin}${globalThis.location.pathname}?payment=success`,
+      return_url: `${globalThis.location.origin}${globalThis.location.pathname}?payment=confirmation`,
     },
   });
 
@@ -59,6 +59,16 @@ const handleSubmit = async () => {
         error.message || "Une erreur s'est produite lors du paiement.",
       type: "foreground",
     });
+
+    if (error.type === "card_error") {
+      const clientSecret = data.value;
+      const query = clientSecret
+        ? `?payment=failed&payment_intent_client_secret=${encodeURIComponent(clientSecret)}`
+        : "?payment=failed";
+      globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}${query}`;
+      return;
+    }
+
   }
 };
 </script>

@@ -49,7 +49,7 @@ const buttonOne = computed(() => {
     case "requires_payment_method":
       return {
         text: "Réessayer le paiement",
-        link: "/checkout",
+        link: "/shop",
       };
     default:
       return {
