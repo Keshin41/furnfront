@@ -6,6 +6,7 @@ const { logout } = useAuth();
 const sidebarItems = ref<NavigationMenuItem[]>([
   { label: "Meets", to: "/admin/meet" },
   { label: "Commandes", to: "/admin/order" },
+  { label: "Commande manuelle", to: "/admin/order/create" },
   { label: "Boutique", to: "/admin/product" },
   { label: "Internat", to: "/admin/internat" },
 ]);
