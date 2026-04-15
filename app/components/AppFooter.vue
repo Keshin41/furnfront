@@ -3,15 +3,15 @@ const discoverLinks = [
   { label: "Furmeets", to: "/furmeet" },
   { label: "Boutique", to: "/shop" },
   { label: "Qu'est-ce qu'un furry ?", to: "/furry" },
-  { label: "Histoire de l'association", to: "#" },
-  { label: "Reseau", to: "#" },
+  { label: "Histoire de l'association", to: "/oups" },
+  { label: "Reseau", to: "/oups" },
 ];
 
 const legalLinks = [
-  { label: "CGU", to: "#" },
-  { label: "RGPD", to: "#" },
-  { label: "Statut", to: "#" },
-  { label: "Reglement interieur", to: "#" },
+  { label: "CGU", to: "/oups" },
+  { label: "RGPD", to: "/oups" },
+  { label: "Statut", to: "/oups" },
+  { label: "Reglement interieur", to: "/oups" },
 ];
 </script>
 

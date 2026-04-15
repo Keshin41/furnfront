@@ -4,20 +4,22 @@ import CartDrawer from "~/components/CartDrawer.vue";
 
 const route = useRoute();
 
+const SelectedClass = "text-brand-yellow font-bold underline decoration-2 underline-offset-4";
+
 const isShopSection = computed(() => {
   return route.path.startsWith("/shop") || route.path.startsWith("/checkout");
 });
 
 const associationChildren = computed<NavigationMenuItem[]>(() => {
   const items: NavigationMenuItem[] = [
-    { label: "Histoire et objectifs", to: "#" },
+    { label: "Histoire et objectifs", to: "/oups" },
     { label: "Qu'est ce qu'un furry", to: "/furry" },
-    { label: "Notre équipe", to: "#" },
-    { label: "Nos évènements", to: "#" },
+    { label: "Notre équipe", to: "/oups" },
+    { label: "Nos évènements", to: "/oups" },
   ];
 
   return items.map((item) => {
-    if (!item.to || item.to === "#") {
+    if (!item.to || item.to === "/oups") {
       return item;
     }
 
@@ -28,7 +30,7 @@ const associationChildren = computed<NavigationMenuItem[]>(() => {
       ...item,
       active: isActive,
       class: isActive
-        ? "text-brand-yellow font-bold underline decoration-2 underline-offset-4"
+        ? SelectedClass
         : undefined,
     };
   });
@@ -43,20 +45,28 @@ const navItems = computed<NavigationMenuItem[]>(() => [
     label: "Notre association",
     active: isAssociationSection.value,
     class: isAssociationSection.value
-      ? "text-brand-yellow font-bold underline decoration-2 underline-offset-4"
+      ? SelectedClass
       : undefined,
     children: associationChildren.value,
   },
-  { label: "Nos évènements", to: "/furmeet" },
+  { label: "Nos évènements", 
+    to: "/furmeet",
+    active: route.path.startsWith("/furmeet"),
+    class: route.path.startsWith("/furmeet") ? SelectedClass : undefined,
+  },
   {
     label: "Boutique",
     to: "/shop",
     active: isShopSection.value,
     class: isShopSection.value
-      ? "text-brand-yellow font-bold underline decoration-2 underline-offset-4"
+      ? SelectedClass
       : undefined,
   },
-  { label: "Internat JTF 2026", to: "/internat" },
+  { label: "Internat JTF 2026", 
+    to: "/internat",
+    active: route.path.startsWith("/internat"),
+    class: route.path.startsWith("/internat") ? SelectedClass : undefined,
+  },
 ]);
 
 const navMenuUi = {
