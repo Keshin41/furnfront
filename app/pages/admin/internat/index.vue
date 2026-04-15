@@ -1,65 +1,44 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
-import EventPartCellRenderer from "~/components/admin/EventPartCellRenderer.vue";
-import type { FurmeetResponse } from "~/types/furmeet";
-
-const UButton = resolveComponent("UButton");
+import BooleanCellRenderer from "~/components/admin/BooleanCellRenderer.vue";
+import type { TicketListDto } from "~/types/internat";
 
 definePageMeta({
   layout: "admin",
   middleware: "auth",
 });
 
-const { data, pending } = await useAPI<FurmeetResponse[]>("/event/");
+const { data, pending } = await useAPI<TicketListDto[]>("/internat/list");
 
-const columns: TableColumn<FurmeetResponse>[] = [
-  { accessorKey: "title", header: "Titre" },
+const columns: TableColumn<TicketListDto>[] = [
+  { accessorKey: "nickname", header: "Pseudo" },
   {
-    accessorKey: "eventDate",
+    accessorKey: "date",
     header: "Date de l'événement",
     cell: ({ row }) =>
-      new Date(row.original.eventDate ?? "").toLocaleDateString("fr-FR", {
+      new Date(row.original.date ?? "").toLocaleDateString("fr-FR", {
         year: "numeric",
         month: "long",
         day: "numeric",
       }),
   },
   {
-    accessorKey: "eventActivities",
-    header: "Activités",
-    cell: ({ row }) =>
-      h(EventPartCellRenderer, {
-        eventActivities: row.original.eventActivities ?? [],
-      }),
+    accessorKey: "duvet",
+    header: "Couette",
+    cell: ({ row }) => h(BooleanCellRenderer, { data: row.original.duvet }),
   },
   {
-    accessorKey: "published",
-    header: "Publié",
-    cell: ({ row }) => (row.original.published ? "Oui" : "Non"),
-  },
-  {
-    accessorKey: "opened",
-    header: "Inscriptions",
-    cell: ({ row }) => (row.original.opened ? "Ouvertes" : "Fermées"),
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      const id = row.original.id;
-      return h(UButton, {
-        variant: "outline",
-        size: "sm",
-        label: "Voir",
-        onClick: () => navigateTo(`/admin/meet/${id}`),
-      });
-    },
+    accessorKey: "goodies",
+    header: "Goodies",
+    cell: ({ row }) => h(BooleanCellRenderer, { data: row.original.goodies }),
   },
 ];
 </script>
 <template>
   <div class="p-4 w-full">
-    <h1 class="text-2xl font-bold mb-4 text-primary">Admin - Meets</h1>
+    <h1 class="text-2xl font-bold mb-4 text-primary">
+      Admin - Liste des inscrits JTF 2026
+    </h1>
     <UTable
       :columns="columns"
       :data="data ?? []"
