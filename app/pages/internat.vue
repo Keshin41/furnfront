@@ -33,7 +33,6 @@ const { data } = await useAPI<any>('/internat/maxTickets', {
   method: 'GET',
 });
 const maxTickets = data.value.max;
-console.log('data', data.value.max);
 
 const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
