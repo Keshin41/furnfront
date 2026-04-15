@@ -10,6 +10,7 @@ type FurmeetPost = {
   opened: boolean;
   activitiesCount: number;
   firstActivityTitle: string;
+  imageUrl: string | null;
 };
 
 const { data, error, pending } = await useAPI<Furmeet[]>("/event/");
@@ -34,6 +35,7 @@ const furmeets = computed<FurmeetPost[]>(() => {
         opened: item.opened ?? false,
         activitiesCount: activities.length,
         firstActivityTitle: firstActivity,
+        imageUrl: item.imageUrl ?? null,
       };
     })
     .sort(
@@ -96,7 +98,7 @@ const formatDate = (value: string) =>
             >
               <NuxtLink :to="`/furmeet/${furmeet.id}`" class="block">
                 <ImageWithFallback
-                  :src="`/furmeet/thumbnail/${furmeet.id}.png`"
+                  :src="furmeet.imageUrl || `/furmeet/thumbnail/${furmeet.id}.png`"
                   :fallback="'/furmeet/thumbnail/default.png'"
                   :alt="furmeet.title"
                   class="h-48 w-full object-cover"

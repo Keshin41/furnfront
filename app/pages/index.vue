@@ -47,7 +47,7 @@ const furmeetsList = computed<FurmeetCard[]>(() => {
       title: item.title,
       description: item.description || "Programme a venir.",
       date: formatMeetDate(item.eventDate ?? item.createdAt),
-      imageURL: `/furmeet/thumbnail/${item.id}.png`,
+      imageURL: item.imageUrl || `/furmeet/thumbnail/${item.id}.png`,
     }));
 });
 
@@ -193,7 +193,7 @@ const onAnnouncementAction = () => {
           class="overflow-hidden rounded-3xl"
         >
           <ImageWithFallback
-            :src="`/furmeet/thumbnail/${meet.id}.png`"
+            :src="meet.imageURL"
             :alt="meet.title"
             :fallback="`/furmeet/thumbnail/default.png`"
             class="h-44 w-full rounded-2xl bg-cover bg-center object-cover sm:h-48"

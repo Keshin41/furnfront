@@ -14,6 +14,7 @@ export type Furmeet = {
   id: string;
   title: string;
   description: string;
+  imageUrl?: string | null;
   type?: FurmeetEventType;
   eventDate: string | null;
   published: boolean;
@@ -27,6 +28,7 @@ export type FurmeetResponse = {
   id: string;
   title: string;
   description: string;
+  imageUrl: string | null;
   type: FurmeetEventType;
   published: boolean;
   opened: boolean;

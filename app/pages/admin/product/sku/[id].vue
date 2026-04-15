@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import z from "zod";
 import type { Product, ProductSku } from "~/types/product";
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
 
 definePageMeta({
   layout: "admin",
@@ -19,6 +20,7 @@ const skuSchema = z.object({
   priceOverride: z.coerce.number().optional(),
   stock: z.coerce.number().int().min(0, "Le stock doit être positif"),
   trackStock: z.boolean(),
+  imageUrl: z.string().optional(),
 });
 
 type SkuState = z.output<typeof skuSchema>;
@@ -30,7 +32,37 @@ const editingSkuState = reactive<SkuState>({
   priceOverride: undefined,
   stock: 0,
   trackStock: true,
+  imageUrl: "",
 });
+
+const uploadingSkuImage = ref(false);
+
+const handleSkuImageUpload = async (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  uploadingSkuImage.value = true;
+  try {
+    const { $api } = useNuxtApp();
+    const result = await $api<{ url: string }>("/sku/upload-image", {
+      method: "POST",
+      body: formData,
+    });
+    editingSkuState.imageUrl = result.url;
+  } catch (err) {
+    console.error("Failed to upload SKU image", err);
+    alert("Une erreur est survenue lors de l'upload de l'image.");
+  } finally {
+    uploadingSkuImage.value = false;
+    input.value = "";
+  }
+};
 
 const startEditSku = (sku: ProductSku) => {
   editingSkuId.value = sku.id;
@@ -39,6 +71,7 @@ const startEditSku = (sku: ProductSku) => {
     Number.parseFloat(sku.priceOverride ?? "") || undefined;
   editingSkuState.stock = sku.stock;
   editingSkuState.trackStock = sku.trackStock;
+  editingSkuState.imageUrl = sku.imageUrl ?? "";
 };
 
 const cancelEditSku = () => {
@@ -58,6 +91,7 @@ const saveSku = async (skuId: string) => {
       priceOverride: parsed.data.priceOverride,
       stock: parsed.data.stock,
       trackStock: parsed.data.trackStock,
+      imageUrl: parsed.data.imageUrl,
     },
   }).catch((err) => {
     console.error("Failed to update SKU", err);
@@ -143,6 +177,15 @@ const effectivePrice = (sku: ProductSku, product: Product) =>
               <span class="font-medium text-primary">{{ sku.stock }}</span>
             </span>
             <span>
+              Image :
+              <UBadge
+                :color="sku.imageUrl ? 'success' : 'neutral'"
+                variant="soft"
+              >
+                {{ sku.imageUrl ? "Oui" : "Non" }}
+              </UBadge>
+            </span>
+            <span>
               Suivi stock :
               <UBadge
                 :color="sku.trackStock ? 'success' : 'neutral'"
@@ -157,7 +200,7 @@ const effectivePrice = (sku: ProductSku, product: Product) =>
         <!-- Edit mode -->
         <template v-else>
           <UForm :schema="skuSchema" :state="editingSkuState">
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-3">
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 mt-3">
               <UFormField label="Code SKU" name="skuCode">
                 <UInput
                   v-model="editingSkuState.skuCode"
@@ -190,6 +233,34 @@ const effectivePrice = (sku: ProductSku, product: Product) =>
                   <USwitch v-model="editingSkuState.trackStock" />
                 </div>
               </UFormField>
+
+              <UFormField label="Image (URL)" name="imageUrl" class="sm:col-span-2">
+                <UInput
+                  v-model="editingSkuState.imageUrl"
+                  placeholder="https://..."
+                />
+              </UFormField>
+
+              <UFormField label="Importer une image locale" class="sm:col-span-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  :disabled="uploadingSkuImage"
+                  class="block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                  @change="handleSkuImageUpload"
+                />
+                <p v-if="uploadingSkuImage" class="mt-1 text-xs text-neutral-500">
+                  Upload en cours...
+                </p>
+              </UFormField>
+            </div>
+
+            <div v-if="editingSkuState.imageUrl" class="mt-3">
+              <ImageWithFallback
+                :src="editingSkuState.imageUrl"
+                :alt="skuLabel(sku)"
+                class="h-24 w-24 rounded-lg border border-neutral-200 object-cover"
+              />
             </div>
           </UForm>
         </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
   src?: string | null;
@@ -11,10 +11,25 @@ const props = withDefaults(defineProps<Props>(), {
   fallback: '/logo-arrow.png',
 });
 
-const currentSrc = ref<string>(props.src || props.fallback);
+const hasFailed = ref(false);
+
+watch(
+  () => props.src,
+  () => {
+    // Reset error state whenever source changes (e.g., changing SKU variant).
+    hasFailed.value = false;
+  },
+);
+
+const currentSrc = computed<string>(() => {
+  if (hasFailed.value) {
+    return props.fallback;
+  }
+  return props.src || props.fallback;
+});
 
 const handleImageError = () => {
-  currentSrc.value = props.fallback;
+  hasFailed.value = true;
 };
 </script>
 <template>
