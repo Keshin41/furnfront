@@ -44,3 +44,26 @@ export type OrderDetailDTO = {
   items: OrderItemDetailDTO[];
   total: number;
 };
+
+export enum ManualOrderPaymentMethod {
+  TPE = "TPE",
+  CASH = "CASH",
+}
+
+export type CreateManualOrderPayload = {
+  buyer: {
+    email: string;
+    firstname: string;
+    lastname: string;
+    nickname: string;
+    address?: string;
+    postalCode?: string;
+    city?: string;
+  };
+  items: {
+    skuId: string;
+    quantity: number;
+  }[];
+  paymentMethod: ManualOrderPaymentMethod;
+  isPaid: boolean;
+};

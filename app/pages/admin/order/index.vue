@@ -132,6 +132,12 @@ const columns: TableColumn<OrderListDTO>[] = [
           {{ orderCount ?? 0 }} commande{{ (orderCount ?? 0) > 1 ? 's' : '' }} au total
         </p>
       </div>
+      <UButton
+        icon="i-heroicons-plus"
+        @click="navigateTo('/admin/order/create')"
+      >
+        Commande manuelle
+      </UButton>
     </div>
 
     <!-- Filtres statut + recherche -->
