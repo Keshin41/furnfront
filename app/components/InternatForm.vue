@@ -92,7 +92,7 @@ const ticketCount = computed({
   <h1 class="border-0 text-primary text-5xl font-bold mb-2">Internat 2026</h1>
 
   <UForm :state="state" :schema="schema" @submit="onSubmit">
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div class="flex flex-col gap-4">
         <UFormField
           label="Nombre de billets"
@@ -196,11 +196,11 @@ const ticketCount = computed({
         </UCard>
       </div>
       <div>
-        <UTabs v-model="active" :items="tabs" :ui="{ label: 'text-white' }">
+        <UTabs v-model="active" :items="tabs" :ui="{ label: 'text-white', trigger: 'data-[state=inactive]:bg-brand-blue/30' }">
           <template #content="{ item }">
             <UCard>
               <UForm :name="`items.${item.index}`" :schema="innerSchema" nested>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <UFormField label="Nom" name="surname" required>
                     <UInput v-model="state.items[item.index]!.surname" />
                   </UFormField>
@@ -254,10 +254,13 @@ const ticketCount = computed({
             </UCard>
           </template>
         </UTabs>
+            <div class="my-4 flex justify-center">
+      <UButton class="w-full justify-center text-white sm:w-auto" type="submit" size="xl">
+        Valider
+      </UButton>
+    </div>
       </div>
     </div>
-    <div class="flex justify-center my-4">
-      <UButton class="text-white" type="submit" size="xl"> Valider </UButton>
-    </div>
+
   </UForm>
 </template>

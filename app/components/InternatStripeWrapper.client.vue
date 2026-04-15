@@ -53,6 +53,11 @@ const handleSubmit = async () => {
         error.message || "Une erreur s'est produite lors du paiement.",
       type: "foreground",
     });
+
+    if (error.type === "card_error") {
+      globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}?payment=failed`;
+      return;
+    }
   }
 };
 </script>

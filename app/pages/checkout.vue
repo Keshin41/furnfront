@@ -23,7 +23,7 @@ const query = useRoute().query;
 const { items: cartItems } = useCart();
 
 const activeStep = ref<number | string | undefined>(
-  query.payment === "success" ? 2 : 0,
+  query.payment === "confirmation" || query.payment === "failed" ? 2 : 0,
 );
 const buyerInfo = ref<Order["user"] | null>(null);
 
