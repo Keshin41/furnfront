@@ -110,7 +110,7 @@ const formatDateTime = (value: string) =>
         class="overflow-hidden rounded-3xl border border-brand-light-blue/50 bg-brand-white shadow-sm"
       >
         <ImageWithFallback
-          :src="`/furmeet/thumbnail/${furmeet.id}.png`"
+          :src="furmeet.imageUrl || `/furmeet/thumbnail/${furmeet.id}.png`"
           :fallback="'/furmeet/thumbnail/default.png'"
           :alt="furmeet.title"
           class="h-72 w-full object-cover"

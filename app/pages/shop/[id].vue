@@ -139,7 +139,7 @@ function handleAddToCart() {
           <ImageWithFallback
             :src="selectedImageUrl"
             :alt="product.name"
-            class="max-h-72 max-w-full object-contain"
+            class="max-w-full object-contain"
           />
         </div>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import z from "zod";
 import type { FurmeetResponse } from "~/types/furmeet";
+import ImageWithFallback from "~/components/ImageWithFallback.vue";
 
 definePageMeta({
   layout: "admin",
@@ -9,7 +10,7 @@ definePageMeta({
 
 const id = useRoute().params.id as string;
 
-const { data, error, pending } = await useAPI<FurmeetResponse>(`/event/${id}`);
+const { data, error, pending, refresh } = await useAPI<FurmeetResponse>(`/event/${id}`);
 
 const schema = z.object({
   title: z.string().min(1, "Le titre est requis"),
@@ -45,6 +46,55 @@ const state = reactive<Schema>({
       order: activity.order,
     })) ?? [],
 });
+const meetImageUrl = ref(data.value?.imageUrl ?? "");
+const uploadingImage = ref(false);
+const savingImage = ref(false);
+
+const handleImageUpload = async (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  uploadingImage.value = true;
+  try {
+    const { $api } = useNuxtApp();
+    const result = await $api<{ url: string }>("/event/upload-image", {
+      method: "POST",
+      body: formData,
+    });
+    meetImageUrl.value = result.url;
+  } catch (err) {
+    console.error("Failed to upload meet image", err);
+    alert("Une erreur est survenue lors de l'upload de l'image.");
+  } finally {
+    uploadingImage.value = false;
+    input.value = "";
+  }
+};
+
+const saveMeetImage = async () => {
+  savingImage.value = true;
+  try {
+    await useAPI(`/event/${id}/image`, {
+      method: "PUT",
+      body: {
+        imageUrl: meetImageUrl.value,
+      },
+    });
+    await refresh();
+    alert("Image de la meet enregistrée.");
+  } catch (err) {
+    console.error("Failed to save meet image", err);
+    alert("Une erreur est survenue lors de l'enregistrement de l'image.");
+  } finally {
+    savingImage.value = false;
+  }
+};
 console.log("🚀 ~ state:", typeof data.value?.eventActivities[0]?.date);
 </script>
 <template>
@@ -59,6 +109,42 @@ console.log("🚀 ~ state:", typeof data.value?.eventActivities[0]?.date);
         class=""
         @submit="() => console.log('Form submitted', state)"
       >
+        <div class="mb-6 rounded-2xl border border-brand-light-blue/50 bg-brand-white p-4">
+          <h2 class="text-lg font-semibold mb-3 text-primary">Image de la meet</h2>
+          <UFormField label="Image (URL)">
+            <UInput v-model="meetImageUrl" placeholder="https://..." />
+          </UFormField>
+          <UFormField label="Importer une image locale" class="mt-3">
+            <input
+              type="file"
+              accept="image/*"
+              :disabled="uploadingImage"
+              class="block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              @change="handleImageUpload"
+            />
+            <p v-if="uploadingImage" class="mt-1 text-xs text-neutral-500">
+              Upload en cours...
+            </p>
+          </UFormField>
+
+          <div v-if="meetImageUrl" class="mt-3">
+            <ImageWithFallback
+              :src="meetImageUrl"
+              :alt="state.title || 'Aperçu image meet'"
+              :fallback="'/furmeet/thumbnail/default.png'"
+              class="h-36 w-full max-w-sm rounded-lg border border-neutral-200 object-cover"
+            />
+          </div>
+
+          <UButton
+            class="mt-3"
+            :loading="savingImage"
+            @click="saveMeetImage"
+          >
+            Enregistrer l'image
+          </UButton>
+        </div>
+
         <UFormField label="Titre" name="title">
           <UInput
             v-model="state.title"
