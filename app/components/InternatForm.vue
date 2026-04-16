@@ -202,8 +202,14 @@ const ticketCount = computed({
             Pour toute question, n’hésitez pas à rejoindre notre canal Telegram.
           </p>
           <br />
-          <ULink to="/reglement_internat_2026.pdf" target="_blank"
-            >Règlement de l'internat</ULink
+          <p>Aucun remboursement ne sera émis par l'association.</p>
+          <br />
+          <UButton
+            to="/reglement_internat_2026.pdf"
+            target="_blank"
+            size="xl"
+            class="text-white"
+            >Règlement de l'internat</UButton
           >
         </UCard>
       </div>
