@@ -141,11 +141,12 @@ const ticketCount = computed({
               6 lits individuels par chambre. Vous pouvez demander à être
               regroupés avec des proches dans une même chambre.
             </strong>
+            Pour cela demander à @BluePawOwO sur Telegram.
           </p>
           <br />
           <p>
-            <strong>Linge :</strong> Drap, oreiller. Pensez à prendre votre
-            couette !
+            <strong>Linge fournit :</strong> Drap. Pensez à prendre votre
+            couette et votre oreiller !
           </p>
           <br />
           <p class="text-primary">
@@ -184,8 +185,8 @@ const ticketCount = computed({
           <ul class="list-disc pl-5">
             <li>
               <strong>7€ - Pack Confort :</strong> Pour 7€ supplémentaires,
-              l’association vous fournit une couette. Plus la peine de
-              transporter la vôtre !
+              l’association vous fournit une couette et un oreiller. Plus la
+              peine de transporter les vôtres !
             </li>
             <li>
               <strong>14€ - Pack Goodies :</strong> L’association vous remet un
@@ -196,6 +197,10 @@ const ticketCount = computed({
           <p>
             Pour toute question, n’hésitez pas à rejoindre notre canal Telegram.
           </p>
+          <br />
+          <ULink to="/reglement_internat_2026.pdf" target="_blank"
+            >Règlement de l'internat</ULink
+          >
         </UCard>
       </div>
       <div v-if="maxTickets > 0">
@@ -224,7 +229,7 @@ const ticketCount = computed({
                     <UInput v-model="state.items[item.index]!.email" />
                   </UFormField>
                   <UFormField
-                    label="Option couette"
+                    label="Pack Confort"
                     name="optionRoom"
                     required
                     class="col-span-2"
@@ -242,7 +247,7 @@ const ticketCount = computed({
                     />
                   </UFormField>
                   <UFormField
-                    label="Pack goodies"
+                    label="Pack Goodies"
                     name="optionRoom"
                     required
                     class="col-span-2"

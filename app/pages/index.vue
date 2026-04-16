@@ -104,9 +104,8 @@ const onAnnouncementAction = () => {
             <p
               class="mt-4 max-w-xl text-base text-white/85 font-family-sans sm:text-lg md:text-xl"
             >
-              Fur'N'Tours est une association dynamique qui organise des
-              événements un samedi par mois pour les passionnés de la culture
-              furry.
+              Fur'N'Tours est une association qui organise des événements un
+              samedi par mois pour les passionnés de la culture furry.
             </p>
             <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <CustomButton
@@ -117,7 +116,8 @@ const onAnnouncementAction = () => {
                 size="lg"
               />
               <CustomButton
-                label="Voir le réseau"
+                label="Accès au telegram"
+                to="https://telegram.furbar.fr"
                 bgClass="border-2 border-white/70 bg-transparent"
                 textClass="text-white"
                 size="lg"
