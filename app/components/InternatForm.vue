@@ -128,12 +128,16 @@ const ticketCount = computed({
           <p>
             <em
               ><strong>
-                Il est nécessaire d’être adhérent à l’association pour
-                participer à l'internat. Les membres déjà adhérents se voient
-                proposer 10€ de réduction sur le prix de l’internat, pour cela
-                renseignez l’adresse mail utilisée lors de votre adhésion.
+                L'internat est réservé aux adhérents de l'association, donc ce
+                pack contient automatiquement une adhésion à l'association !
               </strong>
             </em>
+          </p>
+          <br />
+          <p>
+            Les membres déjà adhérents se voient proposer 10€ de réduction sur
+            le prix de l’internat, pour cela renseignez l’adresse mail utilisée
+            lors de votre adhésion.
           </p>
           <br />
           <p>
