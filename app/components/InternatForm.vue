@@ -51,7 +51,7 @@ const innerSchema = z.object({
 
 const schema = z.object({
   items: z.array(innerSchema),
-  termsAccepted: z.union([z.boolean(),z.literal('indeterminate')]),
+  termsAccepted: z.union([z.boolean(), z.literal("indeterminate")]),
 });
 
 type InnerSchema = z.output<typeof innerSchema>;
@@ -68,7 +68,7 @@ const state = reactive<Schema>({
       goodies: false,
     },
   ],
-  termsAccepted: false
+  termsAccepted: false,
 });
 
 const ticketCount = computed({
@@ -94,7 +94,7 @@ const ticketCount = computed({
 <template>
   <h1 class="border-0 text-primary text-5xl font-bold mb-2">Internat 2026</h1>
 
-  <UForm :state="state" :schema="schema" @submit="onSubmit">
+  <UForm :state="state" :schema="schema" class="mb-6" @submit="onSubmit">
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div class="flex flex-col gap-4">
         <UFormField
@@ -199,7 +199,14 @@ const ticketCount = computed({
         </UCard>
       </div>
       <div v-if="maxTickets > 0">
-        <UTabs v-model="active" :items="tabs" :ui="{ label: 'text-white', trigger: 'data-[state=inactive]:bg-brand-blue/30' }">
+        <UTabs
+          v-model="active"
+          :items="tabs"
+          :ui="{
+            label: 'text-white',
+            trigger: 'data-[state=inactive]:bg-brand-blue/30',
+          }"
+        >
           <template #content="{ item }">
             <UCard>
               <UForm :name="`items.${item.index}`" :schema="innerSchema" nested>
@@ -263,11 +270,22 @@ const ticketCount = computed({
       </div>
     </div>
     <div class="flex justify-between mt-4">
-      <UCheckbox v-model="state.termsAccepted" color="error" variant="card" class="border-red-500" label="Je certifie avoir lu et m'engage à respecter le réglement de l'internat ainsi que le réglement de l'association" required />
-      <UButton v-if="maxTickets > 0" type="submit" size="xl" :disabled="state.termsAccepted !== true">
+      <UCheckbox
+        v-model="state.termsAccepted"
+        color="error"
+        variant="card"
+        class="border-red-500"
+        label="Je certifie avoir lu et m'engage à respecter le réglement de l'internat ainsi que le réglement de l'association"
+        required
+      />
+      <UButton
+        v-if="maxTickets > 0"
+        type="submit"
+        size="xl"
+        :disabled="state.termsAccepted !== true"
+      >
         Valider
       </UButton>
     </div>
-
   </UForm>
 </template>
