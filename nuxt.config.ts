@@ -1,9 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: "2025-07-15",
+  compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/eslint", "@nuxt/ui"],
+  css: ['~/assets/css/main.css'],
+  modules: ['@nuxt/eslint', '@nuxt/ui'],
   ui: {
     fonts: false,
   },
@@ -11,15 +11,15 @@ export default defineNuxtConfig({
     head: {
       link: [
         {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap",
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap',
         },
       ],
     },
   },
   runtimeConfig: {
     public: {
-      apiBaseUrl: "http://localhost:3001",
+      apiBaseUrl: process.env.NUXT_API_BASE_URL,
       stripePublishableKey: process.env.NUXT_STRIPE_PUBLISHABLE_KEY,
     },
   },
