@@ -11,7 +11,7 @@ const publishableKey = config.public.stripePublishableKey;
 const toast = useToast();
 
 const props = defineProps<{
-  basket: {name: string, unitPrice: string, quantity: number}[];
+  basket: { name: string; unitPrice: string; quantity: number }[];
   paymentIntent: string;
 }>();
 
@@ -55,7 +55,11 @@ const handleSubmit = async () => {
     });
 
     if (error.type === "card_error") {
-      globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}?payment=failed`;
+      const clientSecret = props.paymentIntent;
+      const query = clientSecret
+        ? `?payment=failed&payment_intent_client_secret=${encodeURIComponent(clientSecret)}`
+        : "?payment=failed";
+      globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}${query}`;
       return;
     }
   }
@@ -72,7 +76,7 @@ const handleSubmit = async () => {
         <UForm class="flex flex-col gap-6 mb-12" @submit.prevent="handleSubmit">
           <div class="grid gap-6 lg:grid-cols-2">
             <VueStripePaymentElement />
-            <InternatRecap @submit="handleSubmit" :basket="basket" />
+            <InternatRecap :basket="basket" @submit="handleSubmit" />
           </div>
         </UForm>
       </VueStripeElements>
