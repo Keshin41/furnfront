@@ -46,7 +46,7 @@ const handleImageUpload = async (event: Event) => {
       method: "POST",
       body: formData,
     });
-    state.imageUrl = result.url;
+    state.imageUrl = result.url.replace(/^http:\/\//i, "https://");
   } catch (err) {
     console.error("Failed to upload product image", err);
     alert("Une erreur est survenue lors de l'upload de l'image.");
