@@ -4,6 +4,7 @@ import type { NavigationMenuItem } from "@nuxt/ui";
 const { logout } = useAuth();
 
 const sidebarItems = ref<NavigationMenuItem[]>([
+  { label: "Mon profil", to: "/admin/profile" },
   { label: "Meets", to: "/admin/meet" },
   { label: "Commandes", to: "/admin/order" },
   { label: "Commande manuelle", to: "/admin/order/create" },
