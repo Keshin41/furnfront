@@ -20,19 +20,53 @@ const stepperItems: StepperItem[] = [
 ];
 
 const query = useRoute().query;
-const { items: cartItems } = useCart();
+const { items: cartItems, refreshStock } = useCart();
+const toast = useToast();
 
 const activeStep = ref<number | string | undefined>(
-  query.payment === "confirmation" || query.payment === "failed" ? 2 : 0,
+  query.payment === "success" ||
+    query.payment === "failed" ||
+    query.payment === "canceled"
+    ? 2
+    : 0,
 );
 const buyerInfo = ref<Order["user"] | null>(null);
 
-const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
+const handleFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
-  // Handle form submission logic here
-  console.log("Form submitted with data:", event.data);
+
+  const stockResult = await refreshStock();
+  if (!stockResult.ok) {
+    toast.add({
+      title: "Stock mis a jour",
+      description:
+        stockResult.issues[0] ||
+        "Le stock a change. Verifie ton panier avant de payer.",
+      color: "warning",
+    });
+
+    if (!cartItems.value.length) {
+      activeStep.value = 0;
+      return;
+    }
+  }
+
+  if (!cartItems.value.length) {
+    toast.add({
+      title: "Panier vide",
+      description: "Ajoute un produit avant de passer au paiement.",
+      color: "warning",
+    });
+    return;
+  }
+
   buyerInfo.value = event.data as Order["user"]; // Store buyer info for later use
   activeStep.value = 1; // Move to the next step
+};
+
+const handlePaymentCancel = () => {
+  buyerInfo.value = null;
+  activeStep.value = 0;
 };
 </script>
 <template>
@@ -61,6 +95,7 @@ const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
                 quantity: item.quantity,
               })),
             }"
+            @cancel="handlePaymentCancel"
           />
         </template>
       </template>
@@ -68,6 +103,12 @@ const handleFormSubmit = (event: FormSubmitEvent<unknown>) => {
         <template v-if="query.payment_intent_client_secret">
           <StripeConfirm
             :client-secret="query.payment_intent_client_secret.toString()"
+            clear-cart-on-success
+          />
+        </template>
+        <template v-else>
+          <ConfirmRecap
+            :status="query.payment === 'canceled' ? 'canceled' : 'requires_payment_method'"
           />
         </template>
       </template>

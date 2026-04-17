@@ -7,8 +7,9 @@ const publishableKey = config.public.stripePublishableKey;
 const toast = useToast();
 const cart = useCart();
 
-const { clientSecret } = defineProps<{
+const { clientSecret, clearCartOnSuccess = false } = defineProps<{
   clientSecret: string;
+  clearCartOnSuccess?: boolean;
 }>();
 
 const stripeInstance = ref<Stripe | null>(null);
@@ -33,14 +34,21 @@ const onStripeLoad = (stripe: Stripe) => {
         switch (paymentIntent.status) {
           case "succeeded":
             status.value = "success";
-            cart.clearCart();
+            if (clearCartOnSuccess) {
+              cart.clearCart();
+            }
             break;
           case "processing":
             status.value = "processing";
-            cart.clearCart();
+            if (clearCartOnSuccess) {
+              cart.clearCart();
+            }
             break;
           case "requires_payment_method":
             status.value = "requires_payment_method";
+            break;
+          case "canceled":
+            status.value = "canceled";
             break;
           default:
             status.value = "unknown";

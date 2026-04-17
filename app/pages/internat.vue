@@ -21,25 +21,51 @@ const stepperItems: StepperItem[] = [
 const query = useRoute().query;
 const toast = useToast();
 
-const activeStep = ref<string | number | undefined>(
-  query.payment === "success" || query.payment === "failed" ? 2 : 0,
-);
-const basket = ref<any>(null);
-const paymentIntent = ref<string>("");
+type MaxTicketsResponse = {
+  max: number;
+};
 
-const { data } = await useAPI<any>("/internat/maxTickets", {
+const activeStep = ref<string | number | undefined>(
+  query.payment === "success" ||
+    query.payment === "failed" ||
+    query.payment === "canceled"
+    ? 2
+    : 0,
+);
+const basket = ref<InternatOrder["basket"] | null>(null);
+const paymentIntent = ref<string>("");
+const cancelToken = ref<string>("");
+
+const { data, refresh: refreshMaxTickets } = await useAPI<MaxTicketsResponse>("/internat/maxTickets", {
   method: "GET",
 });
-const maxTickets = data.value.max;
+const maxTickets = computed(() => data.value?.max ?? 0);
 
 const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
-  // Handle form submission logic here
-  console.log("Form submitted with data:", event.data);
   const { data, error } = await useAPI<InternatOrder>("/internat/checkout", {
     method: "POST",
     body: JSON.stringify(event.data),
   });
+
+  const backendMessage = error.value?.data?.message;
+  const normalizedMessage = (
+    Array.isArray(backendMessage)
+      ? backendMessage.join(" ")
+      : backendMessage ?? ""
+  ).toLowerCase();
+
+  if (normalizedMessage.includes("insufficient stock")) {
+    await refreshMaxTickets();
+    toast.add({
+      title: "Stock mis a jour",
+      description:
+        "Le stock internat a change. Verifie les quantites disponibles puis reessaie.",
+      color: "warning",
+    });
+    return;
+  }
+
   if (error.value?.statusCode === 500) {
     toast.add({
       title: "Erreur",
@@ -58,9 +84,22 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
     });
     return;
   }
-  basket.value = data.value?.basket;
+  basket.value = data.value?.basket ?? null;
   paymentIntent.value = data.value?.paymentIntent ?? "";
+  cancelToken.value = data.value?.cancelToken ?? "";
   activeStep.value = 1; // Move to the next step
+};
+
+const handlePaymentCancel = () => {
+  basket.value = null;
+  paymentIntent.value = "";
+  cancelToken.value = "";
+  activeStep.value = 0;
+  toast.add({
+    title: "Commande annulée",
+    description: "Votre commande a été annulée. Vous pouvez recommencer.",
+    color: "warning",
+  });
 };
 </script>
 <template>
@@ -87,6 +126,8 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
           <InternatStripeWrapperClient
             :basket="basket"
             :payment-intent="paymentIntent"
+            :cancel-token="cancelToken"
+            @cancel="handlePaymentCancel"
           />
         </template>
       </template>
@@ -94,6 +135,11 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
         <template v-if="query.payment_intent_client_secret">
           <StripeConfirm
             :client-secret="query.payment_intent_client_secret.toString()"
+          />
+        </template>
+        <template v-else>
+          <ConfirmRecap
+            :status="query.payment === 'canceled' ? 'canceled' : 'requires_payment_method'"
           />
         </template>
       </template>

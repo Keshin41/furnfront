@@ -92,25 +92,14 @@ const ticketCount = computed({
 });
 </script>
 <template>
-  <h1 class="border-0 text-primary text-5xl font-bold mb-2">Internat 2026</h1>
+  <h1 class="mb-2 border-0 bg-linear-to-r from-primary to-sky-500 bg-clip-text text-5xl font-bold text-transparent">
+    Internat 2026
+  </h1>
 
   <UForm :state="state" :schema="schema" class="mb-6" @submit="onSubmit">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-4">
-        <UFormField
-          label="Nombre de billets"
-          orientation="horizontal"
-          class="shrink-0 justify-center"
-        >
-          <UInputNumber
-            :min="maxTickets > 0 ? 1 : 0"
-            :max="maxTickets"
-            :default-value="maxTickets > 0 ? 1 : 0"
-            orientation="vertical"
-            v-model="ticketCount"
-          />
-        </UFormField>
-        <UCard class="flex-1">
+        <UCard class="flex-1 border border-primary/20 bg-linear-to-b from-primary/5 to-white shadow-sm">
           <template #header>
             <h2>1 lit au sein de l’internat du Lycée Choiseul</h2>
           </template>
@@ -213,13 +202,28 @@ const ticketCount = computed({
           >
         </UCard>
       </div>
-      <div v-if="maxTickets > 0">
+      <div v-if="maxTickets > 0" class="mt-1 rounded-2xl border border-sky-200 bg-sky-50/50 p-4 md:p-5">
+        <div class="mb-4 rounded-xl border border-primary/15 bg-white p-3 md:p-4">
+          <UFormField
+            label="Nombre de billets"
+            orientation="horizontal"
+            class="shrink-0 justify-center"
+          >
+            <UInputNumber
+              :min="maxTickets > 0 ? 1 : 0"
+              :max="maxTickets"
+              :default-value="maxTickets > 0 ? 1 : 0"
+              orientation="vertical"
+              v-model="ticketCount"
+            />
+          </UFormField>
+        </div>
         <UTabs
           v-model="active"
           :items="tabs"
           :ui="{
             label: 'text-white',
-            trigger: 'data-[state=inactive]:bg-brand-blue/30',
+            trigger: 'data-[state=inactive]:bg-primary/30',
           }"
         >
           <template #content="{ item }">
@@ -284,23 +288,29 @@ const ticketCount = computed({
         Aucun billet disponible pour le moment, veuillez réessayer plus tard
       </div>
     </div>
-    <div class="flex justify-between mt-4">
-      <UCheckbox
-        v-model="state.termsAccepted"
-        color="error"
-        variant="card"
-        class="border-red-500"
-        label="Je certifie avoir lu et m'engage à respecter le réglement de l'internat ainsi que le réglement de l'association"
-        required
-      />
-      <UButton
-        v-if="maxTickets > 0"
-        type="submit"
-        size="xl"
-        :disabled="state.termsAccepted !== true"
-      >
-        Valider
-      </UButton>
+    <div class="mt-6 rounded-2xl border border-primary/20 bg-linear-to-r from-white to-primary/5 p-4 md:p-5">
+      <UFormField name="termsAccepted" class="mb-4">
+        <UCheckbox
+          v-model="state.termsAccepted"
+          label="Je certifie avoir lu et m'engage à respecter le règlement de l'internat ainsi que le règlement de l'association"
+          required
+        />
+      </UFormField>
+
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-xs text-neutral-500">
+          Vous devez accepter les conditions pour continuer.
+        </p>
+        <UButton
+          v-if="maxTickets > 0"
+          type="submit"
+          size="xl"
+          class="sm:min-w-44 justify-center"
+          :disabled="state.termsAccepted !== true"
+        >
+          Valider
+        </UButton>
+      </div>
     </div>
   </UForm>
 </template>

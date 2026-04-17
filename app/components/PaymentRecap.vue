@@ -1,6 +1,34 @@
 <script setup lang="ts">
-const { items, total, count } = useCart();
-const emit = defineEmits<{ submit: [] }>();
+type PaymentRecapItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+};
+
+const props = defineProps<{
+  items?: PaymentRecapItem[];
+  total?: number;
+}>();
+
+const { items: cartItems, total: cartTotal } = useCart();
+const emit = defineEmits<{ submit: []; cancel: [] }>();
+
+// The recap stays reusable: shop falls back to the cart, internat passes its own lines.
+const recapItems = computed<PaymentRecapItem[]>(() => {
+  if (props.items) {
+    return props.items;
+  }
+
+  return cartItems.value.map((item) => ({
+    id: item.skuId,
+    name: item.productName,
+    quantity: item.quantity,
+    unitPrice: item.price,
+  }));
+});
+
+const recapTotal = computed(() => props.total ?? cartTotal.value);
 </script>
 <template>
   <section
@@ -19,28 +47,27 @@ const emit = defineEmits<{ submit: [] }>();
     <div class="mb-6 space-y-3 rounded-xl bg-neutral-50 p-4 md:p-6">
       <ul class="space-y-3">
         <li
-          v-for="item in items"
-          :key="item.skuId"
+          v-for="item in recapItems"
+          :key="item.id"
           class="flex items-center justify-between border-b border-neutral-200 pb-3 last:border-b-0"
         >
           <div class="flex flex-col gap-1">
-            <p class="font-medium text-neutral-900">{{ item.productName }}</p>
+            <p class="font-medium text-neutral-900">{{ item.name }}</p>
             <p class="text-xs text-neutral-600">
-              {{ item.quantity }} × {{ item.price.toFixed(2) }} €
+              {{ item.quantity }} × {{ item.unitPrice.toFixed(2) }} €
             </p>
           </div>
           <p class="text-right font-semibold text-neutral-900">
-            {{ (item.price * item.quantity).toFixed(2) }} €
+            {{ (item.unitPrice * item.quantity).toFixed(2) }} €
           </p>
         </li>
       </ul>
     </div>
 
     <div class="space-y-2 rounded-xl bg-primary/5 p-4 md:p-6">
-        <div class="flex items-center justify-between">
-          <span class="text-lg font-bold text-neutral-900">Total à payer</span>
-          <span class="text-2xl font-bold text-primary">{{ total.toFixed(2) }} €</span>
-        
+      <div class="flex items-center justify-between">
+        <span class="text-lg font-bold text-neutral-900">Total à payer</span>
+        <span class="text-2xl font-bold text-primary">{{ recapTotal.toFixed(2) }} €</span>
       </div>
     </div>
 
@@ -53,6 +80,18 @@ const emit = defineEmits<{ submit: [] }>();
       @click="emit('submit')"
     >
       Payer maintenant
+    </UButton>
+
+    <UButton
+      type="button"
+      size="xl"
+      block
+      variant="outline"
+      color="neutral"
+      class="mt-3"
+      @click="emit('cancel')"
+    >
+      Annuler et revenir au formulaire
     </UButton>
   </section>
 </template>
