@@ -21,17 +21,26 @@ const stepperItems: StepperItem[] = [
 const query = useRoute().query;
 const toast = useToast();
 
+type MaxTicketsResponse = {
+  max: number;
+};
+
 const activeStep = ref<string | number | undefined>(
-  query.payment === "success" || query.payment === "failed" ? 2 : 0,
+  query.payment === "success" ||
+    query.payment === "confirmation" ||
+    query.payment === "failed" ||
+    query.payment === "canceled"
+    ? 2
+    : 0,
 );
 const basket = ref<InternatOrder["basket"] | null>(null);
 const paymentIntent = ref<string>("");
 const cancelToken = ref<string>("");
 
-const { data } = await useAPI<any>("/internat/maxTickets", {
+const { data, refresh: refreshMaxTickets } = await useAPI<MaxTicketsResponse>("/internat/maxTickets", {
   method: "GET",
 });
-const maxTickets = data.value.max;
+const maxTickets = computed(() => data.value?.max ?? 0);
 
 const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
@@ -39,6 +48,25 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
     method: "POST",
     body: JSON.stringify(event.data),
   });
+
+  const backendMessage = error.value?.data?.message;
+  const normalizedMessage = (
+    Array.isArray(backendMessage)
+      ? backendMessage.join(" ")
+      : backendMessage ?? ""
+  ).toLowerCase();
+
+  if (normalizedMessage.includes("insufficient stock")) {
+    await refreshMaxTickets();
+    toast.add({
+      title: "Stock mis a jour",
+      description:
+        "Le stock internat a change. Verifie les quantites disponibles puis reessaie.",
+      color: "warning",
+    });
+    return;
+  }
+
   if (error.value?.statusCode === 500) {
     toast.add({
       title: "Erreur",

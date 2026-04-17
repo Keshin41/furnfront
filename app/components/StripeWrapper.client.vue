@@ -34,6 +34,7 @@ const { data, status, error } = useAPI<CreatePaymentIntentResponse>("/payment/cr
   body: JSON.stringify(props.order),
 });
 
+// Stock conflicts can still happen after the cart view; translate backend errors into UI feedback.
 const paymentCreationErrorMessage = computed(() => {
   const backendMessage = (error.value as { data?: { message?: string | string[] } } | null)
     ?.data?.message;
@@ -71,6 +72,7 @@ watch(
       return;
     }
 
+    // Refresh local cart stock so the next checkout attempt starts from server truth.
     const refreshResult = await refreshStock();
     if (refreshResult.issues.length) {
       toast.add({
@@ -111,15 +113,10 @@ const handleSubmit = async () => {
       type: "foreground",
     });
 
-    if (error.type === "card_error") {
-      const clientSecret = data.value?.paymentIntent;
-      const query = clientSecret
-        ? `?payment=failed&payment_intent_client_secret=${encodeURIComponent(clientSecret)}`
-        : "?payment=failed";
-      globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}${query}`;
-      return;
+    if (error.payment_intent?.object === "payment_intent" && error.payment_intent?.status === "canceled") 
+    {
+      window.location.href = `${globalThis.location.origin}${globalThis.location.pathname}?payment=canceled`;
     }
-
   }
 };
 
@@ -135,6 +132,7 @@ const handleCancel = async () => {
   isCancelling.value = true;
   const { $api } = useNuxtApp();
   try {
+    // Shop and internat use the same cancel-token pattern, only the endpoint changes.
     await ($api as typeof $fetch)(`/payment/checkout/${paymentIntentId}`, {
       method: "DELETE",
       headers: {

@@ -109,6 +109,7 @@ export const useCart = () => {
     const issues: string[] = [];
     let changed = false;
 
+    // Refresh by product because the public API exposes stock through product -> skus.
     const productIds = [...new Set(items.value.map((item) => item.productId))];
     const settled = await Promise.allSettled(
       productIds.map((productId) =>
@@ -152,6 +153,7 @@ export const useCart = () => {
         changed = true;
       }
 
+      // Keep as much of the basket as possible instead of hard-failing the whole checkout.
       if (nextQuantity <= 0) {
         issues.push(`${item.productName} (${item.variantLabel}) est en rupture et a été retiré du panier.`);
         changed = true;

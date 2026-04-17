@@ -27,6 +27,13 @@ const recap = computed(() => {
           "Votre paiement a échoué. Veuillez réessayer avec un autre moyen de paiement.",
         color: "red",
       };
+    case "canceled":
+      return {
+        icon: "i-heroicons-x-circle-20-solid",
+        title: "Paiement annulé",
+        message: "Le paiement a été annulé avant validation.",
+        color: "red",
+      };
     default:
       return {
         icon: "i-heroicons-exclamation-triangle-20-solid",
@@ -51,6 +58,11 @@ const buttonOne = computed(() => {
         text: "Réessayer le paiement",
         link: "/shop",
       };
+    case "canceled":
+      return {
+        text: "Retour à l'accueil",
+        link: "/",
+      };
     default:
       return {
         text: "Retour à l'accueil",
@@ -60,24 +72,10 @@ const buttonOne = computed(() => {
 });
 
 const buttonTwo = computed(() => {
-  switch (status) {
-    case "success":
-    case "processing":
-      return {
-        text: "Retour à l'accueil",
-        link: "/",
-      };
-    case "requires_payment_method":
-      return {
-        text: "Retourner à l'accueil",
-        link: "/",
-      };
-    default:
-      return {
-        text: "Contactez le support",
-        link: "/contact",
-      };
-  }
+  return {
+    text: "Retourner à l'accueil",
+    link: "/",
+  };
 });
 </script>
 <template>
@@ -100,10 +98,10 @@ const buttonTwo = computed(() => {
     <USeparator class="w-full" />
 
     <div class="flex w-full flex-col gap-3 sm:flex-row">
-      <UButton :to="buttonOne.link" color="primary" size="xl" block>
+      <UButton v-if="buttonOne" :to="buttonOne.link" color="primary" size="xl" block>
         {{ buttonOne.text }}
       </UButton>
-      <UButton
+      <UButton v-if="buttonTwo"
         :to="buttonTwo.link"
         color="neutral"
         variant="soft"

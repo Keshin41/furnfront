@@ -24,7 +24,11 @@ const { items: cartItems, refreshStock } = useCart();
 const toast = useToast();
 
 const activeStep = ref<number | string | undefined>(
-  query.payment === "confirmation" || query.payment === "failed" ? 2 : 0,
+  query.payment === "confirmation" ||
+    query.payment === "failed" ||
+    query.payment === "canceled"
+    ? 2
+    : 0,
 );
 const buyerInfo = ref<Order["user"] | null>(null);
 
@@ -99,6 +103,7 @@ const handlePaymentCancel = () => {
         <template v-if="query.payment_intent_client_secret">
           <StripeConfirm
             :client-secret="query.payment_intent_client_secret.toString()"
+            clear-cart-on-success
           />
         </template>
       </template>
