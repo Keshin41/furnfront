@@ -15,13 +15,29 @@ type FurmeetPost = {
 
 const { data, error, pending } = await useAPI<Furmeet[]>("/event/");
 
+const htmlToPlainText = (value?: string | null) => {
+  if (!value) {
+    return "";
+  }
+
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const furmeets = computed<FurmeetPost[]>(() => {
   const raw = data.value ?? [];
 
   return raw
     .filter((item) => item.published)
     .map((item) => {
-      const excerpt = item.description || "Article en cours de redaction.";
+      const excerpt =
+        htmlToPlainText(item.description) || "Article en cours de redaction.";
       const eventDate =
         item.eventDate || item.createdAt || new Date().toISOString();
       const activities = [...(item.eventActivities ?? [])].sort(sortActivities);

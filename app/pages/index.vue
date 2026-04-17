@@ -12,6 +12,21 @@ const { data: announcementData } = await useAPI<Announcement>(
 
 const router = useRouter();
 
+const htmlToPlainText = (value?: string | null) => {
+  if (!value) {
+    return "";
+  }
+
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const toTimestamp = (value?: string | null) => {
   if (!value) return 0;
   const timestamp = new Date(value).getTime();
@@ -45,7 +60,7 @@ const furmeetsList = computed<FurmeetCard[]>(() => {
     .map((item) => ({
       id: String(item.id),
       title: item.title,
-      description: item.description || "Programme a venir.",
+      description: htmlToPlainText(item.description) || "Programme a venir.",
       date: formatMeetDate(item.eventDate ?? item.createdAt),
       imageURL: item.imageUrl || `/furmeet/thumbnail/${item.id}.png`,
     }));

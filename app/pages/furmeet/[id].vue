@@ -12,6 +12,30 @@ type FurmeetApi = Furmeet & { content?: string | null };
 const route = useRoute();
 const id = route.params.id as string;
 
+const hasHtmlTags = (value?: string | null) => /<[^>]+>/.test(value ?? "");
+
+const toHtmlContent = (value?: string | null) => {
+  if (!value?.trim()) {
+    return "";
+  }
+
+  if (hasHtmlTags(value)) {
+    return value;
+  }
+
+  const escaped = value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+  return escaped
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replaceAll("\n", "<br />")}</p>`)
+    .join("");
+};
+
 const { data, error, pending } = await useAPI<FurmeetApi | null>(
   `/event/${id}`,
 );
@@ -35,14 +59,6 @@ const furmeet = computed(() => {
         .join("\n\n") ||
       "Article en cours de redaction.",
   };
-});
-
-const paragraphs = computed(() => {
-  const body = furmeet.value?.body ?? "";
-  return body
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter(Boolean);
 });
 
 const loading = computed(() => pending.value);
@@ -143,12 +159,14 @@ const formatDateTime = (value: string) =>
             {{ furmeet.title }}
           </h1>
 
-          <p class="mt-6 rounded-2xl bg-brand-light-blue/25 p-4 text-brand-ink">
-            {{
-              furmeet.description ||
-              "Aucune description courte pour cet article."
-            }}
-          </p>
+          <div class="mt-6 rounded-2xl bg-brand-light-blue/25 p-4 text-brand-ink">
+            <div
+              v-if="furmeet.description"
+              class="tiptap-render text-sm leading-relaxed"
+              v-html="toHtmlContent(furmeet.description)"
+            />
+            <p v-else>Aucune description courte pour cet article.</p>
+          </div>
 
           <div class="mt-8">
             <h2 class="text-2xl font-bold text-brand-dark-blue">
@@ -185,9 +203,11 @@ const formatDateTime = (value: string) =>
                 <h3 class="mt-2 text-lg font-semibold text-brand-dark-blue">
                   {{ activity.title }}
                 </h3>
-                <p class="mt-2 text-sm leading-relaxed text-brand-ink">
-                  {{ activity.description }}
-                </p>
+                <div
+                  v-if="activity.description"
+                  class="tiptap-render mt-2 text-sm leading-relaxed text-brand-ink"
+                  v-html="toHtmlContent(activity.description)"
+                />
               </li>
             </ol>
           </div>
@@ -196,3 +216,41 @@ const formatDateTime = (value: string) =>
     </main>
   </div>
 </template>
+
+<style scoped>
+.tiptap-render :deep(p + p) {
+  margin-top: 0.6rem;
+}
+
+.tiptap-render :deep(h1) {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-brand-dark-blue);
+}
+
+.tiptap-render :deep(h2) {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-brand-dark-blue);
+}
+
+.tiptap-render :deep(h3) {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-brand-dark-blue);
+}
+
+.tiptap-render :deep(ul),
+.tiptap-render :deep(ol) {
+  margin-top: 0.45rem;
+  padding-left: 1.2rem;
+}
+
+.tiptap-render :deep(ul) {
+  list-style: disc;
+}
+
+.tiptap-render :deep(ol) {
+  list-style: decimal;
+}
+</style>

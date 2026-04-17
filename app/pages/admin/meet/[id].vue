@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import z from "zod";
-import type { FurmeetResponse } from "~/types/furmeet";
+import type { FurmeetActivityType, FurmeetResponse, MeetUpsertPayload } from "~/types/furmeet";
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
+
+useSeoMeta({
+  title: "Edition de la meet",
+});
 
 definePageMeta({
   layout: "admin",
@@ -9,22 +13,43 @@ definePageMeta({
 });
 
 const id = useRoute().params.id as string;
+const toast = useToast();
 
 const { data, error, pending, refresh } = await useAPI<FurmeetResponse>(`/event/${id}`);
 
+const activityTypeOptions: Array<{ label: string; value: FurmeetActivityType }> = [
+  { label: "Activité", value: "ACTIVITY" },
+  { label: "Restaurant", value: "RESTAURANT" },
+  { label: "Bar", value: "BAR" },
+  { label: "Autre", value: "OTHER" },
+];
+
+const toDateInput = (value: string) => value?.split("T")[0] ?? "";
+const toTimeInput = (value: string) => value?.split("T")[1]?.substring(0, 5) ?? "00:00";
+
+const createEmptyActivity = () => ({
+  title: "",
+  description: "",
+  date: "",
+  time: "12:00",
+  order: 0,
+  type: "OTHER" as FurmeetActivityType,
+});
+
 const schema = z.object({
   title: z.string().min(1, "Le titre est requis"),
-  description: z.string().optional(),
+  description: z.string().optional().default(""),
+  imageUrl: z.string().optional().default(""),
   published: z.boolean(),
   opened: z.boolean(),
   eventActivities: z.array(
     z.object({
-      id: z.string().optional(),
       title: z.string().min(1, "Le titre de l'activité est requis"),
-      description: z.string().optional(),
-      date: z.string(),
-      time: z.string(),
+      description: z.string().optional().default(""),
+      date: z.string().min(1, "La date est requise"),
+      time: z.string().min(1, "L'heure est requise"),
       order: z.number().optional(),
+      type: z.enum(["ACTIVITY", "RESTAURANT", "BAR", "OTHER"]),
     }),
   ),
 });
@@ -34,21 +59,21 @@ type Schema = z.output<typeof schema>;
 const state = reactive<Schema>({
   title: data.value?.title ?? "",
   description: data.value?.description ?? "",
+  imageUrl: data.value?.imageUrl ?? "",
   published: data.value?.published ?? false,
   opened: data.value?.opened ?? false,
   eventActivities:
     data.value?.eventActivities.map((activity) => ({
-      id: activity.id,
       title: activity.title,
       description: activity.description,
-      date: activity.date.split("T")[0] ?? "", // Extract date part
-      time: activity.date.split("T")[1]?.substring(0, 5) ?? "00:00", // Extract time part
+      date: toDateInput(activity.date),
+      time: toTimeInput(activity.date),
       order: activity.order,
-    })) ?? [],
+      type: activity.type,
+    })) ?? [createEmptyActivity()],
 });
-const meetImageUrl = ref(data.value?.imageUrl ?? "");
 const uploadingImage = ref(false);
-const savingImage = ref(false);
+const saving = ref(false);
 
 const handleImageUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement;
@@ -67,140 +92,287 @@ const handleImageUpload = async (event: Event) => {
       method: "POST",
       body: formData,
     });
-    meetImageUrl.value = result.url;
+    state.imageUrl = result.url.replace(/^http:\/\//i, "https://");
   } catch (err) {
     console.error("Failed to upload meet image", err);
-    alert("Une erreur est survenue lors de l'upload de l'image.");
+    toast.add({
+      title: "Erreur lors de l'upload de l'image",
+      color: "error",
+    });
   } finally {
     uploadingImage.value = false;
     input.value = "";
   }
 };
 
-const saveMeetImage = async () => {
-  savingImage.value = true;
+const addActivity = () => {
+  state.eventActivities.push({
+    ...createEmptyActivity(),
+    order: state.eventActivities.length,
+  });
+};
+
+const removeActivity = (index: number) => {
+  state.eventActivities.splice(index, 1);
+};
+
+const toActivityDateTime = (date: string, time: string) => {
+  const parsed = new Date(`${date}T${time}:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error("invalid-date");
+  }
+
+  return parsed.toISOString();
+};
+
+const buildPayload = (): MeetUpsertPayload => {
+  const parsed = schema.parse(state);
+
+  return {
+    title: parsed.title,
+    description: parsed.description,
+    imageUrl: parsed.imageUrl,
+    published: parsed.published,
+    opened: parsed.opened,
+    eventActivities: parsed.eventActivities.map((activity, index) => ({
+      title: activity.title,
+      description: activity.description,
+      date: toActivityDateTime(activity.date, activity.time),
+      order: activity.order ?? index,
+      type: activity.type,
+    })),
+  };
+};
+
+const handleSubmit = async () => {
+  saving.value = true;
   try {
-    await useAPI(`/event/${id}/image`, {
+    const payload = buildPayload();
+    await useAPI(`/event/${id}`, {
       method: "PUT",
-      body: {
-        imageUrl: meetImageUrl.value,
-      },
+      body: payload,
+    });
+    toast.add({
+      title: "Meet mise a jour",
+      color: "success",
     });
     await refresh();
-    alert("Image de la meet enregistrée.");
+    await navigateTo("/admin/meet");
   } catch (err) {
-    console.error("Failed to save meet image", err);
-    alert("Une erreur est survenue lors de l'enregistrement de l'image.");
+    console.error("Failed to update meet", err);
+    toast.add({
+      title: "Erreur lors de la mise a jour de la meet",
+      color: "error",
+    });
   } finally {
-    savingImage.value = false;
+    saving.value = false;
   }
 };
-console.log("🚀 ~ state:", typeof data.value?.eventActivities[0]?.date);
 </script>
 <template>
-  <div class="p-4 w-full">
-    <h1 class="text-2xl font-bold mb-4">Admin - Meet Details</h1>
-    <div v-if="pending">Loading...</div>
-    <div v-else-if="error">Error: {{ error.message }}</div>
-    <div v-else-if="data">
+  <div class="w-full p-4 md:p-6">
+    <div class="rounded-3xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white via-brand-white to-brand-light-blue/20 p-4 shadow-sm md:p-6">
+      <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">Edition d'une meet</h1>
+          <p class="mt-2 max-w-2xl text-sm text-brand-ink">
+            Ajuste l'image, le contenu et le programme en quelques sections claires.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <UBadge color="neutral" variant="soft" class="rounded-full px-3 py-1">
+            {{ state.eventActivities.length }} activite(s)
+          </UBadge>
+          <UBadge
+            :color="state.published ? 'success' : 'neutral'"
+            variant="soft"
+            class="rounded-full px-3 py-1"
+          >
+            {{ state.published ? "Publiee" : "Brouillon" }}
+          </UBadge>
+        </div>
+      </div>
+
+      <div v-if="pending" class="rounded-2xl border border-dashed border-brand-light-blue/70 bg-brand-white/70 p-8 text-center text-brand-sky">
+        Chargement de la meet...
+      </div>
+      <div v-else-if="error" class="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+        Erreur: {{ error.message }}
+      </div>
+
       <UForm
+        v-else-if="data"
         :schema="schema"
         :state="state"
-        class=""
-        @submit="() => console.log('Form submitted', state)"
+        class="space-y-6"
+        @submit="handleSubmit"
       >
-        <div class="mb-6 rounded-2xl border border-brand-light-blue/50 bg-brand-white p-4">
-          <h2 class="text-lg font-semibold mb-3 text-primary">Image de la meet</h2>
-          <UFormField label="Image (URL)">
-            <UInput v-model="meetImageUrl" placeholder="https://..." />
-          </UFormField>
-          <UFormField label="Importer une image locale" class="mt-3">
-            <input
-              type="file"
-              accept="image/*"
-              :disabled="uploadingImage"
-              class="block w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-              @change="handleImageUpload"
-            />
-            <p v-if="uploadingImage" class="mt-1 text-xs text-neutral-500">
-              Upload en cours...
-            </p>
-          </UFormField>
+        <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+            <h2 class="text-lg font-bold text-brand-dark-blue">Contenu principal</h2>
+            <p class="mb-4 mt-1 text-sm text-brand-ink">Informations visibles sur la page publique.</p>
 
-          <div v-if="meetImageUrl" class="mt-3">
-            <ImageWithFallback
-              :src="meetImageUrl"
-              :alt="state.title || 'Aperçu image meet'"
-              :fallback="'/furmeet/thumbnail/default.png'"
-              class="h-36 w-full max-w-sm rounded-lg border border-neutral-200 object-cover"
-            />
+            <div class="space-y-4">
+              <UFormField label="Titre" name="title">
+                <UInput v-model="state.title" placeholder="Ex: Meet de printemps" size="xl" />
+              </UFormField>
+
+              <UFormField label="Description" name="description">
+                <AdminRichTextEditor
+                  v-model="state.description"
+                  placeholder="Résumé de la meet"
+                  min-height="150px"
+                />
+              </UFormField>
+            </div>
           </div>
 
-          <UButton
-            class="mt-3"
-            :loading="savingImage"
-            @click="saveMeetImage"
-          >
-            Enregistrer l'image
-          </UButton>
-        </div>
+          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+            <h2 class="text-lg font-bold text-brand-dark-blue">Publication</h2>
+            <p class="mb-4 mt-1 text-sm text-brand-ink">Contrôle l'état de diffusion et les inscriptions.</p>
 
-        <UFormField label="Titre" name="title">
-          <UInput
-            v-model="state.title"
-            placeholder="Entrez le titre de la meet"
-          />
-        </UFormField>
-        <UFormField label="Description" name="description">
-          <UTextarea
-            v-model="state.description"
-            placeholder="Entrez la description du meet"
-          />
-        </UFormField>
-        <UFormField label="Publié" name="published">
-          <USwitch v-model="state.published" />
-        </UFormField>
-        <UFormField label="Ouvert aux inscriptions" name="opened">
-          <USwitch v-model="state.opened" />
-        </UFormField>
-        <div class="col-span-2 mt-4">
-          <h2 class="text-xl font-semibold mb-2">Activités</h2>
-          <div
-            v-for="(activity, index) in state.eventActivities"
-            :key="index"
-            class="overflow-hidden rounded-3xl border border-brand-light-blue/50 bg-brand-white shadow-sm p-4 mb-4"
-          >
-            <UFormField :name="'eventActivities[' + index + '].title'">
-              <UInput
-                v-model="activity.title"
-                class="w-full"
-                placeholder="Entrez le titre de l'activité"
+            <div class="space-y-4">
+              <UFormField label="Publié" name="published">
+                <USwitch v-model="state.published" />
+              </UFormField>
+              <UFormField label="Ouvert aux inscriptions" name="opened">
+                <USwitch v-model="state.opened" />
+              </UFormField>
+            </div>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+          <h2 class="text-lg font-bold text-brand-dark-blue">Image de couverture</h2>
+          <p class="mb-4 mt-1 text-sm text-brand-ink">Ajoute une URL ou importe une image locale.</p>
+
+          <div class="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+            <div class="space-y-3">
+              <UFormField label="Image (URL)" name="imageUrl">
+                <UInput v-model="state.imageUrl" placeholder="https://..." />
+              </UFormField>
+
+              <UFormField label="Importer une image locale">
+                <input
+                  type="file"
+                  accept="image/*"
+                  :disabled="uploadingImage"
+                  class="block w-full rounded-xl border border-brand-light-blue/70 bg-brand-white px-3 py-2 text-sm"
+                  @change="handleImageUpload"
+                />
+                <p v-if="uploadingImage" class="mt-1 text-xs text-brand-sky">
+                  Upload en cours...
+                </p>
+              </UFormField>
+            </div>
+
+            <div class="-mt-17 rounded-xl border border-brand-light-blue/70 bg-brand-light-blue/15 p-3">
+              <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-sky">Apercu</p>
+              <ImageWithFallback
+                v-if="state.imageUrl"
+                :src="state.imageUrl"
+                :alt="state.title || 'Apercu image meet'"
+                :fallback="'/furmeet/thumbnail/default.png'"
+                class="h-48 w-full rounded-lg border border-brand-light-blue/70 object-cover"
               />
-            </UFormField>
-            <UFormField
-              :label="'Description'"
-              :name="'eventActivities[' + index + '].description'"
+              <div v-else class="flex h-44 items-center justify-center rounded-lg border border-dashed border-brand-light-blue/70 text-sm text-brand-sky">
+                Aucune image selectionnee
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-bold text-brand-dark-blue">Programme</h2>
+              <p class="mt-1 text-sm text-brand-ink">Construis chaque etape de la meet.</p>
+            </div>
+            <UButton size="sm" variant="outline" icon="i-lucide-plus" @click="addActivity">
+              Ajouter une activite
+            </UButton>
+          </div>
+
+          <div v-if="state.eventActivities.length === 0" class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-5 text-sm text-brand-sky">
+            Aucune activite. Ajoute au moins une etape au programme.
+          </div>
+
+          <div v-else class="space-y-4">
+            <article
+              v-for="(activity, index) in state.eventActivities"
+              :key="index"
+              class="rounded-2xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white to-brand-light-blue/10 p-4 shadow-xs"
             >
-              <UTextarea
-                v-model="activity.description"
-                class="w-full"
-                placeholder="Entrez la description de l'activité"
-              />
-            </UFormField>
-            <UFormField
-              label="Date"
-              :name="'eventActivities[' + index + '].date'"
-              :validate-on-input-delay="2000"
-            >
-              <UInput v-model="activity.date" type="date" />
-            </UFormField>
-            <UFormField
-              label="Heure"
-              :name="'eventActivities[' + index + '].time'"
-              :validate-on-input-delay="2000"
-            >
-              <UInput v-model="activity.time" type="time" />
-            </UFormField>
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <div class="inline-flex items-center gap-2">
+                  <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue text-sm font-bold text-white">
+                    {{ index + 1 }}
+                  </span>
+                  <p class="text-sm font-semibold text-brand-dark-blue">Etape du programme</p>
+                </div>
+                <UButton
+                  size="xs"
+                  color="error"
+                  variant="soft"
+                  icon="i-lucide-trash-2"
+                  @click="removeActivity(index)"
+                >
+                  Supprimer
+                </UButton>
+              </div>
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <UFormField :label="'Type'" :name="'eventActivities[' + index + '].type'">
+                  <USelect v-model="activity.type" :items="activityTypeOptions" class="min-w-30"/>
+                </UFormField>
+
+                <UFormField :label="'Ordre'" :name="'eventActivities[' + index + '].order'">
+                  <UInput v-model.number="activity.order" type="number" min="0" step="1" />
+                </UFormField>
+              </div>
+
+              <div class="mt-4 space-y-4">
+                <UFormField :name="'eventActivities[' + index + '].title'">
+                  <UInput
+                    v-model="activity.title"
+                    class="w-full"
+                    placeholder="Titre de l'activite"
+                  />
+                </UFormField>
+
+                <UFormField :label="'Description'" :name="'eventActivities[' + index + '].description'">
+                  <AdminRichTextEditor
+                    v-model="activity.description"
+                    placeholder="Description de l'activite"
+                    min-height="80px"
+                  />
+                </UFormField>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                  <UFormField
+                    label="Date"
+                    :name="'eventActivities[' + index + '].date'"
+                    :validate-on-input-delay="2000"
+                  >
+                    <UInput v-model="activity.date" type="date" />
+                  </UFormField>
+
+                  <UFormField
+                    label="Heure"
+                    :name="'eventActivities[' + index + '].time'"
+                    :validate-on-input-delay="2000"
+                  >
+                    <UInput v-model="activity.time" type="time" />
+                  </UFormField>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <div class="sticky bottom-4 z-10 mt-2 flex justify-end">
+          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white/95 p-2 shadow-lg backdrop-blur">
+            <UButton type="submit" :loading="saving" size="lg" label="Enregistrer les modifications" />
           </div>
         </div>
       </UForm>

@@ -50,7 +50,7 @@ const columns: TableColumn<FurmeetResponse>[] = [
       return h(UButton, {
         variant: "outline",
         size: "sm",
-        label: "Voir",
+        label: "Editer",
         onClick: () => navigateTo(`/admin/meet/${id}`),
       });
     },
@@ -58,13 +58,25 @@ const columns: TableColumn<FurmeetResponse>[] = [
 ];
 </script>
 <template>
-  <div class="p-4 w-full">
-    <h1 class="text-2xl font-bold mb-4 text-primary">Admin - Meets</h1>
-    <UTable
-      :columns="columns"
-      :data="data ?? []"
-      :loading="pending"
-      class="w-full"
-    />
+  <div class="w-full p-4 md:p-6">
+    <div class="mb-4 rounded-3xl border border-brand-light-blue/60 bg-linear-to-r from-brand-white via-brand-white to-brand-light-blue/20 p-5 shadow-sm md:p-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">Gestion des meets</h1>
+          <p class="mt-2 text-sm text-brand-ink">
+            Cree, organise et mets a jour les meets et leurs activites.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-2 shadow-xs md:p-3">
+      <UTable
+        :columns="columns"
+        :data="data ?? []"
+        :loading="pending"
+        class="w-full"
+      />
+    </div>
   </div>
 </template>
