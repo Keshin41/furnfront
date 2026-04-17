@@ -67,6 +67,11 @@ const columns: TableColumn<FurmeetResponse>[] = [
             Cree, organise et mets a jour les meets et leurs activites.
           </p>
         </div>
+        <UButton
+          icon="i-lucide-plus"
+          label="Créer une meet"
+          @click="navigateTo('/admin/meet/create')"
+        />
       </div>
     </div>
 
