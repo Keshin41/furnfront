@@ -180,6 +180,12 @@ const handleSubmit = async () => {
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <UButton
+            icon="i-lucide-arrow-left"
+            label="Retour"
+            variant="outline"
+            @click="navigateTo('/admin/meet')"
+          />
           <UBadge color="neutral" variant="soft" class="rounded-full px-3 py-1">
             {{ state.eventActivities.length }} activite(s)
           </UBadge>
@@ -273,7 +279,7 @@ const handleSubmit = async () => {
                 :src="state.imageUrl"
                 :alt="state.title || 'Apercu image meet'"
                 :fallback="'/furmeet/thumbnail/default.png'"
-                class="h-48 w-full rounded-lg border border-brand-light-blue/70 object-cover"
+                class="h-44 w-full rounded-lg border border-brand-light-blue/70 object-cover"
               />
               <div v-else class="flex h-44 items-center justify-center rounded-lg border border-dashed border-brand-light-blue/70 text-sm text-brand-sky">
                 Aucune image selectionnee
