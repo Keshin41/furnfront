@@ -42,6 +42,9 @@ const onStripeLoad = (stripe: Stripe) => {
           case "requires_payment_method":
             status.value = "requires_payment_method";
             break;
+          case "canceled":
+            status.value = "canceled";
+            break;
           default:
             status.value = "unknown";
             break;

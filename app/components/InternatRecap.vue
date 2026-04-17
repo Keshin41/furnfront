@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const emit = defineEmits<{ submit: [] }>();
+const emit = defineEmits<{ submit: []; cancel: [] }>();
 
 
 const props = defineProps<{
@@ -63,6 +63,18 @@ const total = props.basket.reduce((previousValue, currentValue) => {
       @click="emit('submit')"
     >
       Payer maintenant
+    </UButton>
+
+    <UButton
+      type="button"
+      size="xl"
+      block
+      variant="outline"
+      color="neutral"
+      class="mt-3"
+      @click="emit('cancel')"
+    >
+      Annuler et revenir au formulaire
     </UButton>
   </section>
 </template>

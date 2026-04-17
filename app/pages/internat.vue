@@ -62,6 +62,17 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   paymentIntent.value = data.value?.paymentIntent ?? "";
   activeStep.value = 1; // Move to the next step
 };
+
+const handlePaymentCancel = () => {
+  basket.value = null;
+  paymentIntent.value = "";
+  activeStep.value = 0;
+  toast.add({
+    title: "Commande annulée",
+    description: "Votre commande a été annulée. Vous pouvez recommencer.",
+    color: "warning",
+  });
+};
 </script>
 <template>
   <UContainer class="mt-4">
@@ -87,6 +98,7 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
           <InternatStripeWrapperClient
             :basket="basket"
             :payment-intent="paymentIntent"
+            @cancel="handlePaymentCancel"
           />
         </template>
       </template>
