@@ -8,6 +8,7 @@ export type InternatBasket = InternatBasketItem[];
 
 export type InternatOrder = {
   paymentIntent: string;
+  cancelToken: string;
   basket: InternatBasket;
 };
 

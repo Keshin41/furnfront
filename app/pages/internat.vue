@@ -24,8 +24,9 @@ const toast = useToast();
 const activeStep = ref<string | number | undefined>(
   query.payment === "success" || query.payment === "failed" ? 2 : 0,
 );
-const basket = ref<any>(null);
+const basket = ref<InternatOrder["basket"] | null>(null);
 const paymentIntent = ref<string>("");
+const cancelToken = ref<string>("");
 
 const { data } = await useAPI<any>("/internat/maxTickets", {
   method: "GET",
@@ -34,8 +35,6 @@ const maxTickets = data.value.max;
 
 const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
   event.preventDefault();
-  // Handle form submission logic here
-  console.log("Form submitted with data:", event.data);
   const { data, error } = await useAPI<InternatOrder>("/internat/checkout", {
     method: "POST",
     body: JSON.stringify(event.data),
@@ -58,14 +57,16 @@ const handleTicketFormSubmit = async (event: FormSubmitEvent<unknown>) => {
     });
     return;
   }
-  basket.value = data.value?.basket;
+  basket.value = data.value?.basket ?? null;
   paymentIntent.value = data.value?.paymentIntent ?? "";
+  cancelToken.value = data.value?.cancelToken ?? "";
   activeStep.value = 1; // Move to the next step
 };
 
 const handlePaymentCancel = () => {
   basket.value = null;
   paymentIntent.value = "";
+  cancelToken.value = "";
   activeStep.value = 0;
   toast.add({
     title: "Commande annulée",
@@ -98,6 +99,7 @@ const handlePaymentCancel = () => {
           <InternatStripeWrapperClient
             :basket="basket"
             :payment-intent="paymentIntent"
+            :cancel-token="cancelToken"
             @cancel="handlePaymentCancel"
           />
         </template>

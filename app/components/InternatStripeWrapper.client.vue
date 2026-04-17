@@ -13,6 +13,7 @@ const toast = useToast();
 const props = defineProps<{
   basket: { name: string; unitPrice: string; quantity: number }[];
   paymentIntent: string;
+  cancelToken: string;
 }>();
 
 const emit = defineEmits<{ cancel: [] }>();
@@ -70,7 +71,12 @@ const handleCancel = async () => {
   isCancelling.value = true;
   const { $api } = useNuxtApp();
   try {
-    await ($api as typeof $fetch)(`/internat/checkout/${paymentIntentId}`, { method: "DELETE" });
+    await ($api as typeof $fetch)(`/internat/checkout/${paymentIntentId}`, {
+      method: "DELETE",
+      headers: {
+        "x-cancel-token": props.cancelToken,
+      },
+    });
   } catch {
     // Best-effort: even if the call fails (already cancelled, network…), reset UI
   } finally {
