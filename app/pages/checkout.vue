@@ -24,7 +24,7 @@ const { items: cartItems, refreshStock } = useCart();
 const toast = useToast();
 
 const activeStep = ref<number | string | undefined>(
-  query.payment === "confirmation" ||
+  query.payment === "success" ||
     query.payment === "failed" ||
     query.payment === "canceled"
     ? 2
@@ -104,6 +104,11 @@ const handlePaymentCancel = () => {
           <StripeConfirm
             :client-secret="query.payment_intent_client_secret.toString()"
             clear-cart-on-success
+          />
+        </template>
+        <template v-else>
+          <ConfirmRecap
+            :status="query.payment === 'canceled' ? 'canceled' : 'requires_payment_method'"
           />
         </template>
       </template>

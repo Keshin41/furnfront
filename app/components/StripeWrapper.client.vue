@@ -113,9 +113,9 @@ const handleSubmit = async () => {
       type: "foreground",
     });
 
-    if (error.payment_intent?.object === "payment_intent" && error.payment_intent?.status === "canceled") 
+    if (error.payment_intent?.object === "payment_intent" && error.payment_intent?.client_secret && error.payment_intent?.status === "canceled") 
     {
-      window.location.href = `${globalThis.location.origin}${globalThis.location.pathname}?payment=canceled`;
+      window.location.href = `${globalThis.location.origin}${globalThis.location.pathname}?payment=canceled&payment_intent_client_secret=${encodeURIComponent(error.payment_intent.client_secret.toString())}`;
     }
   }
 };

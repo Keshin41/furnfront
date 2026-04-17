@@ -27,7 +27,6 @@ type MaxTicketsResponse = {
 
 const activeStep = ref<string | number | undefined>(
   query.payment === "success" ||
-    query.payment === "confirmation" ||
     query.payment === "failed" ||
     query.payment === "canceled"
     ? 2
@@ -136,6 +135,11 @@ const handlePaymentCancel = () => {
         <template v-if="query.payment_intent_client_secret">
           <StripeConfirm
             :client-secret="query.payment_intent_client_secret.toString()"
+          />
+        </template>
+        <template v-else>
+          <ConfirmRecap
+            :status="query.payment === 'canceled' ? 'canceled' : 'requires_payment_method'"
           />
         </template>
       </template>
