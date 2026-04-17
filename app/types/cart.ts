@@ -6,5 +6,7 @@ export interface CartItem {
   variantLabel: string;
   price: number;
   imageUrl: string | null;
+  trackStock?: boolean;
+  stock?: number;
   quantity: number;
 }

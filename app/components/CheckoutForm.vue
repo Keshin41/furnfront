@@ -3,23 +3,8 @@ import type { FormSubmitEvent } from "@nuxt/ui";
 import z from "zod";
 
 defineProps<{
-  onSubmit: (event: FormSubmitEvent<Schema>) => void;
+  onSubmit: (event: FormSubmitEvent<Schema>) => void | Promise<void>;
 }>();
-
-const cart = useCart();
-
-// For demo purposes, we can add a test item to the cart when the component is mounted
-if (import.meta.dev && cart.items.value.length === 0) {
-  cart.addItem({
-    skuId: "internat-1-sku-draps-oui",
-    productName: "Draps Oui",
-    price: 30,
-    productId: "internat-1-product-draps-oui",
-    skuCode: "DRAPS-OUI",
-    variantLabel: "Standard",
-    imageUrl: null,
-  })
-}
 
 const schema = z.object({
   lastname: z.string().min(1, "Le nom est requis"),

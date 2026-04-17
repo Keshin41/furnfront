@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { items, total, count } = useCart();
-const emit = defineEmits<{ submit: [] }>();
+const emit = defineEmits<{ submit: []; cancel: [] }>();
 </script>
 <template>
   <section
@@ -53,6 +53,18 @@ const emit = defineEmits<{ submit: [] }>();
       @click="emit('submit')"
     >
       Payer maintenant
+    </UButton>
+
+    <UButton
+      type="button"
+      size="xl"
+      block
+      variant="outline"
+      color="neutral"
+      class="mt-3"
+      @click="emit('cancel')"
+    >
+      Annuler et revenir au formulaire
     </UButton>
   </section>
 </template>

@@ -2,7 +2,23 @@
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
 
 const open = defineModel<boolean>({ default: false });
-const { items, total, removeItem, updateQuantity, clearCart } = useCart();
+const { items, total, removeItem, updateQuantity, clearCart, refreshStock } = useCart();
+const toast = useToast();
+
+watch(open, async (isOpen) => {
+  if (!isOpen || !items.value.length) {
+    return;
+  }
+
+  const result = await refreshStock();
+  if (result.issues.length) {
+    toast.add({
+      title: "Panier mis a jour",
+      description: result.issues[0],
+      color: "warning",
+    });
+  }
+});
 
 const handleGoToCheckout = () => {
   open.value = false;
@@ -70,6 +86,10 @@ const handleGoToCheckout = () => {
                 <button
                   type="button"
                   class="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100"
+                  :disabled="item.trackStock && item.quantity >= (item.stock ?? 0)"
+                  :class="{
+                    'opacity-40 cursor-not-allowed hover:bg-transparent': item.trackStock && item.quantity >= (item.stock ?? 0),
+                  }"
                   @click="updateQuantity(item.skuId, item.quantity + 1)"
                 >
                   +

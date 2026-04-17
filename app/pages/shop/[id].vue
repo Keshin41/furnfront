@@ -76,15 +76,44 @@ const selectedOptionSummary = computed(() => {
     .join(" / ");
 });
 
+const toast = useToast();
+
+const { addItem, items: cartItems } = useCart();
+const addedToCart = ref(false);
+
+const quantityInCart = computed(() => {
+  if (!selectedSku.value) return 0;
+  return (
+    cartItems.value.find((item) => item.skuId === selectedSku.value?.id)
+      ?.quantity ?? 0
+  );
+});
+
+const canAddToCart = computed(() => {
+  if (!selectedSku.value) {
+    return false;
+  }
+
+  if (!selectedSku.value.trackStock) {
+    return true;
+  }
+
+  return quantityInCart.value < selectedSku.value.stock;
+});
+
+const isOutOfStock = computed(() => {
+  if (!selectedSku.value) {
+    return true;
+  }
+  return selectedSku.value.trackStock && selectedSku.value.stock <= 0;
+});
+
 const selectOptionValue = (optionTypeId: string, optionValueId: string) => {
   selectedOptions.value = {
     ...selectedOptions.value,
     [optionTypeId]: optionValueId,
   };
 };
-
-const { addItem } = useCart();
-const addedToCart = ref(false);
 
 watch(selectedSku, () => {
   addedToCart.value = false;
@@ -93,7 +122,16 @@ watch(selectedSku, () => {
 function handleAddToCart() {
   if (!selectedSku.value || !product.value) return;
 
-  addItem({
+  if (!canAddToCart.value) {
+    toast.add({
+      title: "Stock insuffisant",
+      description: "Impossible d'ajouter plus de quantité pour cette variante.",
+      color: "warning",
+    });
+    return;
+  }
+
+  const added = addItem({
     skuId: selectedSku.value.id,
     skuCode: selectedSku.value.skuCode,
     productId: product.value.id,
@@ -101,7 +139,18 @@ function handleAddToCart() {
     variantLabel: selectedOptionSummary.value,
     price: Number(selectedSku.value.priceOverride ?? product.value.basePrice),
     imageUrl: selectedSku.value.imageUrl ?? product.value.imageUrl ?? null,
+    trackStock: selectedSku.value.trackStock,
+    stock: selectedSku.value.stock,
   });
+
+  if (!added) {
+    toast.add({
+      title: "Stock insuffisant",
+      description: "Ce produit n'est plus disponible dans cette quantité.",
+      color: "warning",
+    });
+    return;
+  }
 
   addedToCart.value = true;
   setTimeout(() => {
@@ -223,18 +272,24 @@ function handleAddToCart() {
           <div class="mt-5">
             <button
               type="button"
-              :disabled="!selectedSku || addedToCart"
+              :disabled="!canAddToCart || addedToCart"
               class="w-full rounded-full py-3 text-base font-semibold transition"
               :class="
                 addedToCart
                   ? 'bg-green-500 text-white cursor-default'
-                  : selectedSku
+                  : canAddToCart
                     ? 'bg-brand-blue text-white hover:brightness-110'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               "
               @click="handleAddToCart"
             >
-              {{ addedToCart ? "✓ Ajouté au panier" : "Ajouter au panier" }}
+              {{
+                addedToCart
+                  ? "✓ Ajouté au panier"
+                  : isOutOfStock
+                    ? "Rupture de stock"
+                    : "Ajouter au panier"
+              }}
             </button>
           </div>
         </div>
