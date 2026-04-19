@@ -1,4 +1,4 @@
-name: nom-flow
+name: furnflow
 
 on: pull_request
 
