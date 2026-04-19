@@ -27,8 +27,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
-
       - name: Run test \w coverage
         run: npm run test:coverage
 
@@ -41,7 +39,7 @@ jobs:
   sonarqube:
     name: SonarQube Analysis
     runs-on: ubuntu-latest
-    needs: [build, test]
+    needs: [build]
     steps:
       - uses: actions/checkout@v5
         with:
