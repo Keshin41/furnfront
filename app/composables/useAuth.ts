@@ -1,14 +1,22 @@
 export const useAuth = () => {
-  const token = useState<string | null>("token");
+  const token = useCookie<string | null>("token", {
+    secure: true,
+    sameSite: "strict",
+  });
+
+  const payload = computed(() => {
+    if (token.value) {
+      try {
+        return JSON.parse(atob(token.value.split(".")[1] ?? ""));
+      } catch {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  });
 
   const config = useRuntimeConfig();
-
-  function init() {
-    const savedToken = localStorage.getItem("token");
-    if (savedToken) {
-      token.value = savedToken;
-    }
-  }
 
   async function login(email: string, password: string) {
     const response = await $fetch<{ accessToken: string }>(
@@ -20,20 +28,23 @@ export const useAuth = () => {
     );
 
     token.value = response.accessToken;
-
-    localStorage.setItem("token", response.accessToken);
   }
 
   function logout() {
     token.value = null;
-    localStorage.removeItem("token");
     navigateTo("/login");
+  }
+
+  function isTokenExpired(): boolean {
+    if (!payload.value?.exp) return true;
+    return payload.value.exp * 1000 < Date.now();
   }
 
   return {
     token,
-    init,
+    payload,
     login,
     logout,
+    isTokenExpired,
   };
 };
