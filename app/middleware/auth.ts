@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(() => {
-  const { token } = useAuth();
-  if (!token.value) {
-    return navigateTo("/login");
+  const { token, logout, isTokenExpired } = useAuth();
+  if (!token.value || isTokenExpired()) {
+    logout();
   }
 });
