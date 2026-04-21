@@ -54,11 +54,16 @@ const handleSubmit = async () => {
       type: "foreground",
     });
 
-    const clientSecret = props.paymentIntent;
-    const query = clientSecret
-      ? `?payment=failed&payment_intent_client_secret=${encodeURIComponent(clientSecret)}`
-      : "?payment=failed";
-    globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}${query}`;
+    const isCardOrValidationError =
+      error.type === "card_error" || error.type === "validation_error";
+
+    if (!isCardOrValidationError) {
+      const clientSecret = props.paymentIntent;
+      const query = clientSecret
+        ? `?payment=failed&payment_intent_client_secret=${encodeURIComponent(clientSecret)}`
+        : "?payment=failed";
+      globalThis.location.href = `${globalThis.location.origin}${globalThis.location.pathname}${query}`;
+    }
   }
 };
 </script>
