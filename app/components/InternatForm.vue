@@ -204,6 +204,11 @@ const ticketCount = computed({
           <br />
           <p>Aucun remboursement ne sera émis par l'association.</p>
           <br />
+          <p>
+            Le règlement intérieur s'applique à l'internat, par conséquent les
+            mineurs sont interdits.
+          </p>
+          <br />
           <UButton
             to="/reglement_internat_2026.pdf"
             target="_blank"
