@@ -8,10 +8,9 @@ const discoverLinks = [
 ];
 
 const legalLinks = [
-  { label: "CGU", to: "/oups" },
-  { label: "RGPD", to: "/oups" },
-  { label: "Statut", to: "/oups" },
-  { label: "Reglement interieur", to: "/oups" },
+  { label: "CGU/RGPD", to: "/cgu" },
+  { label: "Statuts", to: "/statuts" },
+  { label: "Reglement interieur", to: "/reglement" },
 ];
 </script>
 
@@ -24,19 +23,31 @@ const legalLinks = [
     </template>
 
     <template #right>
-      <div class="grid gap-6 text-sm lg:mr-[8vw] md:grid-cols-2  sm:mr-0">
+      <div class="grid gap-6 text-sm lg:mr-[8vw] md:grid-cols-2 sm:mr-0">
         <div class="mx-8">
           <p class="mb-2 font-semibold">Decouvrir</p>
-          <UButton v-for="link in discoverLinks" :key="link.label" :to="link.to" variant="ghost" size="xs"
-            class="px-0! grid text-slate-700 hover:text-brand-dark-blue">
+          <UButton
+            v-for="link in discoverLinks"
+            :key="link.label"
+            :to="link.to"
+            variant="ghost"
+            size="xs"
+            class="px-0! grid text-slate-700 hover:text-brand-dark-blue"
+          >
             {{ link.label }}
           </UButton>
         </div>
 
         <div class="mx-8">
           <p class="mb-2 font-semibold">Legal</p>
-          <UButton v-for="link in legalLinks" :key="link.label" :to="link.to" variant="ghost" size="xs"
-            class="px-0! grid text-slate-700 hover:text-brand-dark-blue">
+          <UButton
+            v-for="link in legalLinks"
+            :key="link.label"
+            :to="link.to"
+            variant="ghost"
+            size="xs"
+            class="px-0! grid text-slate-700 hover:text-brand-dark-blue"
+          >
             {{ link.label }}
           </UButton>
         </div>
@@ -44,8 +55,9 @@ const legalLinks = [
     </template>
 
     <template #bottom>
-      <p class="flex justify-center text-sm text-gray-500">© 2025 Fur'N'Tours. All rights reserved.</p>
+      <p class="flex justify-center text-sm text-gray-500">
+        © 2026 Fur'N'Tours. All rights reserved.
+      </p>
     </template>
-
   </UFooter>
 </template>
