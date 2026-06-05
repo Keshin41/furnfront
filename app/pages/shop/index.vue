@@ -49,7 +49,8 @@ const goProduct = (id: string) => router.push(`/shop/${id}`);
             v-if="products.length === 0"
             class="text-center text-slate-500 py-16"
           >
-            Aucun produit disponible pour le moment.
+            Aucun produit disponible pour le moment, mais vous pouvez les
+            retrouver pendant nos meets !
           </div>
 
           <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

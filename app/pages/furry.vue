@@ -46,32 +46,11 @@ const regionalAssociations = [
   <div class="min-h-screen bg-brand-white text-brand-ink-deep">
     <main>
       <!-- Hero -->
-      <section
-        class="relative overflow-hidden bg-brand-blue py-20 text-brand-white"
-      >
-        <div class="pointer-events-none absolute inset-0 opacity-10">
-          <div
-            class="absolute -left-16 -top-16 h-96 w-96 rounded-full bg-brand-white blur-3xl"
-          />
-          <div
-            class="absolute -bottom-16 -right-16 h-96 w-96 rounded-full bg-brand-yellow blur-3xl"
-          />
-        </div>
-        <div class="relative z-10 mx-auto max-w-4xl px-6 text-center">
-          <p
-            class="text-sm font-semibold uppercase tracking-widest text-brand-white/70"
-          >
-            Notre association
-          </p>
-          <h1 class="mt-3 text-5xl font-bold leading-tight md:text-6xl">
-            Qu'est-ce que<br />le Furry ?
-          </h1>
-          <p class="mx-auto mt-6 max-w-2xl text-lg text-brand-white/85">
-            Un mouvement culturel mondial qui célèbre la créativité,
-            l'imaginaire et les animaux anthropomorphes.
-          </p>
-        </div>
-      </section>
+      <TitleSection
+        page-title="Notre association"
+        title="Qu'est-ce que le Furry ?"
+        description="Un mouvement culturel mondial qui célèbre la créativité, l'imaginaire et les animaux anthropomorphes."
+      />
 
       <!-- Bloc intro + vidéo Arte -->
       <section class="mx-auto max-w-5xl px-6 py-16">

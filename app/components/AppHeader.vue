@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 import CartDrawer from "~/components/CartDrawer.vue";
+import { HISTORY_URL } from "~/constants/urls";
 
 const route = useRoute();
 
-const SelectedClass = "text-brand-yellow font-bold underline decoration-2 underline-offset-4";
+const SelectedClass =
+  "text-brand-yellow font-bold underline decoration-2 underline-offset-4";
 
 const isShopSection = computed(() => {
   return route.path.startsWith("/shop") || route.path.startsWith("/checkout");
@@ -12,7 +14,7 @@ const isShopSection = computed(() => {
 
 const associationChildren = computed<NavigationMenuItem[]>(() => {
   const items: NavigationMenuItem[] = [
-    { label: "Histoire et objectifs", to: "/oups" },
+    { label: "Histoire et objectifs", to: HISTORY_URL },
     { label: "Qu'est ce qu'un furry", to: "/furry" },
     { label: "Notre équipe", to: "/oups" },
     { label: "Nos évènements", to: "/oups" },
@@ -29,9 +31,7 @@ const associationChildren = computed<NavigationMenuItem[]>(() => {
     return {
       ...item,
       active: isActive,
-      class: isActive
-        ? SelectedClass
-        : undefined,
+      class: isActive ? SelectedClass : undefined,
     };
   });
 });
@@ -44,12 +44,11 @@ const navItems = computed<NavigationMenuItem[]>(() => [
   {
     label: "Notre association",
     active: isAssociationSection.value,
-    class: isAssociationSection.value
-      ? SelectedClass
-      : undefined,
+    class: isAssociationSection.value ? SelectedClass : undefined,
     children: associationChildren.value,
   },
-  { label: "Nos évènements", 
+  {
+    label: "Nos évènements",
     to: "/furmeet",
     active: route.path.startsWith("/furmeet"),
     class: route.path.startsWith("/furmeet") ? SelectedClass : undefined,
@@ -58,11 +57,10 @@ const navItems = computed<NavigationMenuItem[]>(() => [
     label: "Boutique",
     to: "/shop",
     active: isShopSection.value,
-    class: isShopSection.value
-      ? SelectedClass
-      : undefined,
+    class: isShopSection.value ? SelectedClass : undefined,
   },
-  { label: "Internat JTF 2026", 
+  {
+    label: "Internat JTF 2026",
     to: "/internat",
     active: route.path.startsWith("/internat"),
     class: route.path.startsWith("/internat") ? SelectedClass : undefined,
