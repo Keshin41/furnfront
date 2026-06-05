@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { HISTORY_URL } from "~/constants/urls";
+
 const discoverLinks = [
   { label: "Furmeets", to: "/furmeet" },
   { label: "Boutique", to: "/shop" },
   { label: "Qu'est-ce qu'un furry ?", to: "/furry" },
-  { label: "Histoire de l'association", to: "/oups" },
+  { label: "Histoire de l'association", to: HISTORY_URL },
   { label: "Reseau", to: "/oups" },
 ];
 
