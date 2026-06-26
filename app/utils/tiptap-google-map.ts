@@ -52,7 +52,7 @@ export const GoogleMap = Node.create<GoogleMapOptions>({
             'div',
             mergeAttributes(this.options.HTMLAttributes, {
                 'data-google-map': '',
-                class: 'my-4 aspect-video overflow-hidden rounded-lg border border-light-blue/30',
+                class: 'my-4 aspect-video overflow-hidden rounded-lg border border-brand-light-blue/50',
             }),
             [
                 'iframe',

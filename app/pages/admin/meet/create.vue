@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import z from "zod";
-import type { FurmeetActivityType, FurmeetResponse, MeetUpsertPayload } from "~/types/furmeet";
+import type { FurmeetActivityType, MeetUpsertPayload } from "~/types/furmeet";
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
 
 useSeoMeta({
-  title: "Edition de la meet",
+  title: "Création d'une meet",
 });
 
 definePageMeta({
@@ -12,10 +12,7 @@ definePageMeta({
   middleware: "auth",
 });
 
-const id = useRoute().params.id as string;
 const toast = useToast();
-
-const { data, error, pending, refresh } = await useAPI<FurmeetResponse>(`/event/${id}`);
 
 const activityTypeOptions: Array<{ label: string; value: FurmeetActivityType }> = [
   { label: "Activité", value: "ACTIVITY" },
@@ -23,9 +20,6 @@ const activityTypeOptions: Array<{ label: string; value: FurmeetActivityType }> 
   { label: "Bar", value: "BAR" },
   { label: "Autre", value: "OTHER" },
 ];
-
-const toDateInput = (value: string) => value?.split("T")[0] ?? "";
-const toTimeInput = (value: string) => value?.split("T")[1]?.substring(0, 5) ?? "00:00";
 
 const createEmptyActivity = () => ({
   title: "",
@@ -57,21 +51,14 @@ const schema = z.object({
 type Schema = z.output<typeof schema>;
 
 const state = reactive<Schema>({
-  title: data.value?.title ?? "",
-  description: data.value?.description ?? "",
-  imageUrl: data.value?.imageUrl ?? "",
-  published: data.value?.published ?? false,
-  opened: data.value?.opened ?? false,
-  eventActivities:
-    data.value?.eventActivities.map((activity) => ({
-      title: activity.title,
-      description: activity.description,
-      date: toDateInput(activity.date),
-      time: toTimeInput(activity.date),
-      order: activity.order,
-      type: activity.type,
-    })) ?? [createEmptyActivity()],
+  title: "",
+  description: "",
+  imageUrl: "",
+  published: false,
+  opened: false,
+  eventActivities: [createEmptyActivity()],
 });
+
 const uploadingImage = ref(false);
 const saving = ref(false);
 
@@ -148,20 +135,19 @@ const handleSubmit = async () => {
   saving.value = true;
   try {
     const payload = buildPayload();
-    await useAPI(`/event/${id}`, {
-      method: "PUT",
+    await useAPI("/event/", {
+      method: "POST",
       body: payload,
     });
     toast.add({
-      title: "Meet mise a jour",
+      title: "Meet créée",
       color: "success",
     });
-    await refresh();
     await navigateTo("/admin/meet");
   } catch (err) {
-    console.error("Failed to update meet", err);
+    console.error("Failed to create meet", err);
     toast.add({
-      title: "Erreur lors de la mise a jour de la meet",
+      title: "Erreur lors de la création de la meet",
       color: "error",
     });
   } finally {
@@ -169,14 +155,15 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
 <template>
   <div class="w-full p-4 md:p-6">
     <div class="rounded-3xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white via-brand-white to-brand-light-blue/20 p-4 shadow-sm md:p-6">
       <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">Edition d'une meet</h1>
+          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">Création d'une meet</h1>
           <p class="mt-2 max-w-2xl text-sm text-brand-ink">
-            Ajuste l'image, le contenu et le programme en quelques sections claires.
+            Prépare une nouvelle meet avec son contenu, son image et son programme.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -199,15 +186,7 @@ const handleSubmit = async () => {
         </div>
       </div>
 
-      <div v-if="pending" class="rounded-2xl border border-dashed border-brand-light-blue/70 bg-brand-white/70 p-8 text-center text-brand-sky">
-        Chargement de la meet...
-      </div>
-      <div v-else-if="error" class="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-        Erreur: {{ error.message }}
-      </div>
-
       <UForm
-        v-else-if="data"
         :schema="schema"
         :state="state"
         class="space-y-6"
@@ -279,7 +258,7 @@ const handleSubmit = async () => {
                 :src="state.imageUrl"
                 :alt="state.title || 'Apercu image meet'"
                 :fallback="'/furmeet/thumbnail/default.png'"
-                class="h-44 w-full rounded-lg border border-brand-light-blue/70 object-cover"
+                class="h-48 w-full rounded-lg border border-brand-light-blue/70 object-cover"
               />
               <div v-else class="flex h-44 items-center justify-center rounded-lg border border-dashed border-brand-light-blue/70 text-sm text-brand-sky">
                 Aucune image selectionnee
@@ -329,7 +308,7 @@ const handleSubmit = async () => {
 
               <div class="grid gap-4 md:grid-cols-2">
                 <UFormField :label="'Type'" :name="'eventActivities[' + index + '].type'">
-                  <USelect v-model="activity.type" :items="activityTypeOptions" class="min-w-30"/>
+                  <USelect v-model="activity.type" :items="activityTypeOptions" class="min-w-30" />
                 </UFormField>
 
                 <UFormField :label="'Ordre'" :name="'eventActivities[' + index + '].order'">
@@ -378,7 +357,7 @@ const handleSubmit = async () => {
 
         <div class="sticky bottom-4 z-10 mt-2 flex justify-end">
           <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white/95 p-2 shadow-lg backdrop-blur">
-            <UButton type="submit" :loading="saving" size="lg" label="Enregistrer les modifications" />
+            <UButton type="submit" :loading="saving" size="lg" label="Créer la meet" />
           </div>
         </div>
       </UForm>

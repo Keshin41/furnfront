@@ -45,3 +45,20 @@ export type FurmeetCard = {
   date: string | null;
   imageURL?: string;
 };
+
+export type MeetActivityUpsertPayload = {
+  title: string;
+  description?: string;
+  date: string;
+  order?: number;
+  type: FurmeetActivityType;
+};
+
+export type MeetUpsertPayload = {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  published: boolean;
+  opened: boolean;
+  eventActivities: MeetActivityUpsertPayload[];
+};
