@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import z from "zod";
-import type { FurmeetActivityType, MeetUpsertPayload } from "~/types/furmeet";
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
+import type { FurmeetActivityType, MeetUpsertPayload } from "~/types/furmeet";
 
 useSeoMeta({
   title: "Création d'une meet",
@@ -13,13 +13,6 @@ definePageMeta({
 });
 
 const toast = useToast();
-
-const activityTypeOptions: Array<{ label: string; value: FurmeetActivityType }> = [
-  { label: "Activité", value: "ACTIVITY" },
-  { label: "Restaurant", value: "RESTAURANT" },
-  { label: "Bar", value: "BAR" },
-  { label: "Autre", value: "OTHER" },
-];
 
 const createEmptyActivity = () => ({
   title: "",
@@ -158,12 +151,17 @@ const handleSubmit = async () => {
 
 <template>
   <div class="w-full p-4 md:p-6">
-    <div class="rounded-3xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white via-brand-white to-brand-light-blue/20 p-4 shadow-sm md:p-6">
+    <div
+      class="rounded-3xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white via-brand-white to-brand-light-blue/20 p-4 shadow-sm md:p-6"
+    >
       <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">Création d'une meet</h1>
+          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">
+            Création d'une meet
+          </h1>
           <p class="mt-2 max-w-2xl text-sm text-brand-ink">
-            Prépare une nouvelle meet avec son contenu, son image et son programme.
+            Prépare une nouvelle meet avec son contenu, son image et son
+            programme.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -193,13 +191,23 @@ const handleSubmit = async () => {
         @submit="handleSubmit"
       >
         <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
-            <h2 class="text-lg font-bold text-brand-dark-blue">Contenu principal</h2>
-            <p class="mb-4 mt-1 text-sm text-brand-ink">Informations visibles sur la page publique.</p>
+          <div
+            class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
+          >
+            <h2 class="text-lg font-bold text-brand-dark-blue">
+              Contenu principal
+            </h2>
+            <p class="mb-4 mt-1 text-sm text-brand-ink">
+              Informations visibles sur la page publique.
+            </p>
 
             <div class="space-y-4">
               <UFormField label="Titre" name="title">
-                <UInput v-model="state.title" placeholder="Ex: Meet de printemps" size="xl" />
+                <UInput
+                  v-model="state.title"
+                  placeholder="Ex: Meet de printemps"
+                  size="xl"
+                />
               </UFormField>
 
               <UFormField label="Description" name="description">
@@ -212,9 +220,13 @@ const handleSubmit = async () => {
             </div>
           </div>
 
-          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+          <div
+            class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
+          >
             <h2 class="text-lg font-bold text-brand-dark-blue">Publication</h2>
-            <p class="mb-4 mt-1 text-sm text-brand-ink">Contrôle l'état de diffusion et les inscriptions.</p>
+            <p class="mb-4 mt-1 text-sm text-brand-ink">
+              Contrôle l'état de diffusion et les inscriptions.
+            </p>
 
             <div class="space-y-4">
               <UFormField label="Publié" name="published">
@@ -227,9 +239,15 @@ const handleSubmit = async () => {
           </div>
         </section>
 
-        <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
-          <h2 class="text-lg font-bold text-brand-dark-blue">Image de couverture</h2>
-          <p class="mb-4 mt-1 text-sm text-brand-ink">Ajoute une URL ou importe une image locale.</p>
+        <section
+          class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
+        >
+          <h2 class="text-lg font-bold text-brand-dark-blue">
+            Image de couverture
+          </h2>
+          <p class="mb-4 mt-1 text-sm text-brand-ink">
+            Ajoute une URL ou importe une image locale.
+          </p>
 
           <div class="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
             <div class="space-y-3">
@@ -251,8 +269,14 @@ const handleSubmit = async () => {
               </UFormField>
             </div>
 
-            <div class="-mt-17 rounded-xl border border-brand-light-blue/70 bg-brand-light-blue/15 p-3">
-              <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-sky">Apercu</p>
+            <div
+              class="-mt-17 rounded-xl border border-brand-light-blue/70 bg-brand-light-blue/15 p-3"
+            >
+              <p
+                class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-sky"
+              >
+                Apercu
+              </p>
               <ImageWithFallback
                 v-if="state.imageUrl"
                 :src="state.imageUrl"
@@ -260,25 +284,40 @@ const handleSubmit = async () => {
                 :fallback="'/furmeet/thumbnail/default.png'"
                 class="h-48 w-full rounded-lg border border-brand-light-blue/70 object-cover"
               />
-              <div v-else class="flex h-44 items-center justify-center rounded-lg border border-dashed border-brand-light-blue/70 text-sm text-brand-sky">
+              <div
+                v-else
+                class="flex h-44 items-center justify-center rounded-lg border border-dashed border-brand-light-blue/70 text-sm text-brand-sky"
+              >
                 Aucune image selectionnee
               </div>
             </div>
           </div>
         </section>
 
-        <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+        <section
+          class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
+        >
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="text-lg font-bold text-brand-dark-blue">Programme</h2>
-              <p class="mt-1 text-sm text-brand-ink">Construis chaque etape de la meet.</p>
+              <p class="mt-1 text-sm text-brand-ink">
+                Construis chaque etape de la meet.
+              </p>
             </div>
-            <UButton size="sm" variant="outline" icon="i-lucide-plus" @click="addActivity">
+            <UButton
+              size="sm"
+              variant="outline"
+              icon="i-lucide-plus"
+              @click="addActivity"
+            >
               Ajouter une activite
             </UButton>
           </div>
 
-          <div v-if="state.eventActivities.length === 0" class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-5 text-sm text-brand-sky">
+          <div
+            v-if="state.eventActivities.length === 0"
+            class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-5 text-sm text-brand-sky"
+          >
             Aucune activite. Ajoute au moins une etape au programme.
           </div>
 
@@ -290,10 +329,14 @@ const handleSubmit = async () => {
             >
               <div class="mb-3 flex items-center justify-between gap-3">
                 <div class="inline-flex items-center gap-2">
-                  <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue text-sm font-bold text-white">
+                  <span
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue text-sm font-bold text-white"
+                  >
                     {{ index + 1 }}
                   </span>
-                  <p class="text-sm font-semibold text-brand-dark-blue">Etape du programme</p>
+                  <p class="text-sm font-semibold text-brand-dark-blue">
+                    Etape du programme
+                  </p>
                 </div>
                 <UButton
                   size="xs"
@@ -307,12 +350,27 @@ const handleSubmit = async () => {
               </div>
 
               <div class="grid gap-4 md:grid-cols-2">
-                <UFormField :label="'Type'" :name="'eventActivities[' + index + '].type'">
-                  <USelect v-model="activity.type" :items="activityTypeOptions" class="min-w-30" />
+                <UFormField
+                  :label="'Type'"
+                  :name="'eventActivities[' + index + '].type'"
+                >
+                  <USelect
+                    v-model="activity.type"
+                    :items="activityTypeOptions"
+                    class="min-w-30"
+                  />
                 </UFormField>
 
-                <UFormField :label="'Ordre'" :name="'eventActivities[' + index + '].order'">
-                  <UInput v-model.number="activity.order" type="number" min="0" step="1" />
+                <UFormField
+                  :label="'Ordre'"
+                  :name="'eventActivities[' + index + '].order'"
+                >
+                  <UInput
+                    v-model.number="activity.order"
+                    type="number"
+                    min="0"
+                    step="1"
+                  />
                 </UFormField>
               </div>
 
@@ -325,7 +383,10 @@ const handleSubmit = async () => {
                   />
                 </UFormField>
 
-                <UFormField :label="'Description'" :name="'eventActivities[' + index + '].description'">
+                <UFormField
+                  :label="'Description'"
+                  :name="'eventActivities[' + index + '].description'"
+                >
                   <AdminRichTextEditor
                     v-model="activity.description"
                     placeholder="Description de l'activite"
@@ -356,8 +417,15 @@ const handleSubmit = async () => {
         </section>
 
         <div class="sticky bottom-4 z-10 mt-2 flex justify-end">
-          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white/95 p-2 shadow-lg backdrop-blur">
-            <UButton type="submit" :loading="saving" size="lg" label="Créer la meet" />
+          <div
+            class="rounded-2xl border border-brand-light-blue/60 bg-brand-white/95 p-2 shadow-lg backdrop-blur"
+          >
+            <UButton
+              type="submit"
+              :loading="saving"
+              size="lg"
+              label="Créer la meet"
+            />
           </div>
         </div>
       </UForm>
