@@ -159,12 +159,14 @@ const formatDateTime = (value: string) =>
             {{ furmeet.title }}
           </h1>
 
-          <div class="mt-6 rounded-2xl bg-brand-light-blue/25 p-4 text-brand-ink">
+          <div
+            class="mt-6 rounded-2xl bg-brand-light-blue/25 p-4 text-brand-ink"
+          >
             <div
               v-if="furmeet.description"
               class="tiptap-render text-sm leading-relaxed"
               v-html="toHtmlContent(furmeet.description)"
-            />
+            ></div>
             <p v-else>Aucune description courte pour cet article.</p>
           </div>
 
@@ -207,9 +209,20 @@ const formatDateTime = (value: string) =>
                   v-if="activity.description"
                   class="tiptap-render mt-2 text-sm leading-relaxed text-brand-ink"
                   v-html="toHtmlContent(activity.description)"
-                />
+                ></div>
               </li>
             </ol>
+          </div>
+          <div v-if="furmeet.hasAttachedForm">
+            <div class="mb-8">
+              <CustomButton
+                label="Accéder au formulaire d'inscription"
+                size="sm"
+                bgClass="bg-brand-light-blue"
+                textClass="text-brand-ink"
+                :to="`/furmeet/${furmeet.id}/form`"
+              />
+            </div>
           </div>
         </div>
       </article>

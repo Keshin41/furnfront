@@ -65,16 +65,16 @@ const columns: TableColumn<FurmeetResponse>[] = [
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">
-            Gestion des meets
+            Gestion des events
           </h1>
           <p class="mt-2 text-sm text-brand-ink">
-            Cree, organise et mets a jour les meets et leurs activites.
+            Cree, organise et mets a jour les events et leurs activites.
           </p>
         </div>
         <UButton
           icon="i-lucide-plus"
-          label="Créer une meet"
-          @click="navigateTo('/admin/meet/create')"
+          label="Créer un event"
+          @click="navigateTo('/admin/event/new')"
         />
       </div>
     </div>
