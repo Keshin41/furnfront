@@ -4,7 +4,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const api = $fetch.create({
     baseURL: config.public.apiBaseUrl,
-    onRequest({ request, options, error }) {
+    onRequest({ options }) {
       if (token.value) {
         // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
         options.headers.set("Authorization", `Bearer ${token.value}`);
