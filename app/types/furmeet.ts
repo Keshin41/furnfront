@@ -10,6 +10,20 @@ export type FurmeetActivity = {
   description: string;
 };
 
+export type FurmeetFieldType =
+  | "TEXT"
+  | "NUMBER"
+  | "SELECT"
+  | "CHECKBOX"
+  | "RADIO";
+
+export type MeetActivityQuestionUpsertPayload = {
+  label: string;
+  order?: number;
+  type: FurmeetFieldType;
+  required: boolean;
+};
+
 export type Furmeet = {
   id: string;
   title: string;
@@ -22,6 +36,7 @@ export type Furmeet = {
   createdAt: string;
   updatedAt: string;
   eventActivities?: FurmeetActivity[];
+  hasAttachedForm: boolean;
 };
 
 export type FurmeetResponse = {
@@ -52,6 +67,7 @@ export type MeetActivityUpsertPayload = {
   date: string;
   order?: number;
   type: FurmeetActivityType;
+  activityQuestions?: MeetActivityQuestionUpsertPayload[];
 };
 
 export type MeetUpsertPayload = {
