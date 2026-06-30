@@ -1,3 +1,4 @@
+import type { FurmeetActivityType } from "~/types/furmeet";
 import { EventPartType } from "~/types/logicConstants";
 
 export const mapEventPartTypeToLabel = (type: EventPartType): string => {
@@ -24,3 +25,29 @@ export const createOptionFromEnum = <T extends Record<string, string>>(
     value,
   }));
 };
+
+const FieldType = {
+  TEXT: "TEXT",
+  NUMBER: "NUMBER",
+  SELECT: "SELECT",
+  CHECKBOX: "CHECKBOX",
+  RADIO: "RADIO",
+} as const;
+
+type FieldTypeType = (typeof FieldType)[keyof typeof FieldType];
+
+export const createEmptyQuestion = () => ({
+  label: "",
+  order: 0,
+  type: FieldType.TEXT as FieldTypeType,
+  required: false,
+});
+
+export const createEmptyActivity = () => ({
+  title: "",
+  description: "",
+  date: "",
+  time: "12:00",
+  order: 0,
+  type: "OTHER" as FurmeetActivityType,
+});

@@ -8,6 +8,15 @@ export type FurmeetActivity = {
   date: string;
   title: string;
   description: string;
+  activityQuestions?: FurmeetActivityQuestion[];
+};
+
+export type FurmeetActivityQuestion = {
+  id: string;
+  label: string;
+  order?: number;
+  type: FurmeetFieldType;
+  required: boolean;
 };
 
 export type FurmeetFieldType =

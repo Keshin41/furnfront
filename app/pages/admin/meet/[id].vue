@@ -23,11 +23,30 @@ const { data, error, pending, refresh } = await useAPI<FurmeetResponse>(
   `/event/${id}`,
 );
 
-const activityTypeOptions: Array<{
-  label: string;
-  value: FurmeetActivityType;
-}> = [
-  { label: "Activité", value: "ACTIVITY" },
+const FieldType = {
+  TEXT: "TEXT",
+  NUMBER: "NUMBER",
+  SELECT: "SELECT",
+  CHECKBOX: "CHECKBOX",
+  RADIO: "RADIO",
+} as const;
+
+type FieldTypeType = (typeof FieldType)[keyof typeof FieldType];
+
+type ActivityQuestionItem = { label: string; value: FieldTypeType };
+
+const questionTypeItems: ActivityQuestionItem[] = [
+  { label: "Texte", value: FieldType.TEXT },
+  { label: "Nombre", value: FieldType.NUMBER },
+  { label: "Liste", value: FieldType.SELECT },
+  { label: "Case à cocher", value: FieldType.CHECKBOX },
+  { label: "Bouton radio", value: FieldType.RADIO },
+];
+
+type ActivityTypeItem = { label: string; value: FurmeetActivityType };
+
+const activityTypeItems: ActivityTypeItem[] = [
+  { label: "Activite", value: "ACTIVITY" },
   { label: "Restaurant", value: "RESTAURANT" },
   { label: "Bar", value: "BAR" },
   { label: "Autre", value: "OTHER" },
@@ -60,12 +79,16 @@ const schema = z.object({
       time: z.string().min(1, "L'heure est requise"),
       order: z.number().optional(),
       type: z.enum(["ACTIVITY", "RESTAURANT", "BAR", "OTHER"]),
-      fields: z.array(
-        z.object({
-          type: z.enum([]),
-          name: z.string(),
-        }),
-      ),
+      activityQuestions: z
+        .array(
+          z.object({
+            label: z.string().min(1, "Label obligatoire"),
+            order: z.number().optional(),
+            type: z.enum(["TEXT", "NUMBER", "SELECT", "CHECKBOX", "RADIO"]),
+            required: z.boolean(),
+          }),
+        )
+        .optional(),
     }),
   ),
 });
@@ -85,6 +108,12 @@ const state = reactive<Schema>({
     time: toTimeInput(activity.date),
     order: activity.order,
     type: activity.type,
+    activityQuestions: activity.activityQuestions?.map((question) => ({
+      label: question.label,
+      order: question.order,
+      type: question.type,
+      required: question.required,
+    })),
   })) ?? [createEmptyActivity()],
 });
 const uploadingImage = ref(false);
@@ -129,6 +158,54 @@ const addActivity = () => {
 
 const removeActivity = (index: number) => {
   state.eventActivities.splice(index, 1);
+};
+
+const setActivityType = (
+  index: number,
+  value: FurmeetActivityType | undefined,
+) => {
+  const activity = state.eventActivities[index];
+  if (!activity || !value) {
+    return;
+  }
+  activity.type = value;
+};
+
+const addActivityQuestion = (activityIndex: number) => {
+  const activity = state.eventActivities[activityIndex];
+  if (!activity) {
+    return;
+  }
+  if (!activity.activityQuestions) {
+    activity.activityQuestions = [] as Array<
+      ReturnType<typeof createEmptyQuestion>
+    >;
+  }
+  activity.activityQuestions.push(createEmptyQuestion());
+};
+
+const removeActivityQuestion = (
+  activityIndex: number,
+  questionIndex: number,
+) => {
+  const activity = state.eventActivities[activityIndex];
+  if (!activity || !activity.activityQuestions) {
+    return;
+  }
+  activity.activityQuestions.splice(questionIndex, 1);
+};
+
+const setActivityQuestionType = (
+  activityIndex: number,
+  questionIndex: number,
+  value: FieldTypeType | undefined,
+) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question || !value) {
+    return;
+  }
+  question.type = value;
 };
 
 const toActivityDateTime = (date: string, time: string) => {
@@ -331,7 +408,7 @@ const handleSubmit = async () => {
                 :src="state.imageUrl"
                 :alt="state.title || 'Apercu image meet'"
                 :fallback="'/furmeet/thumbnail/default.png'"
-                class="h-44 w-full rounded-lg border border-brand-light-blue/70 object-cover"
+                class="h-48 w-full rounded-lg border border-brand-light-blue/70 object-cover"
               />
               <div
                 v-else
@@ -376,11 +453,240 @@ const handleSubmit = async () => {
               :key="index"
               class="rounded-2xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white to-brand-light-blue/10 p-4 shadow-xs"
             >
-              <EventPartForm
-                :activity="activity"
-                :index="index"
-                :remove-activity="removeActivity"
-              />
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <div class="inline-flex items-center gap-2">
+                  <span
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue text-sm font-bold text-white"
+                  >
+                    {{ index + 1 }}
+                  </span>
+                  <p class="text-sm font-semibold text-brand-dark-blue">
+                    Etape du programme
+                  </p>
+                </div>
+                <UButton
+                  size="xs"
+                  color="error"
+                  variant="soft"
+                  icon="i-lucide-trash-2"
+                  @click="removeActivity(index)"
+                >
+                  Supprimer
+                </UButton>
+              </div>
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <UFormField
+                  :label="'Type'"
+                  :name="'eventActivities[' + index + '].type'"
+                >
+                  <USelect
+                    :model-value="activity.type"
+                    :items="activityTypeItems"
+                    class="min-w-30"
+                    @update:model-value="
+                      (value) =>
+                        setActivityType(index, value as FurmeetActivityType)
+                    "
+                  />
+                </UFormField>
+
+                <UFormField
+                  :label="'Ordre'"
+                  :name="'eventActivities[' + index + '].order'"
+                >
+                  <UInput
+                    v-model.number="activity.order"
+                    type="number"
+                    min="0"
+                    step="1"
+                  />
+                </UFormField>
+              </div>
+
+              <div class="mt-4 space-y-4">
+                <UFormField :name="'eventActivities[' + index + '].title'">
+                  <UInput
+                    v-model="activity.title"
+                    class="w-full"
+                    placeholder="Titre de l'activite"
+                  />
+                </UFormField>
+
+                <UFormField
+                  :label="'Description'"
+                  :name="'eventActivities[' + index + '].description'"
+                >
+                  <AdminRichTextEditor
+                    v-model="activity.description"
+                    placeholder="Description de l'activite"
+                    min-height="80px"
+                  />
+                </UFormField>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                  <UFormField
+                    label="Date"
+                    :name="'eventActivities[' + index + '].date'"
+                    :validate-on-input-delay="2000"
+                  >
+                    <UInput v-model="activity.date" type="date" />
+                  </UFormField>
+
+                  <UFormField
+                    label="Heure"
+                    :name="'eventActivities[' + index + '].time'"
+                    :validate-on-input-delay="2000"
+                  >
+                    <UInput v-model="activity.time" type="time" />
+                  </UFormField>
+                </div>
+
+                <section
+                  class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-4"
+                >
+                  <div
+                    class="mb-4 flex flex-wrap items-center justify-between gap-3"
+                  >
+                    <div>
+                      <h3 class="text-base font-semibold text-brand-dark-blue">
+                        Questions de l'activité
+                      </h3>
+                      <p class="text-sm text-brand-ink">
+                        Ajoute des questions demandées lors de l'inscription.
+                      </p>
+                    </div>
+                    <UButton
+                      size="sm"
+                      variant="outline"
+                      icon="i-lucide-plus"
+                      @click.prevent="addActivityQuestion(index)"
+                    >
+                      Ajouter une question
+                    </UButton>
+                  </div>
+
+                  <div
+                    v-if="
+                      !activity.activityQuestions ||
+                      activity.activityQuestions.length === 0
+                    "
+                    class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-4 text-sm text-brand-sky"
+                  >
+                    Aucune question. Ajoute une question si tu veux demander des
+                    informations supplémentaires.
+                  </div>
+
+                  <div v-else class="space-y-4">
+                    <article
+                      v-for="(
+                        question, questionIndex
+                      ) in activity.activityQuestions"
+                      :key="questionIndex"
+                      class="rounded-2xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white to-brand-light-blue/10 p-4"
+                    >
+                      <div
+                        class="mb-3 flex flex-wrap items-center justify-between gap-3"
+                      >
+                        <div>
+                          <p class="text-sm font-semibold text-brand-dark-blue">
+                            Question {{ questionIndex + 1 }}
+                          </p>
+                          <p class="text-xs text-brand-ink">
+                            Cette question sera liée à l'activité.
+                          </p>
+                        </div>
+                        <UButton
+                          size="xs"
+                          color="error"
+                          variant="soft"
+                          icon="i-lucide-trash-2"
+                          @click.prevent="
+                            removeActivityQuestion(index, questionIndex)
+                          "
+                        >
+                          Supprimer
+                        </UButton>
+                      </div>
+
+                      <div class="grid gap-4 md:grid-cols-2">
+                        <UFormField
+                          :name="
+                            'eventActivities[' +
+                            index +
+                            '].activityQuestions[' +
+                            questionIndex +
+                            '].label'
+                          "
+                        >
+                          <UInput
+                            v-model="question.label"
+                            placeholder="Intitulé de la question"
+                          />
+                        </UFormField>
+
+                        <UFormField
+                          label="Type"
+                          :name="
+                            'eventActivities[' +
+                            index +
+                            '].activityQuestions[' +
+                            questionIndex +
+                            '].type'
+                          "
+                        >
+                          <USelect
+                            :model-value="question.type"
+                            :items="questionTypeItems"
+                            class="min-w-30"
+                            @update:model-value="
+                              (value) =>
+                                setActivityQuestionType(
+                                  index,
+                                  questionIndex,
+                                  value as FieldTypeType,
+                                )
+                            "
+                          />
+                        </UFormField>
+                      </div>
+
+                      <div class="grid gap-4 md:grid-cols-2">
+                        <UFormField
+                          label="Requise"
+                          :name="
+                            'eventActivities[' +
+                            index +
+                            '].activityQuestions[' +
+                            questionIndex +
+                            '].required'
+                          "
+                        >
+                          <USwitch v-model="question.required" />
+                        </UFormField>
+
+                        <UFormField
+                          label="Ordre"
+                          :name="
+                            'eventActivities[' +
+                            index +
+                            '].activityQuestions[' +
+                            questionIndex +
+                            '].order'
+                          "
+                        >
+                          <UInput
+                            v-model.number="question.order"
+                            type="number"
+                            min="0"
+                            step="1"
+                          />
+                        </UFormField>
+                      </div>
+                    </article>
+                  </div>
+                </section>
+              </div>
             </article>
           </div>
         </section>
@@ -393,7 +699,7 @@ const handleSubmit = async () => {
               type="submit"
               :loading="saving"
               size="lg"
-              label="Enregistrer les modifications"
+              label="Créer la meet"
             />
           </div>
         </div>
