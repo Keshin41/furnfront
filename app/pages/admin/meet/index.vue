@@ -68,7 +68,7 @@ const columns: TableColumn<FurmeetResponse>[] = [
             Gestion des meets
           </h1>
           <p class="mt-2 text-sm text-brand-ink">
-            Cree, organise et mets a jour les meets et leurs activites.
+            Crée, organise et mets a jour les meets et leurs activites.
           </p>
         </div>
         <UButton
