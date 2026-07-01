@@ -21,7 +21,7 @@ export const createOptionFromEnum = <T extends Record<string, string>>(
   mapToLabel: (value: T[keyof T]) => string,
 ): { label: string; value: string }[] => {
   return Object.values(enumObj).map((value) => ({
-    label: mapToLabel(value),
+    label: mapToLabel(value as T[keyof T]),
     value,
   }));
 };

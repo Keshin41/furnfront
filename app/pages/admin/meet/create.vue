@@ -91,6 +91,61 @@ const setActivityQuestionType = (
   question.type = value;
 };
 
+const choiceIdCounter = ref(0);
+
+const createEmptyChoice = (): { id: string; label: string; value: string } => {
+  return {
+    id: `choice-${++choiceIdCounter.value}-${Date.now()}`,
+    label: "",
+    value: "",
+  };
+};
+
+const addChoice = (activityIndex: number, questionIndex: number) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question) {
+    return;
+  }
+  if (!question.choices) {
+    question.choices = [];
+  }
+  question.choices.push(createEmptyChoice());
+};
+
+const removeChoice = (
+  activityIndex: number,
+  questionIndex: number,
+  choiceIndex: number,
+) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question?.choices) {
+    return;
+  }
+  question.choices.splice(choiceIndex, 1);
+};
+
+const moveChoice = (
+  activityIndex: number,
+  questionIndex: number,
+  choiceIndex: number,
+  direction: -1 | 1,
+) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question?.choices) {
+    return;
+  }
+  const newIndex = choiceIndex + direction;
+  if (newIndex < 0 || newIndex >= question.choices.length) {
+    return;
+  }
+  const temp = question.choices[choiceIndex]!;
+  question.choices[choiceIndex] = question.choices[newIndex]!;
+  question.choices[newIndex] = temp;
+};
+
 const schema = z.object({
   title: z.string().min(1, "Le titre est requis"),
   description: z.string().optional().default(""),
@@ -112,6 +167,15 @@ const schema = z.object({
             order: z.number().optional(),
             type: z.enum(["TEXT", "NUMBER", "SELECT", "CHECKBOX", "RADIO"]),
             required: z.boolean(),
+            choices: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  label: z.string().min(1, "Le libellé est requis"),
+                  value: z.string().min(1, "La valeur est requise"),
+                }),
+              )
+              .optional(),
           }),
         )
         .optional(),
@@ -203,6 +267,7 @@ const buildPayload = (): MeetUpsertPayload => {
         order: question.order,
         type: question.type,
         required: question.required,
+        choices: question.choices?.map((c) => ({ id: c.id, label: c.label, value: c.value })),
       })),
     })),
   };
@@ -636,6 +701,85 @@ const handleSubmit = async () => {
                             step="1"
                           />
                         </UFormField>
+                      </div>
+
+                      <!-- Options de la question (for SELECT, CHECKBOX, RADIO) -->
+                      <div
+                        v-if="
+                          question.type === 'SELECT' ||
+                          question.type === 'CHECKBOX' ||
+                          question.type === 'RADIO'
+                        "
+                        class="mt-4"
+                      >
+                        <div class="mb-2 flex items-center justify-between">
+                          <h4 class="text-sm font-semibold text-brand-dark-blue">
+                            Options
+                          </h4>
+                          <UButton
+                            size="xs"
+                            variant="soft"
+                            icon="i-lucide-plus"
+                            @click.prevent="addChoice(index, qIndex)"
+                          >
+                            Ajouter une option
+                          </UButton>
+                        </div>
+
+                        <div
+                          v-if="!question.choices || question.choices.length === 0"
+                          class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-3 text-sm text-brand-sky"
+                        >
+                          Aucune option. Ajoute des options pour que
+                          l'utilisateur puisse choisir.
+                        </div>
+
+                        <div v-else class="space-y-2">
+                          <div
+                            v-for="(choice, cIndex) in question.choices"
+                            :key="choice.id"
+                            class="flex items-center gap-2 rounded-lg border border-brand-light-blue/60 bg-brand-white p-2"
+                          >
+                            <div class="flex flex-col gap-0.5">
+                              <UButton
+                                size="xs"
+                                variant="ghost"
+                                icon="i-lucide-chevron-up"
+                                :disabled="cIndex === 0"
+                                @click="moveChoice(index, qIndex, cIndex, -1)"
+                              />
+                              <UButton
+                                size="xs"
+                                variant="ghost"
+                                icon="i-lucide-chevron-down"
+                                :disabled="cIndex === question.choices.length - 1"
+                                @click="moveChoice(index, qIndex, cIndex, 1)"
+                              />
+                            </div>
+
+                            <UInput
+                              v-model="choice.label"
+                              placeholder="Libellé de l'option"
+                              size="sm"
+                              class="flex-1"
+                            />
+
+                            <UInput
+                              v-model="choice.value"
+                              placeholder="Valeur"
+                              size="sm"
+                              class="w-28"
+                            />
+
+                            <UButton
+                              size="xs"
+                              color="error"
+                              variant="soft"
+                              icon="i-lucide-trash-2"
+                              @click.prevent="removeChoice(index, qIndex, cIndex)"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </article>
                   </div>

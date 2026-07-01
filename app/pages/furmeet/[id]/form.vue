@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { z } from "zod";
+import { z } from 'zod';
 
 const route = useRoute();
 const id = route.params.id as string;
@@ -8,7 +8,8 @@ export type QuestionDto = {
   id: string;
   question: string;
   required: boolean;
-  type: "TEXT" | "NUMBER" | "SELECT" | "CHECKBOX" | "RADIO";
+  type: 'TEXT' | 'NUMBER' | 'SELECT' | 'CHECKBOX' | 'RADIO';
+  choices?: { id: string; label: string; value: string }[];
 };
 
 export type FormDto = {
@@ -33,11 +34,9 @@ export type FormAnswersDto = {
   activities: ActivityAnswersDto[];
 };
 
-const { data, error, pending } = await useAPI<FormDto | null>(
-  `/event/${id}/form`,
-);
+const { data, error, pending } = await useAPI<FormDto | null>(`/event/${id}/form`);
 
-type Participation = "yes" | "no" | undefined;
+type Participation = 'yes' | 'no' | undefined;
 
 interface FormState {
   email: string;
@@ -52,21 +51,37 @@ function buildInitialState(form: FormDto | null | undefined): FormState {
   form?.forEach((section) => {
     participations[section.id] = undefined;
     section.questions.forEach((question) => {
-      answers[question.id] = question.type === "CHECKBOX" ? "false" : "";
+      answers[question.id] = question.type === 'CHECKBOX' ? '[]' : '';
     });
   });
 
-  return { email: "", participations, answers };
+  return { email: '', participations, answers };
 }
 
 const state = reactive<FormState>(buildInitialState(data.value));
 
 function getAnswer(questionId: string) {
-  return state.answers[questionId] ?? "";
+  return state.answers[questionId] ?? '';
 }
 
 function setAnswer(questionId: string, value: string) {
   state.answers[questionId] = value;
+}
+
+function getCheckboxAnswer(questionId: string): string[] {
+  const raw = state.answers[questionId] ?? '';
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function setCheckboxAnswer(questionId: string, value: string, checked: boolean) {
+  const current = getCheckboxAnswer(questionId);
+  const next = checked ? [...current, value] : current.filter((v) => v !== value);
+  state.answers[questionId] = JSON.stringify(next);
 }
 
 // --- Conditional schema ------------------------------------------------------
@@ -77,11 +92,8 @@ function setAnswer(questionId: string, value: string) {
 const schema = computed(() => {
   return z
     .object({
-      email: z.email("Email invalide").min(1, "Email requis"),
-      participations: z.record(
-        z.string(),
-        z.enum(["yes", "no"], { message: "Merci de répondre" }).optional(),
-      ),
+      email: z.email('Email invalide').min(1, 'Email requis'),
+      participations: z.record(z.string(), z.enum(['yes', 'no'], { message: 'Merci de répondre' }).optional()),
       answers: z.record(z.string(), z.string()),
     })
     .superRefine((val, ctx) => {
@@ -89,36 +101,55 @@ const schema = computed(() => {
       data.value?.forEach((section) => {
         if (!val.participations[section.id]) {
           ctx.addIssue({
-            code: "custom",
-            message: "Merci de répondre",
-            path: ["participations", section.id],
+            code: 'custom',
+            message: 'Merci de répondre',
+            path: ['participations', section.id],
           });
         }
 
         // Only validate questions for opted-in activities
-        const participates = val.participations[section.id] === "yes";
+        const participates = val.participations[section.id] === 'yes';
         if (!participates) return;
 
         section.questions.forEach((question) => {
-          const answer = val.answers[question.id] ?? "";
+          const answer = val.answers[question.id] ?? '';
 
-          if (question.required && answer.trim() === "") {
+          if (question.type === 'CHECKBOX') {
+            try {
+              const checked = JSON.parse(answer) as string[];
+              if (question.required && checked.length === 0) {
+                ctx.addIssue({
+                  code: 'custom',
+                  message: 'Ce champ est requis',
+                  path: ['answers', question.id],
+                });
+              }
+            } catch {
+              // Invalid JSON — treat as empty
+              if (question.required) {
+                ctx.addIssue({
+                  code: 'custom',
+                  message: 'Ce champ est requis',
+                  path: ['answers', question.id],
+                });
+              }
+            }
+            return;
+          }
+
+          if (question.required && answer.trim() === '') {
             ctx.addIssue({
-              code: "custom",
-              message: "Ce champ est requis",
-              path: ["answers", question.id],
+              code: 'custom',
+              message: 'Ce champ est requis',
+              path: ['answers', question.id],
             });
           }
 
-          if (
-            question.type === "NUMBER" &&
-            answer !== "" &&
-            Number.isNaN(Number(answer))
-          ) {
+          if (question.type === 'NUMBER' && answer !== '' && Number.isNaN(Number(answer))) {
             ctx.addIssue({
-              code: "custom",
-              message: "Ce champ doit être un nombre",
-              path: ["answers", question.id],
+              code: 'custom',
+              message: 'Ce champ doit être un nombre',
+              path: ['answers', question.id],
             });
           }
         });
@@ -135,22 +166,32 @@ async function onSubmit() {
       email: state.email,
       activities:
         data.value?.map((section) => {
-          const present = state.participations[section.id] === "yes";
+          const present = state.participations[section.id] === 'yes';
           return {
             activityId: section.id,
             present,
             answers: present
-              ? section.questions.map((q) => ({
-                  questionId: q.id,
-                  answer: state.answers[q.id] ?? "",
-                }))
+              ? section.questions
+                  .map((q) => {
+                    if (q.type === 'CHECKBOX') {
+                      return {
+                        questionId: q.id,
+                        answer: JSON.stringify(state.answers[q.id] ?? []),
+                      };
+                    }
+                    return {
+                      questionId: q.id,
+                      answer: state.answers[q.id] ?? '',
+                    };
+                  })
+                  .filter((a) => a.answer !== '' || section.questions.find((q) => q.id === a.questionId && q.required))
               : [],
           };
         }) ?? [],
     };
 
     await useAPI(`/event/${id}/form`, {
-      method: "POST",
+      method: 'POST',
       body: payload,
     });
   } finally {
@@ -165,13 +206,8 @@ async function onSubmit() {
     <p v-else-if="error">Erreur dans le formulaire.</p>
     <p v-else-if="!data || data.length === 0">Aucun formulaire disponible.</p>
 
-    <UForm
-      v-else
-      :schema="schema"
-      :state="state"
-      class="space-y-8"
-      @submit="onSubmit"
-    >
+    <UForm v-else :schema="schema" :state="state" class="space-y-8" @submit="onSubmit">
+      <h1 class="text-xl">Formulaire d'inscription</h1>
       <UFormField label="Email" name="email" required>
         <UInput v-model="state.email" type="email" />
       </UFormField>
@@ -191,9 +227,7 @@ async function onSubmit() {
               { label: 'Oui', value: 'yes' },
               { label: 'Non', value: 'no' },
             ]"
-            @update:model-value="
-              (v) => (state.participations[section.id] = v as Participation)
-            "
+            @update:model-value="(v) => (state.participations[section.id] = v as Participation)"
           />
         </UFormField>
 
@@ -218,18 +252,23 @@ async function onSubmit() {
             />
             <USelect
               v-else-if="question.type === 'SELECT'"
-              :items="[{ label: 'Option 1', value: 'option-1' }]"
+              :items="question.choices ?? [{ label: 'Option 1', value: 'option-1' }]"
               :model-value="getAnswer(question.id)"
               @update:model-value="(v) => setAnswer(question.id, String(v))"
             />
-            <UCheckbox
-              v-else-if="question.type === 'CHECKBOX'"
-              :model-value="getAnswer(question.id) === 'true'"
-              @update:model-value="(v) => setAnswer(question.id, String(v))"
-            />
+            <div v-else-if="question.type === 'CHECKBOX'" class="space-y-2">
+              <UCheckbox
+                v-for="choice in question.choices ?? []"
+                :key="choice.id"
+                :model-value="getCheckboxAnswer(question.id).includes(choice.value)"
+                @update:model-value="(v) => setCheckboxAnswer(question.id, choice.value, Boolean(v))"
+              >
+                {{ choice.label }}
+              </UCheckbox>
+            </div>
             <URadioGroup
               v-else-if="question.type === 'RADIO'"
-              :items="[{ label: 'Option 1', value: 'option-1' }]"
+              :items="question.choices ?? [{ label: 'Option 1', value: 'option-1' }]"
               :model-value="getAnswer(question.id)"
               @update:model-value="(v) => setAnswer(question.id, String(v))"
             />

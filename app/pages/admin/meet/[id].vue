@@ -1,34 +1,28 @@
 <script setup lang="ts">
-import z from "zod";
-import ImageWithFallback from "~/components/ImageWithFallback.vue";
-import type {
-  FurmeetActivityType,
-  FurmeetResponse,
-  MeetUpsertPayload,
-} from "~/types/furmeet";
+import z from 'zod';
+import ImageWithFallback from '~/components/ImageWithFallback.vue';
+import type { FurmeetActivityType, FurmeetResponse, MeetUpsertPayload } from '~/types/furmeet';
 
 useSeoMeta({
-  title: "Edition de la meet",
+  title: 'Edition de la meet',
 });
 
 definePageMeta({
-  layout: "admin",
-  middleware: "auth",
+  layout: 'admin',
+  middleware: 'auth',
 });
 
 const id = useRoute().params.id as string;
 const toast = useToast();
 
-const { data, error, pending, refresh } = await useAPI<FurmeetResponse>(
-  `/event/${id}`,
-);
+const { data, error, pending, refresh } = await useAPI<FurmeetResponse>(`/event/${id}`);
 
 const FieldType = {
-  TEXT: "TEXT",
-  NUMBER: "NUMBER",
-  SELECT: "SELECT",
-  CHECKBOX: "CHECKBOX",
-  RADIO: "RADIO",
+  TEXT: 'TEXT',
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  CHECKBOX: 'CHECKBOX',
+  RADIO: 'RADIO',
 } as const;
 
 type FieldTypeType = (typeof FieldType)[keyof typeof FieldType];
@@ -36,56 +30,64 @@ type FieldTypeType = (typeof FieldType)[keyof typeof FieldType];
 type ActivityQuestionItem = { label: string; value: FieldTypeType };
 
 const questionTypeItems: ActivityQuestionItem[] = [
-  { label: "Texte", value: FieldType.TEXT },
-  { label: "Nombre", value: FieldType.NUMBER },
-  { label: "Liste", value: FieldType.SELECT },
-  { label: "Case à cocher", value: FieldType.CHECKBOX },
-  { label: "Bouton radio", value: FieldType.RADIO },
+  { label: 'Texte', value: FieldType.TEXT },
+  { label: 'Nombre', value: FieldType.NUMBER },
+  { label: 'Liste', value: FieldType.SELECT },
+  { label: 'Case à cocher', value: FieldType.CHECKBOX },
+  { label: 'Bouton radio', value: FieldType.RADIO },
 ];
 
 type ActivityTypeItem = { label: string; value: FurmeetActivityType };
 
 const activityTypeItems: ActivityTypeItem[] = [
-  { label: "Activite", value: "ACTIVITY" },
-  { label: "Restaurant", value: "RESTAURANT" },
-  { label: "Bar", value: "BAR" },
-  { label: "Autre", value: "OTHER" },
+  { label: 'Activite', value: 'ACTIVITY' },
+  { label: 'Restaurant', value: 'RESTAURANT' },
+  { label: 'Bar', value: 'BAR' },
+  { label: 'Autre', value: 'OTHER' },
 ];
 
-const toDateInput = (value: string) => value?.split("T")[0] ?? "";
-const toTimeInput = (value: string) =>
-  value?.split("T")[1]?.substring(0, 5) ?? "00:00";
+const toDateInput = (value: string) => value?.split('T')[0] ?? '';
+const toTimeInput = (value: string) => value?.split('T')[1]?.substring(0, 5) ?? '00:00';
 
 const createEmptyActivity = () => ({
-  title: "",
-  description: "",
-  date: "",
-  time: "12:00",
+  title: '',
+  description: '',
+  date: '',
+  time: '12:00',
   order: 0,
-  type: "OTHER" as FurmeetActivityType,
+  type: 'OTHER' as FurmeetActivityType,
 });
 
 const schema = z.object({
-  title: z.string().min(1, "Le titre est requis"),
-  description: z.string().optional().default(""),
-  imageUrl: z.string().optional().default(""),
+  title: z.string().min(1, 'Le titre est requis'),
+  description: z.string().optional().default(''),
+  imageUrl: z.string().optional().default(''),
   published: z.boolean(),
   opened: z.boolean(),
   eventActivities: z.array(
     z.object({
       title: z.string().min(1, "Le titre de l'activité est requis"),
-      description: z.string().optional().default(""),
-      date: z.string().min(1, "La date est requise"),
+      description: z.string().optional().default(''),
+      date: z.string().min(1, 'La date est requise'),
       time: z.string().min(1, "L'heure est requise"),
       order: z.number().optional(),
-      type: z.enum(["ACTIVITY", "RESTAURANT", "BAR", "OTHER"]),
+      type: z.enum(['ACTIVITY', 'RESTAURANT', 'BAR', 'OTHER']),
       activityQuestions: z
         .array(
           z.object({
-            label: z.string().min(1, "Label obligatoire"),
+            label: z.string().min(1, 'Label obligatoire'),
             order: z.number().optional(),
-            type: z.enum(["TEXT", "NUMBER", "SELECT", "CHECKBOX", "RADIO"]),
+            type: z.enum(['TEXT', 'NUMBER', 'SELECT', 'CHECKBOX', 'RADIO']),
             required: z.boolean(),
+            choices: z
+              .array(
+                z.object({
+                  id: z.string(),
+                  label: z.string().min(1, 'Le libellé est requis'),
+                  value: z.string().min(1, 'La valeur est requise'),
+                }),
+              )
+              .optional(),
           }),
         )
         .optional(),
@@ -96,9 +98,9 @@ const schema = z.object({
 type Schema = z.output<typeof schema>;
 
 const state = reactive<Schema>({
-  title: data.value?.title ?? "",
-  description: data.value?.description ?? "",
-  imageUrl: data.value?.imageUrl ?? "",
+  title: data.value?.title ?? '',
+  description: data.value?.description ?? '',
+  imageUrl: data.value?.imageUrl ?? '',
   published: data.value?.published ?? false,
   opened: data.value?.opened ?? false,
   eventActivities: data.value?.eventActivities.map((activity) => ({
@@ -113,6 +115,11 @@ const state = reactive<Schema>({
       order: question.order,
       type: question.type,
       required: question.required,
+      choices: question.choices?.map((c) => ({
+        id: c.id,
+        label: c.label,
+        value: c.value,
+      })),
     })),
   })) ?? [createEmptyActivity()],
 });
@@ -127,25 +134,25 @@ const handleImageUpload = async (event: Event) => {
   }
 
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append('file', file);
 
   uploadingImage.value = true;
   try {
     const { $api } = useNuxtApp();
-    const result = await $api<{ url: string }>("/event/upload-image", {
-      method: "POST",
+    const result = await $api<{ url: string }>('/event/upload-image', {
+      method: 'POST',
       body: formData,
     });
-    state.imageUrl = result.url.replace(/^http:\/\//i, "https://");
+    state.imageUrl = result.url.replace(/^http:\/\//i, 'https://');
   } catch (err) {
-    console.error("Failed to upload meet image", err);
+    console.error('Failed to upload meet image', err);
     toast.add({
       title: "Erreur lors de l'upload de l'image",
-      color: "error",
+      color: 'error',
     });
   } finally {
     uploadingImage.value = false;
-    input.value = "";
+    input.value = '';
   }
 };
 
@@ -160,10 +167,7 @@ const removeActivity = (index: number) => {
   state.eventActivities.splice(index, 1);
 };
 
-const setActivityType = (
-  index: number,
-  value: FurmeetActivityType | undefined,
-) => {
+const setActivityType = (index: number, value: FurmeetActivityType | undefined) => {
   const activity = state.eventActivities[index];
   if (!activity || !value) {
     return;
@@ -177,17 +181,12 @@ const addActivityQuestion = (activityIndex: number) => {
     return;
   }
   if (!activity.activityQuestions) {
-    activity.activityQuestions = [] as Array<
-      ReturnType<typeof createEmptyQuestion>
-    >;
+    activity.activityQuestions = [] as Array<ReturnType<typeof createEmptyQuestion>>;
   }
   activity.activityQuestions.push(createEmptyQuestion());
 };
 
-const removeActivityQuestion = (
-  activityIndex: number,
-  questionIndex: number,
-) => {
+const removeActivityQuestion = (activityIndex: number, questionIndex: number) => {
   const activity = state.eventActivities[activityIndex];
   if (!activity || !activity.activityQuestions) {
     return;
@@ -195,11 +194,7 @@ const removeActivityQuestion = (
   activity.activityQuestions.splice(questionIndex, 1);
 };
 
-const setActivityQuestionType = (
-  activityIndex: number,
-  questionIndex: number,
-  value: FieldTypeType | undefined,
-) => {
+const setActivityQuestionType = (activityIndex: number, questionIndex: number, value: FieldTypeType | undefined) => {
   const activity = state.eventActivities[activityIndex];
   const question = activity?.activityQuestions?.[questionIndex];
   if (!question || !value) {
@@ -208,10 +203,56 @@ const setActivityQuestionType = (
   question.type = value;
 };
 
+const choiceIdCounter = ref(0);
+
+const createEmptyChoice = (): { id: string; label: string; value: string } => {
+  return {
+    id: `choice-${++choiceIdCounter.value}-${Date.now()}`,
+    label: '',
+    value: '',
+  };
+};
+
+const addChoice = (activityIndex: number, questionIndex: number) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question) {
+    return;
+  }
+  if (!question.choices) {
+    question.choices = [];
+  }
+  question.choices.push(createEmptyChoice());
+};
+
+const removeChoice = (activityIndex: number, questionIndex: number, choiceIndex: number) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question?.choices) {
+    return;
+  }
+  question.choices.splice(choiceIndex, 1);
+};
+
+const moveChoice = (activityIndex: number, questionIndex: number, choiceIndex: number, direction: -1 | 1) => {
+  const activity = state.eventActivities[activityIndex];
+  const question = activity?.activityQuestions?.[questionIndex];
+  if (!question?.choices) {
+    return;
+  }
+  const newIndex = choiceIndex + direction;
+  if (newIndex < 0 || newIndex >= question.choices.length) {
+    return;
+  }
+  const temp = question.choices[choiceIndex]!;
+  question.choices[choiceIndex] = question.choices[newIndex]!;
+  question.choices[newIndex] = temp;
+};
+
 const toActivityDateTime = (date: string, time: string) => {
   const parsed = new Date(`${date}T${time}:00`);
   if (Number.isNaN(parsed.getTime())) {
-    throw new Error("invalid-date");
+    throw new Error('invalid-date');
   }
 
   return parsed.toISOString();
@@ -219,6 +260,7 @@ const toActivityDateTime = (date: string, time: string) => {
 
 const buildPayload = (): MeetUpsertPayload => {
   const parsed = schema.parse(state);
+  console.log('🚀 ~ buildPayload ~ parsed:', parsed);
 
   return {
     title: parsed.title,
@@ -232,6 +274,13 @@ const buildPayload = (): MeetUpsertPayload => {
       date: toActivityDateTime(activity.date, activity.time),
       order: activity.order ?? index,
       type: activity.type,
+      activityQuestions: activity.activityQuestions?.map((question) => ({
+        label: question.label,
+        order: question.order,
+        type: question.type,
+        required: question.required,
+        choices: question.choices?.map((c) => ({ id: c.id, label: c.label, value: c.value })),
+      })),
     })),
   };
 };
@@ -241,20 +290,20 @@ const handleSubmit = async () => {
   try {
     const payload = buildPayload();
     await useAPI(`/event/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       body: payload,
     });
     toast.add({
-      title: "Meet mise a jour",
-      color: "success",
+      title: 'Meet mise a jour',
+      color: 'success',
     });
     await refresh();
-    await navigateTo("/admin/meet");
+    await navigateTo('/admin/meet');
   } catch (err) {
-    console.error("Failed to update meet", err);
+    console.error('Failed to update meet', err);
     toast.add({
-      title: "Erreur lors de la mise a jour de la meet",
-      color: "error",
+      title: 'Erreur lors de la mise a jour de la meet',
+      color: 'error',
     });
   } finally {
     saving.value = false;
@@ -268,30 +317,18 @@ const handleSubmit = async () => {
     >
       <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">
-            Edition d'une meet
-          </h1>
+          <h1 class="mt-2 text-3xl font-black text-brand-dark-blue">Edition d'une meet</h1>
           <p class="mt-2 max-w-2xl text-sm text-brand-ink">
-            Ajuste l'image, le contenu et le programme en quelques sections
-            claires.
+            Ajuste l'image, le contenu et le programme en quelques sections claires.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <UButton
-            icon="i-lucide-arrow-left"
-            label="Retour"
-            variant="outline"
-            @click="navigateTo('/admin/meet')"
-          />
+          <UButton icon="i-lucide-arrow-left" label="Retour" variant="outline" @click="navigateTo('/admin/meet')" />
           <UBadge color="neutral" variant="soft" class="rounded-full px-3 py-1">
             {{ state.eventActivities.length }} activite(s)
           </UBadge>
-          <UBadge
-            :color="state.published ? 'success' : 'neutral'"
-            variant="soft"
-            class="rounded-full px-3 py-1"
-          >
-            {{ state.published ? "Publiee" : "Brouillon" }}
+          <UBadge :color="state.published ? 'success' : 'neutral'" variant="soft" class="rounded-full px-3 py-1">
+            {{ state.published ? 'Publiee' : 'Brouillon' }}
           </UBadge>
         </div>
       </div>
@@ -302,57 +339,30 @@ const handleSubmit = async () => {
       >
         Chargement de la meet...
       </div>
-      <div
-        v-else-if="error"
-        class="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700"
-      >
+      <div v-else-if="error" class="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
         Erreur: {{ error.message }}
       </div>
 
-      <UForm
-        v-else-if="data"
-        :schema="schema"
-        :state="state"
-        class="space-y-6"
-        @submit="handleSubmit"
-      >
+      <UForm v-else-if="data" :schema="schema" :state="state" class="space-y-6" @submit="handleSubmit">
         <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div
-            class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
-          >
-            <h2 class="text-lg font-bold text-brand-dark-blue">
-              Contenu principal
-            </h2>
-            <p class="mb-4 mt-1 text-sm text-brand-ink">
-              Informations visibles sur la page publique.
-            </p>
+          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+            <h2 class="text-lg font-bold text-brand-dark-blue">Contenu principal</h2>
+            <p class="mb-4 mt-1 text-sm text-brand-ink">Informations visibles sur la page publique.</p>
 
             <div class="space-y-4">
               <UFormField label="Titre" name="title">
-                <UInput
-                  v-model="state.title"
-                  placeholder="Ex: Meet de printemps"
-                  size="xl"
-                />
+                <UInput v-model="state.title" placeholder="Ex: Meet de printemps" size="xl" />
               </UFormField>
 
               <UFormField label="Description" name="description">
-                <AdminRichTextEditor
-                  v-model="state.description"
-                  placeholder="Résumé de la meet"
-                  min-height="150px"
-                />
+                <AdminRichTextEditor v-model="state.description" placeholder="Résumé de la meet" min-height="150px" />
               </UFormField>
             </div>
           </div>
 
-          <div
-            class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
-          >
+          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
             <h2 class="text-lg font-bold text-brand-dark-blue">Publication</h2>
-            <p class="mb-4 mt-1 text-sm text-brand-ink">
-              Contrôle l'état de diffusion et les inscriptions.
-            </p>
+            <p class="mb-4 mt-1 text-sm text-brand-ink">Contrôle l'état de diffusion et les inscriptions.</p>
 
             <div class="space-y-4">
               <UFormField label="Publié" name="published">
@@ -365,15 +375,9 @@ const handleSubmit = async () => {
           </div>
         </section>
 
-        <section
-          class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
-        >
-          <h2 class="text-lg font-bold text-brand-dark-blue">
-            Image de couverture
-          </h2>
-          <p class="mb-4 mt-1 text-sm text-brand-ink">
-            Ajoute une URL ou importe une image locale.
-          </p>
+        <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
+          <h2 class="text-lg font-bold text-brand-dark-blue">Image de couverture</h2>
+          <p class="mb-4 mt-1 text-sm text-brand-ink">Ajoute une URL ou importe une image locale.</p>
 
           <div class="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
             <div class="space-y-3">
@@ -389,20 +393,12 @@ const handleSubmit = async () => {
                   class="block w-full rounded-xl border border-brand-light-blue/70 bg-brand-white px-3 py-2 text-sm"
                   @change="handleImageUpload"
                 />
-                <p v-if="uploadingImage" class="mt-1 text-xs text-brand-sky">
-                  Upload en cours...
-                </p>
+                <p v-if="uploadingImage" class="mt-1 text-xs text-brand-sky">Upload en cours...</p>
               </UFormField>
             </div>
 
-            <div
-              class="-mt-17 rounded-xl border border-brand-light-blue/70 bg-brand-light-blue/15 p-3"
-            >
-              <p
-                class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-sky"
-              >
-                Apercu
-              </p>
+            <div class="-mt-17 rounded-xl border border-brand-light-blue/70 bg-brand-light-blue/15 p-3">
+              <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-sky">Apercu</p>
               <ImageWithFallback
                 v-if="state.imageUrl"
                 :src="state.imageUrl"
@@ -420,22 +416,13 @@ const handleSubmit = async () => {
           </div>
         </section>
 
-        <section
-          class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs"
-        >
+        <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-5 shadow-xs">
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 class="text-lg font-bold text-brand-dark-blue">Programme</h2>
-              <p class="mt-1 text-sm text-brand-ink">
-                Construis chaque etape de la meet.
-              </p>
+              <p class="mt-1 text-sm text-brand-ink">Construis chaque etape de la meet.</p>
             </div>
-            <UButton
-              size="sm"
-              variant="outline"
-              icon="i-lucide-plus"
-              @click="addActivity"
-            >
+            <UButton size="sm" variant="outline" icon="i-lucide-plus" @click="addActivity">
               Ajouter une activite
             </UButton>
           </div>
@@ -460,63 +447,34 @@ const handleSubmit = async () => {
                   >
                     {{ index + 1 }}
                   </span>
-                  <p class="text-sm font-semibold text-brand-dark-blue">
-                    Etape du programme
-                  </p>
+                  <p class="text-sm font-semibold text-brand-dark-blue">Etape du programme</p>
                 </div>
-                <UButton
-                  size="xs"
-                  color="error"
-                  variant="soft"
-                  icon="i-lucide-trash-2"
-                  @click="removeActivity(index)"
-                >
+                <UButton size="xs" color="error" variant="soft" icon="i-lucide-trash-2" @click="removeActivity(index)">
                   Supprimer
                 </UButton>
               </div>
 
               <div class="grid gap-4 md:grid-cols-2">
-                <UFormField
-                  :label="'Type'"
-                  :name="'eventActivities[' + index + '].type'"
-                >
+                <UFormField :label="'Type'" :name="'eventActivities[' + index + '].type'">
                   <USelect
                     :model-value="activity.type"
                     :items="activityTypeItems"
                     class="min-w-30"
-                    @update:model-value="
-                      (value) =>
-                        setActivityType(index, value as FurmeetActivityType)
-                    "
+                    @update:model-value="(value) => setActivityType(index, value as FurmeetActivityType)"
                   />
                 </UFormField>
 
-                <UFormField
-                  :label="'Ordre'"
-                  :name="'eventActivities[' + index + '].order'"
-                >
-                  <UInput
-                    v-model.number="activity.order"
-                    type="number"
-                    min="0"
-                    step="1"
-                  />
+                <UFormField :label="'Ordre'" :name="'eventActivities[' + index + '].order'">
+                  <UInput v-model.number="activity.order" type="number" min="0" step="1" />
                 </UFormField>
               </div>
 
               <div class="mt-4 space-y-4">
                 <UFormField :name="'eventActivities[' + index + '].title'">
-                  <UInput
-                    v-model="activity.title"
-                    class="w-full"
-                    placeholder="Titre de l'activite"
-                  />
+                  <UInput v-model="activity.title" class="w-full" placeholder="Titre de l'activite" />
                 </UFormField>
 
-                <UFormField
-                  :label="'Description'"
-                  :name="'eventActivities[' + index + '].description'"
-                >
+                <UFormField :label="'Description'" :name="'eventActivities[' + index + '].description'">
                   <AdminRichTextEditor
                     v-model="activity.description"
                     placeholder="Description de l'activite"
@@ -542,19 +500,11 @@ const handleSubmit = async () => {
                   </UFormField>
                 </div>
 
-                <section
-                  class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-4"
-                >
-                  <div
-                    class="mb-4 flex flex-wrap items-center justify-between gap-3"
-                  >
+                <section class="rounded-2xl border border-brand-light-blue/60 bg-brand-white p-4">
+                  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h3 class="text-base font-semibold text-brand-dark-blue">
-                        Questions de l'activité
-                      </h3>
-                      <p class="text-sm text-brand-ink">
-                        Ajoute des questions demandées lors de l'inscription.
-                      </p>
+                      <h3 class="text-base font-semibold text-brand-dark-blue">Questions de l'activité</h3>
+                      <p class="text-sm text-brand-ink">Ajoute des questions demandées lors de l'inscription.</p>
                     </div>
                     <UButton
                       size="sm"
@@ -567,43 +517,29 @@ const handleSubmit = async () => {
                   </div>
 
                   <div
-                    v-if="
-                      !activity.activityQuestions ||
-                      activity.activityQuestions.length === 0
-                    "
+                    v-if="!activity.activityQuestions || activity.activityQuestions.length === 0"
                     class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-4 text-sm text-brand-sky"
                   >
-                    Aucune question. Ajoute une question si tu veux demander des
-                    informations supplémentaires.
+                    Aucune question. Ajoute une question si tu veux demander des informations supplémentaires.
                   </div>
 
                   <div v-else class="space-y-4">
                     <article
-                      v-for="(
-                        question, questionIndex
-                      ) in activity.activityQuestions"
+                      v-for="(question, questionIndex) in activity.activityQuestions"
                       :key="questionIndex"
                       class="rounded-2xl border border-brand-light-blue/60 bg-linear-to-br from-brand-white to-brand-light-blue/10 p-4"
                     >
-                      <div
-                        class="mb-3 flex flex-wrap items-center justify-between gap-3"
-                      >
+                      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p class="text-sm font-semibold text-brand-dark-blue">
-                            Question {{ questionIndex + 1 }}
-                          </p>
-                          <p class="text-xs text-brand-ink">
-                            Cette question sera liée à l'activité.
-                          </p>
+                          <p class="text-sm font-semibold text-brand-dark-blue">Question {{ questionIndex + 1 }}</p>
+                          <p class="text-xs text-brand-ink">Cette question sera liée à l'activité.</p>
                         </div>
                         <UButton
                           size="xs"
                           color="error"
                           variant="soft"
                           icon="i-lucide-trash-2"
-                          @click.prevent="
-                            removeActivityQuestion(index, questionIndex)
-                          "
+                          @click.prevent="removeActivityQuestion(index, questionIndex)"
                         >
                           Supprimer
                         </UButton>
@@ -611,41 +547,21 @@ const handleSubmit = async () => {
 
                       <div class="grid gap-4 md:grid-cols-2">
                         <UFormField
-                          :name="
-                            'eventActivities[' +
-                            index +
-                            '].activityQuestions[' +
-                            questionIndex +
-                            '].label'
-                          "
+                          :name="'eventActivities[' + index + '].activityQuestions[' + questionIndex + '].label'"
                         >
-                          <UInput
-                            v-model="question.label"
-                            placeholder="Intitulé de la question"
-                          />
+                          <UInput v-model="question.label" placeholder="Intitulé de la question" />
                         </UFormField>
 
                         <UFormField
                           label="Type"
-                          :name="
-                            'eventActivities[' +
-                            index +
-                            '].activityQuestions[' +
-                            questionIndex +
-                            '].type'
-                          "
+                          :name="'eventActivities[' + index + '].activityQuestions[' + questionIndex + '].type'"
                         >
                           <USelect
                             :model-value="question.type"
                             :items="questionTypeItems"
                             class="min-w-30"
                             @update:model-value="
-                              (value) =>
-                                setActivityQuestionType(
-                                  index,
-                                  questionIndex,
-                                  value as FieldTypeType,
-                                )
+                              (value) => setActivityQuestionType(index, questionIndex, value as FieldTypeType)
                             "
                           />
                         </UFormField>
@@ -654,34 +570,79 @@ const handleSubmit = async () => {
                       <div class="grid gap-4 md:grid-cols-2">
                         <UFormField
                           label="Requise"
-                          :name="
-                            'eventActivities[' +
-                            index +
-                            '].activityQuestions[' +
-                            questionIndex +
-                            '].required'
-                          "
+                          :name="'eventActivities[' + index + '].activityQuestions[' + questionIndex + '].required'"
                         >
                           <USwitch v-model="question.required" />
                         </UFormField>
 
                         <UFormField
                           label="Ordre"
-                          :name="
-                            'eventActivities[' +
-                            index +
-                            '].activityQuestions[' +
-                            questionIndex +
-                            '].order'
-                          "
+                          :name="'eventActivities[' + index + '].activityQuestions[' + questionIndex + '].order'"
                         >
-                          <UInput
-                            v-model.number="question.order"
-                            type="number"
-                            min="0"
-                            step="1"
-                          />
+                          <UInput v-model.number="question.order" type="number" min="0" step="1" />
                         </UFormField>
+                      </div>
+
+                      <!-- Options de la question (for SELECT, CHECKBOX, RADIO) -->
+                      <div
+                        v-if="question.type === 'SELECT' || question.type === 'CHECKBOX' || question.type === 'RADIO'"
+                        class="mt-4"
+                      >
+                        <div class="mb-2 flex items-center justify-between">
+                          <h4 class="text-sm font-semibold text-brand-dark-blue">Options</h4>
+                          <UButton
+                            size="xs"
+                            variant="soft"
+                            icon="i-lucide-plus"
+                            @click.prevent="addChoice(index, questionIndex)"
+                          >
+                            Ajouter une option
+                          </UButton>
+                        </div>
+
+                        <div
+                          v-if="!question.choices || question.choices.length === 0"
+                          class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-3 text-sm text-brand-sky"
+                        >
+                          Aucune option. Ajoute des options pour que l'utilisateur puisse choisir.
+                        </div>
+
+                        <div v-else class="space-y-2">
+                          <div
+                            v-for="(choice, cIndex) in question.choices"
+                            :key="choice.id"
+                            class="flex items-center gap-2 rounded-lg border border-brand-light-blue/60 bg-brand-white p-2"
+                          >
+                            <div class="flex flex-col gap-0.5">
+                              <UButton
+                                size="xs"
+                                variant="ghost"
+                                icon="i-lucide-chevron-up"
+                                :disabled="cIndex === 0"
+                                @click="moveChoice(index, questionIndex, cIndex, -1)"
+                              />
+                              <UButton
+                                size="xs"
+                                variant="ghost"
+                                icon="i-lucide-chevron-down"
+                                :disabled="cIndex === question.choices.length - 1"
+                                @click="moveChoice(index, questionIndex, cIndex, 1)"
+                              />
+                            </div>
+
+                            <UInput v-model="choice.label" placeholder="Libellé de l'option" size="sm" class="flex-1" />
+
+                            <UInput v-model="choice.value" placeholder="Valeur" size="sm" class="w-28" />
+
+                            <UButton
+                              size="xs"
+                              color="error"
+                              variant="soft"
+                              icon="i-lucide-trash-2"
+                              @click.prevent="removeChoice(index, questionIndex, cIndex)"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </article>
                   </div>
@@ -692,15 +653,8 @@ const handleSubmit = async () => {
         </section>
 
         <div class="sticky bottom-4 z-10 mt-2 flex justify-end">
-          <div
-            class="rounded-2xl border border-brand-light-blue/60 bg-brand-white/95 p-2 shadow-lg backdrop-blur"
-          >
-            <UButton
-              type="submit"
-              :loading="saving"
-              size="lg"
-              label="Créer la meet"
-            />
+          <div class="rounded-2xl border border-brand-light-blue/60 bg-brand-white/95 p-2 shadow-lg backdrop-blur">
+            <UButton type="submit" :loading="saving" size="lg" label="Créer la meet" />
           </div>
         </div>
       </UForm>

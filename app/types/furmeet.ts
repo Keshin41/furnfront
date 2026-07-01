@@ -1,5 +1,5 @@
-export type FurmeetEventType = "MEET" | "OTHER";
-export type FurmeetActivityType = "ACTIVITY" | "RESTAURANT" | "BAR" | "OTHER";
+export type FurmeetEventType = 'MEET' | 'OTHER';
+export type FurmeetActivityType = 'ACTIVITY' | 'RESTAURANT' | 'BAR' | 'OTHER';
 
 export type FurmeetActivity = {
   id: string;
@@ -17,20 +17,23 @@ export type FurmeetActivityQuestion = {
   order?: number;
   type: FurmeetFieldType;
   required: boolean;
+  choices?: FieldOption[];
 };
 
-export type FurmeetFieldType =
-  | "TEXT"
-  | "NUMBER"
-  | "SELECT"
-  | "CHECKBOX"
-  | "RADIO";
+export type FurmeetFieldType = 'TEXT' | 'NUMBER' | 'SELECT' | 'CHECKBOX' | 'RADIO';
+
+export type FieldOption = {
+  id: string;
+  label: string;
+  value: string;
+};
 
 export type MeetActivityQuestionUpsertPayload = {
   label: string;
   order?: number;
   type: FurmeetFieldType;
   required: boolean;
+  choices?: FieldOption[];
 };
 
 export type Furmeet = {
