@@ -267,7 +267,11 @@ const buildPayload = (): MeetUpsertPayload => {
         order: question.order,
         type: question.type,
         required: question.required,
-        choices: question.choices?.map((c) => ({ id: c.id, label: c.label, value: c.value })),
+        choices: question.choices?.map((c) => ({
+          id: c.id,
+          label: c.label,
+          value: c.value,
+        })),
       })),
     })),
   };
@@ -285,7 +289,7 @@ const handleSubmit = async () => {
       title: "Event créé",
       color: "success",
     });
-    await navigateTo("/admin/event");
+    await navigateTo("/admin/meet");
   } catch (err) {
     console.error("Failed to create event", err);
     toast.add({
@@ -713,7 +717,9 @@ const handleSubmit = async () => {
                         class="mt-4"
                       >
                         <div class="mb-2 flex items-center justify-between">
-                          <h4 class="text-sm font-semibold text-brand-dark-blue">
+                          <h4
+                            class="text-sm font-semibold text-brand-dark-blue"
+                          >
                             Options
                           </h4>
                           <UButton
@@ -727,7 +733,9 @@ const handleSubmit = async () => {
                         </div>
 
                         <div
-                          v-if="!question.choices || question.choices.length === 0"
+                          v-if="
+                            !question.choices || question.choices.length === 0
+                          "
                           class="rounded-xl border border-dashed border-brand-light-blue/70 bg-brand-light-blue/10 p-3 text-sm text-brand-sky"
                         >
                           Aucune option. Ajoute des options pour que
@@ -752,7 +760,9 @@ const handleSubmit = async () => {
                                 size="xs"
                                 variant="ghost"
                                 icon="i-lucide-chevron-down"
-                                :disabled="cIndex === question.choices.length - 1"
+                                :disabled="
+                                  cIndex === question.choices.length - 1
+                                "
                                 @click="moveChoice(index, qIndex, cIndex, 1)"
                               />
                             </div>
@@ -776,7 +786,9 @@ const handleSubmit = async () => {
                               color="error"
                               variant="soft"
                               icon="i-lucide-trash-2"
-                              @click.prevent="removeChoice(index, qIndex, cIndex)"
+                              @click.prevent="
+                                removeChoice(index, qIndex, cIndex)
+                              "
                             />
                           </div>
                         </div>
