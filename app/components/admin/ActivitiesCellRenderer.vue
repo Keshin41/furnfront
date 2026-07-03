@@ -2,13 +2,13 @@
 import type { Activity } from "~/types/registration";
 
 const props = defineProps<{
-  eventActivities: Activity[];
+  eventActivities: Activity;
 }>();
 </script>
 <template>
   <ul class="list-disc list-inside">
-    <li v-for="activity in props.eventActivities" :key="activity.id">
-      {{ activity.label }}
-    </li>
+    {{
+      props.eventActivities.label
+    }}
   </ul>
 </template>

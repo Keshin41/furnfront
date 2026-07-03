@@ -12,6 +12,7 @@ definePageMeta({
 });
 
 const { data, pending } = await useAPI<Registration[]>("/event/registrations/");
+console.log("🚀 ~ data:", data);
 
 const columns: TableColumn<Registration>[] = [
   { accessorKey: "name", header: "Nom" },
@@ -24,7 +25,6 @@ const columns: TableColumn<Registration>[] = [
     header: "Pseudo",
   },
   {
-    accessorKey: "activities",
     header: "Activités",
     cell: ({ row }) =>
       h(ActivitiesCellRenderer, {
@@ -32,7 +32,6 @@ const columns: TableColumn<Registration>[] = [
       }),
   },
   {
-    accessorKey: "choices",
     header: "Choix des options",
     cell: ({ row }) =>
       h(ChoicesCellRenderer, {
@@ -44,11 +43,6 @@ const columns: TableColumn<Registration>[] = [
 <template>
   <div class="p-4">
     <h1 class="text-2xl font-bold mb-4 text-primary">Liste des inscriptions</h1>
-    <UButton
-      class="mb-4"
-      label="Créer un produit"
-      @click="navigateTo('/admin/product/create')"
-    />
     <UTable
       :columns="columns"
       :data="data ?? []"

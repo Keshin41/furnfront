@@ -1,13 +1,13 @@
 export interface Registration {
   event: string;
   nickname: string;
-  eventPart: Activity[];
+  eventPart: Activity;
   choices: ActivityChoice[];
 }
 
 export interface ActivityChoice {
   id: string;
-  label: string;
+  value: string;
   choice: string;
 }
 
