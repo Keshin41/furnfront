@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toast } from "#build/ui";
 import { z } from "zod";
 
 const route = useRoute();
@@ -179,6 +178,7 @@ const submitting = ref(false);
 
 async function onSubmit() {
   submitting.value = true;
+  let submitResult;
   try {
     const payload: FormAnswersDto = {
       email: state.email,
@@ -214,22 +214,31 @@ async function onSubmit() {
         }) ?? [],
     };
 
-    await useAPI(`/event/${id}/form`, {
+    submitResult = await useAPI(`/event/${id}/form`, {
       method: "POST",
       body: payload,
     });
+    if (submitResult?.error.value) {
+      console.error("Failed to process form", submitResult?.error);
+      toast.add({
+        title: "Erreur lors de l'envoi du formulaire",
+        color: "error",
+      });
+    } else {
+      toast.add({
+        title: "Réponse enregistrée avec succès",
+        color: "success",
+      });
+      await navigateTo(`/furmeet/${id}`);
+    }
   } catch (err) {
     console.error("Failed to process form", err);
     toast.add({
-      title: "Erreur lors de la création de l'event",
+      title: "Erreur lors de l'envoi du formulaire",
       color: "error",
     });
   } finally {
     submitting.value = false;
-    toast.add({
-      title: "Réponse enregistrée avec succès",
-      color: "success",
-    });
   }
 }
 </script>
@@ -247,13 +256,17 @@ async function onSubmit() {
       class="space-y-8"
       @submit="onSubmit"
     >
-      <h1 class="text-xl">Formulaire d'inscription</h1>
+      <h1 class="text-xl font-bold text-brand-dark-blue">
+        Formulaire d'inscription
+      </h1>
       <UFormField label="Email" name="email" required>
         <UInput v-model="state.email" type="email" />
       </UFormField>
 
       <div v-for="section in data" :key="section.id" class="space-y-4">
-        <h2 class="text-lg font-semibold">{{ section.activity }}</h2>
+        <h2 class="text-lg font-bold text-brand-dark-blue">
+          {{ section.activity }}
+        </h2>
 
         <UFormField
           :label="`Souhaitez-vous participer à ${section.activity} ?`"
