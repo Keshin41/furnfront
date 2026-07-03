@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { z } from 'zod';
+import { toast } from "#build/ui";
+import { z } from "zod";
 
 const route = useRoute();
 const id = route.params.id as string;
+
+const toast = useToast();
 
 export type QuestionDto = {
   id: string;
   question: string;
   required: boolean;
-  type: 'TEXT' | 'NUMBER' | 'SELECT' | 'CHECKBOX' | 'RADIO';
-  choices?: { id: string; label: string; value: string }[];
+  type: "TEXT" | "NUMBER" | "SELECT" | "CHECKBOX" | "RADIO";
+  options?: { id: string; label: string; value: string }[];
 };
 
 export type FormDto = {
@@ -34,9 +37,11 @@ export type FormAnswersDto = {
   activities: ActivityAnswersDto[];
 };
 
-const { data, error, pending } = await useAPI<FormDto | null>(`/event/${id}/form`);
+const { data, error, pending } = await useAPI<FormDto | null>(
+  `/event/${id}/form`,
+);
 
-type Participation = 'yes' | 'no' | undefined;
+type Participation = "yes" | "no" | undefined;
 
 interface FormState {
   email: string;
@@ -51,17 +56,17 @@ function buildInitialState(form: FormDto | null | undefined): FormState {
   form?.forEach((section) => {
     participations[section.id] = undefined;
     section.questions.forEach((question) => {
-      answers[question.id] = question.type === 'CHECKBOX' ? '[]' : '';
+      answers[question.id] = question.type === "CHECKBOX" ? "[]" : "";
     });
   });
 
-  return { email: '', participations, answers };
+  return { email: "", participations, answers };
 }
 
 const state = reactive<FormState>(buildInitialState(data.value));
 
 function getAnswer(questionId: string) {
-  return state.answers[questionId] ?? '';
+  return state.answers[questionId] ?? "";
 }
 
 function setAnswer(questionId: string, value: string) {
@@ -69,7 +74,7 @@ function setAnswer(questionId: string, value: string) {
 }
 
 function getCheckboxAnswer(questionId: string): string[] {
-  const raw = state.answers[questionId] ?? '';
+  const raw = state.answers[questionId] ?? "";
   if (!raw) return [];
   try {
     return JSON.parse(raw);
@@ -78,9 +83,15 @@ function getCheckboxAnswer(questionId: string): string[] {
   }
 }
 
-function setCheckboxAnswer(questionId: string, value: string, checked: boolean) {
+function setCheckboxAnswer(
+  questionId: string,
+  value: string,
+  checked: boolean,
+) {
   const current = getCheckboxAnswer(questionId);
-  const next = checked ? [...current, value] : current.filter((v) => v !== value);
+  const next = checked
+    ? [...current, value]
+    : current.filter((v) => v !== value);
   state.answers[questionId] = JSON.stringify(next);
 }
 
@@ -92,8 +103,11 @@ function setCheckboxAnswer(questionId: string, value: string, checked: boolean) 
 const schema = computed(() => {
   return z
     .object({
-      email: z.email('Email invalide').min(1, 'Email requis'),
-      participations: z.record(z.string(), z.enum(['yes', 'no'], { message: 'Merci de répondre' }).optional()),
+      email: z.email("Email invalide").min(1, "Email requis"),
+      participations: z.record(
+        z.string(),
+        z.enum(["yes", "no"], { message: "Merci de répondre" }).optional(),
+      ),
       answers: z.record(z.string(), z.string()),
     })
     .superRefine((val, ctx) => {
@@ -101,55 +115,59 @@ const schema = computed(() => {
       data.value?.forEach((section) => {
         if (!val.participations[section.id]) {
           ctx.addIssue({
-            code: 'custom',
-            message: 'Merci de répondre',
-            path: ['participations', section.id],
+            code: "custom",
+            message: "Merci de répondre",
+            path: ["participations", section.id],
           });
         }
 
         // Only validate questions for opted-in activities
-        const participates = val.participations[section.id] === 'yes';
+        const participates = val.participations[section.id] === "yes";
         if (!participates) return;
 
         section.questions.forEach((question) => {
-          const answer = val.answers[question.id] ?? '';
+          const answer = val.answers[question.id] ?? "";
 
-          if (question.type === 'CHECKBOX') {
+          if (question.type === "CHECKBOX") {
             try {
               const checked = JSON.parse(answer) as string[];
               if (question.required && checked.length === 0) {
                 ctx.addIssue({
-                  code: 'custom',
-                  message: 'Ce champ est requis',
-                  path: ['answers', question.id],
+                  code: "custom",
+                  message: "Ce champ est requis",
+                  path: ["answers", question.id],
                 });
               }
             } catch {
               // Invalid JSON — treat as empty
               if (question.required) {
                 ctx.addIssue({
-                  code: 'custom',
-                  message: 'Ce champ est requis',
-                  path: ['answers', question.id],
+                  code: "custom",
+                  message: "Ce champ est requis",
+                  path: ["answers", question.id],
                 });
               }
             }
             return;
           }
 
-          if (question.required && answer.trim() === '') {
+          if (question.required && answer.trim() === "") {
             ctx.addIssue({
-              code: 'custom',
-              message: 'Ce champ est requis',
-              path: ['answers', question.id],
+              code: "custom",
+              message: "Ce champ est requis",
+              path: ["answers", question.id],
             });
           }
 
-          if (question.type === 'NUMBER' && answer !== '' && Number.isNaN(Number(answer))) {
+          if (
+            question.type === "NUMBER" &&
+            answer !== "" &&
+            Number.isNaN(Number(answer))
+          ) {
             ctx.addIssue({
-              code: 'custom',
-              message: 'Ce champ doit être un nombre',
-              path: ['answers', question.id],
+              code: "custom",
+              message: "Ce champ doit être un nombre",
+              path: ["answers", question.id],
             });
           }
         });
@@ -166,14 +184,14 @@ async function onSubmit() {
       email: state.email,
       activities:
         data.value?.map((section) => {
-          const present = state.participations[section.id] === 'yes';
+          const present = state.participations[section.id] === "yes";
           return {
             activityId: section.id,
             present,
             answers: present
               ? section.questions
                   .map((q) => {
-                    if (q.type === 'CHECKBOX') {
+                    if (q.type === "CHECKBOX") {
                       return {
                         questionId: q.id,
                         answer: JSON.stringify(state.answers[q.id] ?? []),
@@ -181,21 +199,37 @@ async function onSubmit() {
                     }
                     return {
                       questionId: q.id,
-                      answer: state.answers[q.id] ?? '',
+                      answer: state.answers[q.id] ?? "",
                     };
                   })
-                  .filter((a) => a.answer !== '' || section.questions.find((q) => q.id === a.questionId && q.required))
+                  .filter(
+                    (a) =>
+                      a.answer !== "" ||
+                      section.questions.find(
+                        (q) => q.id === a.questionId && q.required,
+                      ),
+                  )
               : [],
           };
         }) ?? [],
     };
 
     await useAPI(`/event/${id}/form`, {
-      method: 'POST',
+      method: "POST",
       body: payload,
+    });
+  } catch (err) {
+    console.error("Failed to process form", err);
+    toast.add({
+      title: "Erreur lors de la création de l'event",
+      color: "error",
     });
   } finally {
     submitting.value = false;
+    toast.add({
+      title: "Réponse enregistrée avec succès",
+      color: "success",
+    });
   }
 }
 </script>
@@ -206,7 +240,13 @@ async function onSubmit() {
     <p v-else-if="error">Erreur dans le formulaire.</p>
     <p v-else-if="!data || data.length === 0">Aucun formulaire disponible.</p>
 
-    <UForm v-else :schema="schema" :state="state" class="space-y-8" @submit="onSubmit">
+    <UForm
+      v-else
+      :schema="schema"
+      :state="state"
+      class="space-y-8"
+      @submit="onSubmit"
+    >
       <h1 class="text-xl">Formulaire d'inscription</h1>
       <UFormField label="Email" name="email" required>
         <UInput v-model="state.email" type="email" />
@@ -227,7 +267,9 @@ async function onSubmit() {
               { label: 'Oui', value: 'yes' },
               { label: 'Non', value: 'no' },
             ]"
-            @update:model-value="(v) => (state.participations[section.id] = v as Participation)"
+            @update:model-value="
+              (v) => (state.participations[section.id] = v as Participation)
+            "
           />
         </UFormField>
 
@@ -252,23 +294,32 @@ async function onSubmit() {
             />
             <USelect
               v-else-if="question.type === 'SELECT'"
-              :items="question.choices ?? [{ label: 'Option 1', value: 'option-1' }]"
+              :items="
+                question.options ?? [{ label: 'Option 1', value: 'option-1' }]
+              "
               :model-value="getAnswer(question.id)"
               @update:model-value="(v) => setAnswer(question.id, String(v))"
             />
             <div v-else-if="question.type === 'CHECKBOX'" class="space-y-2">
               <UCheckbox
-                v-for="choice in question.choices ?? []"
+                v-for="choice in question.options ?? []"
                 :key="choice.id"
-                :model-value="getCheckboxAnswer(question.id).includes(choice.value)"
-                @update:model-value="(v) => setCheckboxAnswer(question.id, choice.value, Boolean(v))"
+                :model-value="
+                  getCheckboxAnswer(question.id).includes(choice.value)
+                "
+                @update:model-value="
+                  (v) =>
+                    setCheckboxAnswer(question.id, choice.value, Boolean(v))
+                "
               >
                 {{ choice.label }}
               </UCheckbox>
             </div>
             <URadioGroup
               v-else-if="question.type === 'RADIO'"
-              :items="question.choices ?? [{ label: 'Option 1', value: 'option-1' }]"
+              :items="
+                question.options ?? [{ label: 'Option 1', value: 'option-1' }]
+              "
               :model-value="getAnswer(question.id)"
               @update:model-value="(v) => setAnswer(question.id, String(v))"
             />
