@@ -6,6 +6,7 @@ import type {
   FurmeetActivity,
   FurmeetActivityType,
 } from "~/types/furmeet";
+import { getMeetFallbackImage } from "~/utils/meetFallback";
 
 type FurmeetApi = Furmeet & { content?: string | null };
 
@@ -126,8 +127,8 @@ const formatDateTime = (value: string) =>
         class="overflow-hidden rounded-3xl border border-brand-light-blue/50 bg-brand-white shadow-sm"
       >
         <ImageWithFallback
-          :src="furmeet.imageUrl || `/furmeet/thumbnail/${furmeet.id}.png`"
-          :fallback="'/furmeet/thumbnail/default.png'"
+          :src="furmeet.imageUrl"
+          :fallback="getMeetFallbackImage(furmeet.id)"
           :alt="furmeet.title"
           class="h-72 w-full object-cover"
         />

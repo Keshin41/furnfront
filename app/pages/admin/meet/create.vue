@@ -2,6 +2,7 @@
 import z from "zod";
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
 import type { FurmeetActivityType, MeetUpsertPayload } from "~/types/furmeet";
+import { getMeetFallbackImage } from "~/utils/meetFallback";
 
 useSeoMeta({
   title: "Création d'un event",
@@ -434,7 +435,7 @@ const handleSubmit = async () => {
                 v-if="state.imageUrl"
                 :src="state.imageUrl"
                 :alt="state.title || 'Apercu image meet'"
-                :fallback="'/furmeet/thumbnail/default.png'"
+                :fallback="getMeetFallbackImage(state.title)"
                 class="h-48 w-full rounded-lg border border-brand-light-blue/70 object-cover"
               />
               <div

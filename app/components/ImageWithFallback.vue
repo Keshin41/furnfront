@@ -36,7 +36,9 @@ const handleImageError = () => {
   <img
     :src="currentSrc"
     :alt="alt"
-    @error="handleImageError"
+    loading="lazy"
+    decoding="async"
     v-bind="$attrs"
+    @error="handleImageError"
   />
 </template>

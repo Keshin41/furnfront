@@ -3,6 +3,7 @@ import CustomButton from "~/components/CustomButton.vue";
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
 import type { Announcement } from "~/types/announcement";
 import type { Furmeet, FurmeetCard } from "~/types/furmeet";
+import { getMeetFallbackImage } from "~/utils/meetFallback";
 
 // API calls
 const { data: furmeets } = await useAPI<Furmeet[]>("/event/");
@@ -62,7 +63,7 @@ const furmeetsList = computed<FurmeetCard[]>(() => {
       title: item.title,
       description: htmlToPlainText(item.description) || "Programme a venir.",
       date: formatMeetDate(item.eventDate ?? item.createdAt),
-      imageURL: item.imageUrl || `/furmeet/thumbnail/${item.id}.png`,
+      imageURL: item.imageUrl ?? undefined,
     }));
 });
 
@@ -97,7 +98,12 @@ const onAnnouncementAction = () => {
       class="relative grid min-h-[calc(100vh-var(--ui-header-height))] items-center overflow-hidden text-white"
     >
       <HeroBackgroundCarousel
-        :photos="['/meet-shuffle.avif', '/meet-outdoor.jpg', '/meet-duck.jpg']"
+        :photos="[
+          '/hero-shuffle.webp',
+          '/hero-jtf.webp',
+          '/hero-outdoor.webp',
+          '/hero-duck.webp',
+        ]"
       />
 
       <div
@@ -225,7 +231,7 @@ const onAnnouncementAction = () => {
           <ImageWithFallback
             :src="meet.imageURL"
             :alt="meet.title"
-            :fallback="`/furmeet/thumbnail/default.png`"
+            :fallback="getMeetFallbackImage(meet.id)"
             class="h-44 w-full rounded-2xl bg-cover bg-center object-cover sm:h-48"
           />
           <div class="px-2 pb-4 pt-4">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ImageWithFallback from "~/components/ImageWithFallback.vue";
 import type { Furmeet, FurmeetActivity } from "~/types/furmeet";
+import { getMeetFallbackImage } from "~/utils/meetFallback";
 
 type FurmeetPost = {
   id: string;
@@ -114,8 +115,8 @@ const formatDate = (value: string) =>
             >
               <NuxtLink :to="`/furmeet/${furmeet.id}`" class="block">
                 <ImageWithFallback
-                  :src="furmeet.imageUrl || `/furmeet/thumbnail/${furmeet.id}.png`"
-                  :fallback="'/furmeet/thumbnail/default.png'"
+                  :src="furmeet.imageUrl"
+                  :fallback="getMeetFallbackImage(furmeet.id)"
                   :alt="furmeet.title"
                   class="h-48 w-full object-cover"
                 />

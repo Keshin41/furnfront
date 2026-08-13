@@ -6,7 +6,12 @@ const props = withDefaults(
     duration?: number;
   }>(),
   {
-    photos: () => ["/meet-duck.jpg", "/meet-outdoor.jpg", "/meet-shuffle.avif"],
+    photos: () => [
+      "/hero-duck.webp",
+      "/hero-outdoor.webp",
+      "/hero-shuffle.webp",
+      "/hero-jtf.webp",
+    ],
     interval: 4500,
     duration: 900,
   },
@@ -41,7 +46,14 @@ onBeforeUnmount(() => {
         :key="src"
         class="absolute inset-0"
       >
-        <img :src="src" alt="" class="h-full w-full object-cover" />
+        <img
+          :src="src"
+          alt=""
+          class="h-full w-full object-cover"
+          decoding="async"
+          :fetchpriority="index === 0 ? 'high' : 'low'"
+          :loading="index === 0 ? 'eager' : 'lazy'"
+        />
       </div>
     </transition-group>
 
