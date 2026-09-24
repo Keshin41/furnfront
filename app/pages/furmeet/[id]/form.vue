@@ -33,6 +33,7 @@ export type ActivityAnswersDto = {
 
 export type FormAnswersDto = {
   email: string;
+  nickname: string;
   activities: ActivityAnswersDto[];
 };
 
@@ -46,6 +47,7 @@ interface FormState {
   email: string;
   participations: Record<string, Participation>;
   answers: Record<string, string>;
+  nickname: string;
 }
 
 function buildInitialState(form: FormDto | null | undefined): FormState {
@@ -59,7 +61,7 @@ function buildInitialState(form: FormDto | null | undefined): FormState {
     });
   });
 
-  return { email: "", participations, answers };
+  return { email: "", participations, answers, nickname: "" };
 }
 
 const state = reactive<FormState>(buildInitialState(data.value));
@@ -182,6 +184,7 @@ async function onSubmit() {
   try {
     const payload: FormAnswersDto = {
       email: state.email,
+      nickname: state.nickname,
       activities:
         data.value?.map((section) => {
           const present = state.participations[section.id] === "yes";
@@ -261,6 +264,9 @@ async function onSubmit() {
       </h1>
       <UFormField label="Email" name="email" required>
         <UInput v-model="state.email" type="email" />
+      </UFormField>
+      <UFormField label="Pseudo" name="nickname" required>
+        <UInput v-model="state.nickname" type="text" />
       </UFormField>
 
       <div v-for="section in data" :key="section.id" class="space-y-4">
