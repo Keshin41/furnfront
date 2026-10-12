@@ -126,15 +126,15 @@ const onAnnouncementAction = () => {
               <CustomButton
                 label="Découvrir les furmeets"
                 to="/furmeet"
-                bgClass="bg-brand-dark-blue"
-                textClass="text-white"
+                bg-class="bg-brand-dark-blue"
+                text-class="text-white"
                 size="lg"
               />
               <CustomButton
                 label="Accès au telegram"
-                to="https://telegram.furbar.fr"
-                bgClass="border-2 border-white/70 bg-transparent"
-                textClass="text-white"
+                to="https://t.me/+RHbOwsko2JVkZGM0"
+                bg-class="border-2 border-white/70 bg-transparent"
+                text-class="text-white"
                 size="lg"
               />
             </div>
